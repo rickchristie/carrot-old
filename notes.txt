@@ -1,0 +1,19 @@
+Some conventions:
+
+File name that holds a class should have an uppercase first character, the rest of the character must be lowercase.
+For example, this is correct:
+	
+	Home.php
+	Home_page.php
+
+This is wrong:
+
+	home.php
+	homePage.php
+
+File name must be the same with the class name that the file contains.
+
+	Home.php contains 'Home' class
+	Home_page.php contains 'Home_page' class
+
+Oh, and yeah, the folder name must be all lowercase
