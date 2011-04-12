@@ -33,7 +33,6 @@ class Factory
 	protected $views = array();
 	protected $loaded_files = array();
 	
-	
 	public function __construct($config, $db, $router, $request, $session)
 	{
 		$this->libraries['Config'] = $config;

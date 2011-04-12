@@ -29,14 +29,38 @@ class Config
 {
 	protected $config = array();
 	
-	public function __construct($config, $abspath)
+	/**
+	 * Constructs Config object.
+	 *
+	 * The constructor will load config.php file 
+	 *
+	 * @throws 
+	 *
+	 */
+	public function __construct($abspath = '')
 	{
+		// The $abspath variable is the ABSOLUTE PATH
+		// to the folder where the config.php is stored.
+		// Config class will check for it's existence,
+		// require and load the variables into $this->config.
+		
+		if (empty($abspath))
+		{
+			$abspath = $this->determine_abspath();
+		}
+		
+		if (!file_exists($abspath . 'config.php'))
+		{
+			throw new InvalidArgumentException("Config object, error when instantiating. Path does not contain config.php ({$abspath})");
+		}
+		
+		require($abspath . 'config.php');
 		$config['abspath'] = $abspath;
 		
 		// Default controller must not be empty
-		if (empty($config['default_controller_name']))
+		if (empty($config['default_request_name']))
 		{
-			exit('Configuration file error. Default controller name must not be empty.');
+			exit('Configuration file error. Default request name must not be empty.');
 		}
 		
 		/*
@@ -77,10 +101,33 @@ class Config
 		$this->config = $config;
 	}
 	
+	/**
+	 * Determines the current absolute path for the framework.
+	 *
+	 * Assuming that this file is location is /framework/core/Config.php,
+	 * this function gets the absolute path to this framework's root
+	 * folder.
+	 *
+	 */
+	public function determine_abspath()
+	{
+		return realpath(realpath(dirname(__FILE__) . '/../..') . '/');
+	}
+	
 	// ---------------------------------------------------------------
 	
 	public function item($name)
 	{
 		return $this->config[$name];
+	}
+	
+	public function get_item_or_default($name, $default)
+	{
+		if (isset($this->config[$name]))
+		{
+			return $this->config[$name];
+		}
+		
+		return $default;
 	}
 }

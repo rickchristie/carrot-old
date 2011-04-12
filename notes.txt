@@ -17,3 +17,11 @@ File name must be the same with the class name that the file contains.
 	Home_page.php contains 'Home_page' class
 
 Oh, and yeah, the folder name must be all lowercase
+
+------
+
+Having rules that dictates the naming conventions are a pain in the ass.
+Don't check or transform lowercase or uppercase. Let the user figure it out
+themselves.
+
+The rule becomes: don't have a class with the same class names, even controllers and views clash out. Nice!

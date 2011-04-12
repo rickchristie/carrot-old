@@ -21,14 +21,14 @@ if (ini_get('register_globals'))
 	exit('Register globals are on. Turn off register globals.');
 }
 
-if (intval(substr(phpversion(), 0, 1)) < 5)
+if (floatval(substr(phpversion(), 0, 3)) < 5.3)
 {
 	exit('This framework requires PHP 5, please upgrade.');
 }
 
 /*
 |---------------------------------------------------------------
-| BOOTSTRAPPING
+| START SESSION AND OUTPUT BUFFER
 |---------------------------------------------------------------
 */
 
@@ -47,44 +47,100 @@ ob_start();
 |---------------------------------------------------------------
 */
 
-// Load configuration file
 $abspath = dirname(__FILE__) . '/';
-require($abspath . 'config.php');
-
-// Load base classes
-require($abspath . 'framework/core/Library.php');
-require($abspath . 'framework/core/Controller.php');
-require($abspath . 'framework/core/Model.php');
-require($abspath . 'framework/core/View.php');
-
-// Load core classes
-require($abspath . 'framework/core/Factory.php');
+require($abspath . 'framework/core/DI_container.php');
 require($abspath . 'framework/core/Config.php');
-require($abspath . 'framework/core/Database.php');
 require($abspath . 'framework/core/Router.php');
 require($abspath . 'framework/core/Request.php');
 require($abspath . 'framework/core/Session.php');
+require($abspath . 'framework/core/Carrot.php');
+require($abspath . 'framework/core/Response.php');
 
 /*
 |---------------------------------------------------------------
-| INSTANTIATE CORE OBJECTS
+| INSTANTIATE SOME CORE OBJECTS
 |---------------------------------------------------------------
 */
 
+$config = new Config($abspath);
+$request = new Request($_SERVER, $_GET, $_POST, $_FILES, $_COOKIE, $_REQUEST, $_ENV);
+$session = new Session($_SESSION);
+unset($abspath);
+
+/*
+|---------------------------------------------------------------
+| INSTANTIATE ROUTER
+|---------------------------------------------------------------
+*/
+
+$router = new Router($request->server('REQUEST_URI'), $config->item('abspath') . 'controllers/', $config->item('default_request_name'), $config->item('path'));
+$router->set_route();
+
+//echo '<pre>', var_dump($router), '</pre>';
+
+$carrot = new Carrot($request, $session, $config);
+
+exit;
+
+
+$search_paths = array
+(
+	$abspath . 'controllers'
+);
+
+$dic = new DI_container();
+
+$blah = array
+(
+	$abspath,
+	'blah',
+	'Object' => '',
+	array('blah')
+);
+
+$blah = array($abspath, 'blah', 'Object' => 'Auth');
+
+//$dic->register('Foo', array())
+
+echo '<pre>', var_dump($blah), '</pre>';
+
+foreach ($blah as $index => $content)
+{
+	if (is_integer($index))
+	{
+		echo 'Integer <br />';
+	}
+	else if (is_string($index))
+	{
+		echo 'String <br />';
+	}
+}
+
+exit();
+
 $config = new Config($config, $abspath);
-$db = new Database($config);
 $request = new Request($_SERVER, $_GET, $_POST, $_FILES, $_COOKIE, $_REQUEST, $_ENV, $config);
 $session = new Session($_SESSION, $config);
 $router = new Router($config, $request);
 unset($abspath);
 
+$config->item('blah');
+
+
+
+throw new InvalidArgumentException('blah!'); 
+
+echo '<pre>', var_dump($blah), '</pre>';
+
+exit();
+
 /*
 |---------------------------------------------------------------
-| INSTANTIATE FACTORY
+| INSTANTIATE DI CONTAINER
 |---------------------------------------------------------------
 */
 
-$factory = new Factory($config, $db, $router, $request, $session);
+$factory = new Factory($config, $router, $request, $session);
 
 /*
 |---------------------------------------------------------------

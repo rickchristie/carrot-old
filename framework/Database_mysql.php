@@ -26,7 +26,7 @@
  *
  */
 
-class Database
+class Database_mysql
 {
 	public function test()
 	{

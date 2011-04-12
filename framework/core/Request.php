@@ -34,14 +34,11 @@ class Request
 	protected $cookie;
 	protected $request;
 	protected $env;
-	protected $config;
-	protected $uri_segments = array();
 	
 	// ---------------------------------------------------------------
 	
-	public function __construct($server, $get, $post, $files, $cookie, $request, $env, $config)
+	public function __construct($server, $get, $post, $files, $cookie, $request, $env)
 	{
-		// Initialize properties
 		$this->server = $server;
 		$this->get = $get;
 		$this->post = $post;
@@ -49,59 +46,6 @@ class Request
 		$this->cookie = $cookie;
 		$this->request = $request;
 		$this->env = $env;
-		$this->config = $config;
-		
-		/*
-		|---------------------------------------------------------------
-		| GENERATE URI SEGMENTS
-		|---------------------------------------------------------------
-		*/
-		
-		$request_uri = $this->server('REQUEST_URI');
-		$path = $this->config->item('path');
-		
-		// Remove query string from $request_uri
-		$pos = strpos($request_uri, '?');
-		
-		if ($pos !== false)
-		{
-			$request_uri = substr($request_uri, 0, $pos);
-		}
-		
-		// Split the URL into segments
-		if ($path != '/')
-		{
-			$uri_segments = explode('/', str_ireplace($path, '', $request_uri));
-		}
-		
-		// Fill the uri_segments property, ignore empty segments
-		foreach($uri_segments as $segment)
-		{
-			if (!empty($segment))
-			{
-				// We use rawurldecode instead of urldecode since
-				// urldecode will decode '+' sign to space ' '
-				$this->uri_segments[] = rawurldecode($segment);
-			}
-		}
-		
-		// If after all this the uri_segments is empty, then grab
-		// the default controller name and generate uri_segments from it.
-		
-		if (empty($this->uri_segments))
-		{
-			$this->uri_segments = array();
-			$exploded = explode('/', $this->config->item('default_controller_name'));
-			
-			// Fill the uri_segments property, ignore empty segments
-			foreach ($exploded as $segment)
-			{
-				if (!empty($segment))
-				{
-					$this->uri_segments[] = $segment;
-				}
-			}
-		}
 	}
 	
 	// ---------------------------------------------------------------
@@ -174,15 +118,5 @@ class Request
 		}
 		
 		return $this->env[$item];
-	}
-	
-	public function uri_segments($index = 'string')
-	{
-		if (!is_integer($index))
-		{
-			return $this->uri_segments;
-		}
-		
-		return $this->uri_segments[$index];
 	}
 }

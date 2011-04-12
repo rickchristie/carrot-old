@@ -36,9 +36,9 @@ $config['domain'] = '';
 | PATH TO THE FRAMEWORK
 |---------------------------------------------------------------
 | 
-| Path to the framework, WITH TRAILING SLASH. If framework is at
-| the root of the domain, use '/'. Leave empty to guess.
-| Examples:
+| Path to the framework, WITH TRAILING AND START SLASH. If
+| framework is at the root of the domain, use '/'. Leave empty
+| to guess. Examples:
 |
 |	/
 |	/path/to/framework/
@@ -50,7 +50,7 @@ $config['path'] = '';
 
 /*
 |---------------------------------------------------------------
-| DEFAULT CONTROLLER
+| DEFAULT REQUEST URI
 |---------------------------------------------------------------
 | 
 | The controller and function to load when people are visiting
@@ -79,7 +79,7 @@ $config['path'] = '';
 |---------------------------------------------------------------
 */
 
-$config['default_controller_name'] = 'test/for/multiple/folders/test_multiple';
+$config['default_request_name'] = 'test/for/multiple/folders/test_multiple';
 
 /*
 |---------------------------------------------------------------
