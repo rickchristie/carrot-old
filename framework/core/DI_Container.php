@@ -21,12 +21,12 @@
  * OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN
  * THE SOFTWARE.
  *
- * @package			Carrot
- * @author 		  	Ricky Christie <seven.rchristie@gmail.com>
- * @copyright		2011 Ricky Christie <seven.rchristie@gmail.com>
- * @license			http://www.opensource.org/licenses/mit-license.php MIT License
- * @since		 	0.1
- * @version			0.1
+ * @package		Carrot
+ * @author		Ricky Christie <seven.rchristie@gmail.com>
+ * @copyright	2011 Ricky Christie <seven.rchristie@gmail.com>
+ * @license		http://www.opensource.org/licenses/mit-license.php MIT License
+ * @since		0.1
+ * @version		0.1
  */
 
 /**
@@ -40,13 +40,13 @@
  * behavior is set to return references of objects already instantiated, although
  * you can also force the class to create a new instance.
  * 
- * @package			Carrot
- * @author 		  	Ricky Christie <seven.rchristie@gmail.com>
- * @copyright		2011 Ricky Christie <seven.rchristie@gmail.com>
- * @license			http://www.opensource.org/licenses/mit-license.php MIT License
- * @since		 	0.1
- * @version			0.1
- * @todo			Validate $transients & $singletons in constructor, both must not contain references to the same classes.
+ * @package		Carrot
+ * @author		Ricky Christie <seven.rchristie@gmail.com>
+ * @copyright	2011 Ricky Christie <seven.rchristie@gmail.com>
+ * @license		http://www.opensource.org/licenses/mit-license.php MIT License
+ * @since		0.1
+ * @version		0.1
+ * @todo		Validate $transients & $singletons in constructor, both must not contain references to the same classes.
  */
 
 class DI_Container
@@ -105,9 +105,9 @@ class DI_Container
 	 * <code>
 	 * $search_paths = array
 	 * (
-	 *    '/absolute/path/to/libraries',
-	 *    '/absolute/path/to/controllers',
-	 *    '/absolute/path/to/views'
+	 *	  '/absolute/path/to/libraries',
+	 *	  '/absolute/path/to/controllers',
+	 *	  '/absolute/path/to/views'
 	 * );
 	 * </code>
 	 *
@@ -118,27 +118,27 @@ class DI_Container
 	 * <code>
 	 * $config['Class_name'] = array
 	 * (
-	 *    0 => array('Contents' => 'Some string value', 'Type' => 'Value'),
-	 *    1 => array('Contents' => $object_ref, 'Type' => 'Value'),
-	 *    2 => array('Contents' => array('pear', 'grape', 'lime', 'lemon'), 'Type' => 'Value'),
-	 *    3 => array('Contents' => array
-	 *                             (
-	 *                                0 => array('Contents' => 9938, 'Type' => 'Value'),
-	 *                                1 => array('Contents' => 'Class_name', 'Type' => 'Object')
-	 *                             ), 'Type' => 'Array'),
-	 *    4 => array('Contents' => 'Class_name', 'Type' => 'Object'),
-	 *    5 => array('Contents' => 'Class_name', 'Type' => 'Object:force')
+	 *	  0 => array('Contents' => 'Some string value', 'Type' => 'Value'),
+	 *	  1 => array('Contents' => $object_ref, 'Type' => 'Value'),
+	 *	  2 => array('Contents' => array('pear', 'grape', 'lime', 'lemon'), 'Type' => 'Value'),
+	 *	  3 => array('Contents' => array
+	 *							   (
+	 *								  0 => array('Contents' => 9938, 'Type' => 'Value'),
+	 *								  1 => array('Contents' => 'Class_name', 'Type' => 'Object')
+	 *							   ), 'Type' => 'Array'),
+	 *	  4 => array('Contents' => 'Class_name', 'Type' => 'Object'),
+	 *	  5 => array('Contents' => 'Class_name', 'Type' => 'Object:force')
 	 * );
 	 * </code>
 	 *
 	 * There are three types of parameter types you can use:
 	 * 
-	 *  1. Object - means get an instance of this object, returns cache object
-	 * 	   when available.
-	 *  2. Object:force - means get an instance of this object, ignore cache and
-	 *     instantiate a new object no matter what.
-	 *  3. Array - contains an array of configuration, to be processed recursively.
-	 *  4. Value - the contents are passed without any further processing.
+	 *	1. Object - means get an instance of this object, returns cache object
+	 *		   when available.
+	 *	2. Object:force - means get an instance of this object, ignore cache and
+	 *	   instantiate a new object no matter what.
+	 *	3. Array - contains an array of configuration, to be processed recursively.
+	 *	4. Value - the contents are passed without any further processing.
 	 *
 	 * Class names inside $singletons would not be instantiated more than once. This
 	 * is useful in the case of $config or $DB objects, where you want every other object
@@ -159,7 +159,7 @@ class DI_Container
 	 *
 	 */
 	public function __construct(array $search_paths, array $config = array(), array $forbidden = array(), array $singletons = array(), array $transients = array())
-	{	
+	{		
 		$this->search_paths = $search_paths;
 		$this->config = $config;
 		$this->forbidden = $forbidden;
@@ -250,7 +250,7 @@ class DI_Container
 	 *
 	 */
 	public function get_instance($class_name, array $config = array(), $force_instantiation = FALSE)
-	{			
+	{						
 		if (in_array($class_name, $this->forbidden))
 		{
 			throw new RuntimeException("DIC error in instantiating. Class {$class_name} is not allowed to be instantiated.");
@@ -420,7 +420,7 @@ class DI_Container
 		else
 		{
 			$reflection = new ReflectionClass($class_name);
-			$object = $reflection->newInstanceArgs($ctor_arguments);	
+			$object = $reflection->newInstanceArgs($ctor_arguments);		
 		}
 		
 		if (!in_array($class_name, $this->transients))
@@ -463,11 +463,11 @@ class DI_Container
 	 *
 	 */
 	protected function prepare_ctor_arguments(array $config)
-	{	
+	{		
 		$ctor_arguments = array();
 		
 		foreach ($config as $item)
-		{	
+		{		
 			if (!is_array($item) or !isset($item['Type']) or !isset($item['Contents']))
 			{
 				continue;
