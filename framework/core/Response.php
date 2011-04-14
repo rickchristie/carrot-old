@@ -32,7 +32,8 @@
 /**
  * Response object.
  *
- * The object representing the framework's response to a particular request.
+ * The object representing the framework's response to a particular request. It
+ * doesn't support anything besides than HTTP 1.0 and HTTP 1.1 protocol.
  *
  * @package			Carrot
  * @author 		  	Ricky Christie <seven.rchristie@gmail.com>
@@ -40,6 +41,7 @@
  * @license			http://www.opensource.org/licenses/mit-license.php MIT License
  * @since		 	0.1
  * @version			0.1
+ * @todo			Make an abstract version so you can split it to HTTP 1.0, HTTP 1.1, WebSocket, etc
  */
 
 class Response
@@ -65,56 +67,117 @@ class Response
 	protected $status_codes = array
 	(
 		// Class 1 - Informational
-		100 => '100 Continue',
-		101 => '101 Switching Protocols',
+		100 => 'Continue',
+		101 => 'Switching Protocols',
 
 		// Class 2 - Successful
-		200 => '200 OK',
-		201 => '201 Created',
-		202 => '202 Accepted',
-		203 => '203 Non-Authoritative Information',
-		204 => '204 No Content',
-		205 => '205 Reset Content',
-		206 => '206 Partial Content',
+		200 => 'OK',
+		201 => 'Created',
+		202 => 'Accepted',
+		203 => 'Non-Authoritative Information',
+		204 => 'No Content',
+		205 => 'Reset Content',
+		206 => 'Partial Content',
 		
 		// Class 3 - Redirection
-		300 => '300 Multiple Choices',
-		301 => '301 Moved Permanently',
-		302 => '302 Found',
-		303 => '303 See Other',
-		304 => '304 Not Modified',
-		305 => '305 Use Proxy',
-		306 => '306 Switch Proxy (No longer used)',
-		307 => '307 Temporary Redirect',
+		300 => 'Multiple Choices',
+		301 => 'Moved Permanently',
+		302 => 'Found',
+		303 => 'See Other',
+		304 => 'Not Modified',
+		305 => 'Use Proxy',
+		306 => 'Switch Proxy (No longer used)',
+		307 => 'Temporary Redirect',
 		
 		// Class 4 - Client Error
-		400 => '400 Bad Request',
-		401 => '401 Unauthorized',
-		402 => '402 Payment Required',
-		403 => '403 Forbidden',
-		404 => '404 Not Found',
-		405 => '405 Method Not Allowed',
-		406 => '406 Not Acceptable',
-		407 => '407 Proxy Authentication Required',
-		408 => '408 Request Timeout',
-		409 => '409 Conflict',
-		410 => '410 Gone',
-		411 => '411 Length Required',
-		412 => '412 Precondition Failed',
-		413 => '413 Request Entity Too Large',
-		414 => '414 Request-URI Too Long',
-		415 => '415 Unsupported Media Type',
-		416 => '416 Requested Range Not Satisfiable',
-		417 => '417 Expectation Failed',
+		400 => 'Bad Request',
+		401 => 'Unauthorized',
+		402 => 'Payment Required',
+		403 => 'Forbidden',
+		404 => 'Not Found',
+		405 => 'Method Not Allowed',
+		406 => 'Not Acceptable',
+		407 => 'Proxy Authentication Required',
+		408 => 'Request Timeout',
+		409 => 'Conflict',
+		410 => 'Gone',
+		411 => 'Length Required',
+		412 => 'Precondition Failed',
+		413 => 'Request Entity Too Large',
+		414 => 'Request-URI Too Long',
+		415 => 'Unsupported Media Type',
+		416 => 'Requested Range Not Satisfiable',
+		417 => 'Expectation Failed',
 		
 		// Class 5 - Server Error
-		500 => '500 Internal Server Error',
-		501 => '501 Not Implemented',
-		502 => '502 Bad Gateway',
-		503 => '503 Service Unavailable',
-		504 => '504 Gateway Timeout',
-		505 => '505 HTTP Version Not Supported'
+		500 => 'Internal Server Error',
+		501 => 'Not Implemented',
+		502 => 'Bad Gateway',
+		503 => 'Service Unavailable',
+		504 => 'Gateway Timeout',
+		505 => 'HTTP Version Not Supported'
 	);
+	
+	/**
+	 * @var array List of allowed response header fields for HTTP 1.0.
+	 */
+	protected $header_fields_1_0 = array
+	(
+		'Allow',
+		'Content-Language',
+		'Content-Encoding',
+		'Content-Length',
+		'Content-Type',
+		'Date',
+		'Expires',
+		'Last-Modified',
+		'Link',
+		'Location',
+		'Pragma',
+		'Retry-After',
+		'Server',
+		'WWW-Authenticate'
+	);
+	
+	/**
+	 * @var array List of allowed response header fields for HTTP 1.1.
+	 */
+	protected $header_fields_1_1 = array
+	(
+		'Accept-Ranges',
+		'Age',
+		'Allow',
+		'Cache-Control',
+		'Content-Encoding',
+		'Content-Language',
+		'Content-Length',
+		'Content-Location',
+		'Content-MD5',
+		'Content-Disposition',
+		'Content-Range',
+		'Content-Type',
+		'Date',
+		'Etag',
+		'Expires',
+		'Last-Modified',
+		'Link',
+		'Location',
+		'Pragma',
+		'Proxy-Authenticate',
+		'Retry-After',
+		'Server',
+		'Trailer',
+		'Transfer-Encoding',
+		'Vary',
+		'Via',
+		'Warning',
+		'WWW-Authenticate'
+	);
+	
+	/**
+	 * @var array Array containing the allowed header fields, set at constructor.
+	 */
+	protected $header_fields;
 	
 	/**
 	 * @var array The protocol to be written in header when returning status codes.
@@ -131,14 +194,32 @@ class Response
 	 *
 	 * This request object assumes that output buffering has
 	 * already started. Therefore it doesn't check if headers
-	 * are sent.
+	 * are sent. This class only supports HTTP/1.0 and HTTP/1.1
+	 * protocol, anything other than that and it will throw
+	 * InvalidArgumentException.
 	 *
-	 * @param string $server_protocol
+	 * @param string $server_protocol Must be either 'HTTP/1.1' or 'HTTP/1.0'.
+	 * @throws InvalidArgumentException
 	 *
 	 */
-	public function __construct($server_protocol = 'HTTP/1.1')
+	public function __construct($server_protocol)
 	{
-		$this->server_protocol = $server_protocol;
+		// Fill in header fields based on which protocol we are at.
+		if ($server_protocol == 'HTTP/1.0')
+		{
+			$this->server_protocol = $server_protocol;
+			$this->header_fields = $this->header_fields_1_0;
+			return;
+		}
+		
+		if ($server_protocol == 'HTTP/1.1')
+		{
+			$this->server_protocol = $server_protocol;
+			$this->header_fields = $this->header_fields_1_1;
+			return;
+		}
+		
+		throw new InvalidArgumentException('Error instantiating Response object. Server protocol must be HTTP/1.0 or HTTP/1.1.');
 	}
 	
 	/**
@@ -156,13 +237,24 @@ class Response
 	 *
 	 * <code>header('Content-Type: text/html');</code>
 	 *
+	 * This method also checks if the header field is allowed
+	 * for the HTTP version you are using as $this->server_protocol.
+	 * To skip the check, use $force optional parameter.
+	 *
 	 * @param string $header_name
 	 * @param string $contents
-	 * @return bool TRUE if headers are not sent yet, FALSE if otherwise.
+	 * @param bool $force Optional. Use TRUE to skip header field validation. Defaults to FALSE.
+	 * @return bool TRUE if successful, FALSE if otherwise.
 	 *
 	 */
-	public function set_header($header_name, $contents)
+	public function set_header($header_name, $contents, $force = FALSE)
 	{
+		// Checks if $header_name is allowed
+		if (!$force && !in_array($header_name, $this->header_fields))
+		{
+			return FALSE;
+		}
+		
 		if (!headers_sent())
 		{
 			$this->headers[$header_name] = $contents;
@@ -174,7 +266,7 @@ class Response
 	}
 	
 	/**
-	 * Removes a header, all all headers.
+	 * Removes a header or all previously set headers.
 	 *
 	 * This is a wrapper for header_remove(). Other
 	 * than also removing the actual header, it 
@@ -216,7 +308,7 @@ class Response
 	 *
 	 * @param int $code HTTP status code.
 	 * @param string $message Message to accompany the status code.
-	 * @return TRUE if successful, FALSE if not.
+	 * @return bool TRUE if successful, FALSE if not.
 	 *
 	 */
 	public function set_status($code, $message = '')
@@ -243,7 +335,11 @@ class Response
 	 * headers. If headers are sent already, it
 	 * simply returns FALSE. It doesn't exit the
 	 * PHP processing for you, so you can still
-	 * do some processing after it is redirected.
+	 * do some processing after we sent the
+	 * redirection header.
+	 *
+	 * @param string $location The URL.
+	 * @return bool TRUE on success, FALSE of failure.
 	 *
 	 */
 	public function redirect($location)
@@ -252,6 +348,7 @@ class Response
 		{
 			$this->remove_header();
 			$this->set_header('Location', $location);
+			return TRUE;
 		}
 		
 		return FALSE;
@@ -262,6 +359,11 @@ class Response
 	public function get_body()
 	{
 		return $this->body;
+	}
+	
+	public function set_body($string)
+	{
+		$this->body = $string;
 	}
 	
 	public function append_body($string)

@@ -36,7 +36,54 @@ class Carrot
 	
 	public function __construct($request, $session, $config)
 	{
-		$this->response = new Response();
+		$search_paths = array
+		(
+			$config->item('abspath') . 'controllers/',
+			$config->item('abspath') . 'libraries/',
+			$config->item('abspath') . 'views/',
+			$config->item('abspath') . 'framework/'
+		);
+		
+		$config = array();
+		
+		$config['Home'] = array
+		(
+			0 => array('Contents' => 'This is a value', 'Type' => 'Value'),
+			1 => array('Contents' => 'Test_view', 'Type' => 'Object'),
+			2 => array('Contents' => array
+			(
+				0 => array('Contents' => 'Value', 'Type' => 'Value'),
+				1 => array('Contents' => 'Foo', 'Type' => 'Object:force')
+			), 'Type' => 'Array')
+		);
+		
+		$config['Test_view'] = array
+		(
+			0 => array('Contents' => 'Foo', 'Type' => 'Object')
+		);
+		
+		$config['Foo'] = array
+		(
+			0 => array('Contents' => 'Bar', 'Type' => 'Object')
+		);
+		
+		$config['Bar'] = array
+		(
+			0 => array('Contents' => 'Database_mysql', 'Type' => 'Object')
+		);
+		
+		$forbidden = array();
+		$singletons = array();
+		$transients = array();
+		
+		$dic = new DI_Container($search_paths, $config, $forbidden, $singletons, $transients);
+		$object = $dic->get_instance('Home');
+		
+		$object->index();
+		
+		//$this->response
+		
+		//$this->response = new Response();
 	}
 	
 	/**

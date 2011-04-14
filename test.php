@@ -1,6 +1,24 @@
 <?php
 
-$blah = array('bb' => 'ss');
+
+
+$blah = array(5 => 'ss', 10 => 'ss', 11 => 'ff', 1 => 'gjj', 'asdfs' => 'ss');
+
+$string = array('asdf',444,33);
+
+$merged = array_merge($blah, $string);
+ksort($blah, SORT_NUMERIC);
+
+echo '<pre>', var_dump($blah), '</pre>';
+
+$bbb = 'sss';
+
+echo $bbb['Type'];
+
+switch ($bbb['Type'])
+{
+	
+}
 
 unset($lknlv);
 unset($blah['hhhh']);

@@ -48,7 +48,7 @@ ob_start();
 */
 
 $abspath = dirname(__FILE__) . '/';
-require($abspath . 'framework/core/DI_container.php');
+require($abspath . 'framework/core/DI_Container.php');
 require($abspath . 'framework/core/Config.php');
 require($abspath . 'framework/core/Router.php');
 require($abspath . 'framework/core/Request.php');
@@ -58,7 +58,7 @@ require($abspath . 'framework/core/Response.php');
 
 /*
 |---------------------------------------------------------------
-| INSTANTIATE SOME CORE OBJECTS
+| INSTANTIATE CONFIG, REQUEST, SESSION
 |---------------------------------------------------------------
 */
 
@@ -66,6 +66,18 @@ $config = new Config($abspath);
 $request = new Request($_SERVER, $_GET, $_POST, $_FILES, $_COOKIE, $_REQUEST, $_ENV);
 $session = new Session($_SESSION);
 unset($abspath);
+
+/*
+|---------------------------------------------------------------
+| INSTANTIATE CARROT OBJECT.
+|
+| Carrot will take $config, $request, and $session as its
+| instantiation parameter. 
+|
+|---------------------------------------------------------------
+*/
+
+$carrot = new Carrot($request, $session, $config);
 
 /*
 |---------------------------------------------------------------

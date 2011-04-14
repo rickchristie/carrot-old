@@ -25,7 +25,7 @@
  * @version			version
  */
  
-class Rules extends Library
+class Rules
 {
 	
 }

@@ -1,7 +1,12 @@
 <?php
 
-class Test_view extends View
-{	
+class Test_view
+{
+	public function __construct($foo)
+	{
+		$this->foo = $foo;
+	}
+		
 	public function render($message)
 	{		
 		$this->template('header');

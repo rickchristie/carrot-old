@@ -1,12 +1,11 @@
 <?php
 
-class Bar extends Library
-{
-	protected $library_dependencies = array
-	(
-		'Config' => 'config',
-		'Database' => 'db'
-	);
+class Bar
+{	
+	public function __construct($db)
+	{
+		$this->db = $db;
+	}
 	
 	public function test()
 	{

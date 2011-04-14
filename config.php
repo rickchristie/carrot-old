@@ -162,3 +162,15 @@ $config['maintenance_passphrase'] = 'luigi';
 */
 
 $config['live'] = FALSE;
+
+/*
+|---------------------------------------------------------------
+| DEPENDENCY INJECTION CONFIGURATION
+|---------------------------------------------------------------
+| 
+| Place any dependency injection configuration in the variable
+| below. The DIC configuration for core classes are defined
+| automatically by the framework, you won't be able to 
+|
+|--------------------------------------------------------------- 
+*/
