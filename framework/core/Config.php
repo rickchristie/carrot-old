@@ -1,126 +1,110 @@
 <?php
 
 /**
- * The short description
+ * Configuration object
  *
- * As many lines of extendend description as you want {@link element}
- * links to an element
- * {@link http://www.example.com Example hyperlink inline link} links to
- * a website. The inline
- * source tag displays function source code in the description:
- * {@source } 
+ * Permission is hereby granted, free of charge, to any person obtaining a copy
+ * of this software and associated documentation files (the "Software"), to deal
+ * in the Software without restriction, including without limitation the rights
+ * to use, copy, modify, merge, publish, distribute, sublicense, and/or sell
+ * copies of the Software, and to permit persons to whom the Software is
+ * furnished to do so, subject to the following conditions:
+ *
+ * The above copyright notice and this permission notice shall be included in
+ * all copies or substantial portions of the Software.
+ *
+ * THE SOFTWARE IS PROVIDED "AS IS", WITHOUT WARRANTY OF ANY KIND, EXPRESS OR
+ * IMPLIED, INCLUDING BUT NOT LIMITED TO THE WARRANTIES OF MERCHANTABILITY,
+ * FITNESS FOR A PARTICULAR PURPOSE AND NONINFRINGEMENT. IN NO EVENT SHALL THE
+ * AUTHORS OR COPYRIGHT HOLDERS BE LIABLE FOR ANY CLAIM, DAMAGES OR OTHER
+ * LIABILITY, WHETHER IN AN ACTION OF CONTRACT, TORT OR OTHERWISE, ARISING FROM,
+ * OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN
+ * THE SOFTWARE.
+ *
+ * @package		Carrot
+ * @author		Ricky Christie <seven.rchristie@gmail.com>
+ * @copyright	2011 Ricky Christie <seven.rchristie@gmail.com>
+ * @license		http://www.opensource.org/licenses/mit-license.php MIT License
+ * @since		0.1
+ * @version		0.1
+ */
+
+/**
+ * Configuration object
+ *
+ * Object representing user configurations. It does not have a set() method
+ * as it does not allow configurations to be changed at runtime. This will
+ * hopefully make testing a lot easier.
  * 
- * {@link http://www.example.com Read more}
- *
- * @package			package_name
- * @subpackage		sub package name, groupings inside of a project
- * @author 		  	author name <author@email>
- * @copyright		name date
- * @deprecated	 	description
- * @param		 	type [$varname] description
- * @return		 	type description
- * @since		 	a version or a date
- * @todo			phpdoc.de compatibility
- * @var				type	a data type for a class variable
- * @version			version
+ * @package		Carrot
+ * @author		Ricky Christie <seven.rchristie@gmail.com>
+ * @copyright	2011 Ricky Christie <seven.rchristie@gmail.com>
+ * @license		http://www.opensource.org/licenses/mit-license.php MIT License
+ * @since		0.1
+ * @version		0.1
+ * @todo		
  */
 
 class Config
 {
+	/**
+	 * @var array Configurations stored as associative index array.
+	 */
 	protected $config = array();
+	
+	/**
+	 * @var array List of configuration index name that must not be empty.
+	 */
+	protected $required = array();
+	
+	/**
+	 * @var array List of configuration item defaults.
+	 */
+	protected $default = array();
 	
 	/**
 	 * Constructs Config object.
 	 *
-	 * The constructor will load config.php file 
+	 * Config object would check for defaults first, if a config item
+	 * does not exist or empty (according to $this->is_empty()), it
+	 * will be replaced by default values. It also checks that all
+	 * required configuration items are present and not empty. 
 	 *
-	 * @throws 
+	 * @see Config::is_empty()
+	 * @see Config::replace_defaults_if_empty()
+	 * @see Config::required_config_must_exists()
+	 * @param string $config Array of user configurations.
+	 * @param string $defaults Array of default values, will replace user values if they are empty or non-existent.
+	 * @param string $required List of items that must not be empty.
 	 *
 	 */
-	public function __construct($abspath = '')
-	{
-		// The $abspath variable is the ABSOLUTE PATH
-		// to the folder where the config.php is stored.
-		// Config class will check for it's existence,
-		// require and load the variables into $this->config.
+	public function __construct(array $config, array $defaults = array(), array $required = array())
+	{	
+		$config = $this->replace_defaults_if_empty($config, $defaults);
+		$this->required_config_must_exists($config, $required);
 		
-		if (empty($abspath))
-		{
-			$abspath = $this->determine_abspath();
-		}
-		
-		if (!file_exists($abspath . 'config.php'))
-		{
-			throw new InvalidArgumentException("Config object, error when instantiating. Path does not contain config.php ({$abspath})");
-		}
-		
-		require($abspath . 'config.php');
-		$config['abspath'] = $abspath;
-		
-		// Default controller must not be empty
-		if (empty($config['default_request_name']))
-		{
-			exit('Configuration file error. Default request name must not be empty.');
-		}
-		
-		/*
-		|---------------------------------------------------------------
-		| FILLING IN THE BLANKS
-		|---------------------------------------------------------------
-		*/
-		
-		// Guess protocol
-		if (!isset($config['protocol']) or empty($config['protocol']))
-		{
-			// CREDIT: Regin Gaarsmand, http://www.sourcerally.net/regin
-			$config['protocol'] = strtolower(substr($_SERVER["SERVER_PROTOCOL"],0,5)) == 'https' ? 'https' : 'http';
-		}
-		
-		// Guess domain name
-		if (!isset($config['domain']) or empty($config['domain']))
-		{
-			$config['domain'] = $_SERVER['SERVER_NAME'];
-		}
-		
-		// Guess path
-		if (!isset($config['path']) or empty($config['path']))
-		{
-			// Assuming that this file is always loaded by framework.php
-			// and framework.php is always loaded by index.php
-			// then SCRIPT_NAME should always be {path}/index.php
-			
-			$config['path'] = str_ireplace('/index.php', '', $_SERVER['SCRIPT_NAME']);
-			
-			// Add trailing slash
-			if (empty($config['path']) or substr($config['path'], -1) != '/')
-			{
-				$config['path'] .= '/';
-			}
-		}
-		
+		$this->required = $required;
 		$this->config = $config;
 	}
 	
 	/**
-	 * Determines the current absolute path for the framework.
+	 * Gets an item.
 	 *
-	 * Assuming that this file is location is /framework/core/Config.php,
-	 * this function gets the absolute path to this framework's root
-	 * folder.
+	 * @param string $name Item name to be fetched.
 	 *
 	 */
-	public function determine_abspath()
-	{
-		return realpath(realpath(dirname(__FILE__) . '/../..') . '/');
-	}
-	
-	// ---------------------------------------------------------------
-	
 	public function item($name)
 	{
 		return $this->config[$name];
 	}
 	
+	/**
+	 * Gets the item. If it doesn't exist, return a default value.
+	 *
+	 * @param string $name Item name to be fetched.
+	 * @param mixed $default Default value, to be returned if config item does not exist.
+	 *
+	 */
 	public function get_item_or_default($name, $default)
 	{
 		if (isset($this->config[$name]))
@@ -129,5 +113,90 @@ class Config
 		}
 		
 		return $default;
+	}
+	
+	// ---------------------------------------------------------------
+	
+	/**
+	 * Replace configuration items with defaults if they are empty or non-existent.
+	 *
+	 * @param array $config Configuration array to be replaced.
+	 * @param array $defaults List of default values.
+	 * @return array Configuration array with defaults inserted appropriately.
+	 *
+	 */
+	protected function replace_defaults_if_empty(array $config, array $defaults)
+	{
+		foreach ($defaults as $index => $content)
+		{
+			if (!array_key_exists($index, $config) or $this->is_empty($config[$index]))
+			{
+				$config[$index] = $content;
+			}
+		}
+		
+		return $config;
+	}
+	
+	/**
+	 * Throws an exception if required configuration is empty.
+	 *
+	 * Loops through the list of required item names and makes sure that it
+	 * exists $config and is not empty (according to $this->is_empty()).
+	 * 
+	 * @see Config::is_empty()
+	 * @param array $config Configuration array to be checked.
+	 * @param array $required List of required item names.
+	 * @throws RuntimeException
+	 *
+	 */
+	protected function required_config_must_exists(array $config, array $required)
+	{
+		foreach ($required as $item_name)
+		{
+			if (!array_key_exists($item_name, $config) or $this->is_empty($config[$item_name]))
+			{
+				throw new RuntimeException("Configuration file error. Required configuration ({$item_name}) is empty.");
+				break;
+			}
+		}
+	}
+	
+	/**
+	 * Checks if a configuration item is empty.
+	 *
+	 * We can't use empty() to determine whether or not a configuration item
+	 * is empty because a zero string '0' must also be considered a value.
+	 * If the $item is an array, it is checked with empty(), if it's an integer,
+	 * float, bool, or object, it is always considered not empty. If it is string,
+	 * as long as it is not an empty string, it's considered not empty.
+	 *
+	 * @param mixed $item Contents of the configuration item to check for emptiness.
+	 * @return bool TRUE if empty, FALSE if otherwise.
+	 *
+	 */
+	protected function is_empty($item)
+	{	
+		if ($item === NULL)
+		{
+			return FALSE;
+		}
+		
+		if (is_array($item))
+		{
+			return empty($item);
+		}
+		
+		if (is_string($item))
+		{
+			return !isset($item{0});
+		}
+		
+		if (is_integer($item) or is_float($item) or is_bool($item) or is_object($item))
+		{
+			return TRUE;
+		}
+		
+		return FALSE;
 	}
 }

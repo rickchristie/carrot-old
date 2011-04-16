@@ -36,7 +36,7 @@ $config['domain'] = '';
 | PATH TO THE FRAMEWORK
 |---------------------------------------------------------------
 | 
-| Path to the framework, WITH TRAILING AND START SLASH. If
+| Path to the framework, WITH TRAILING AND STARTING SLASH. If
 | framework is at the root of the domain, use '/'. Leave empty
 | to guess. Examples:
 |
@@ -50,7 +50,7 @@ $config['path'] = '';
 
 /*
 |---------------------------------------------------------------
-| DEFAULT REQUEST URI
+| DEFAULT REQUEST NAME
 |---------------------------------------------------------------
 | 
 | The controller and function to load when people are visiting
@@ -86,32 +86,8 @@ $config['default_request_name'] = 'test/for/multiple/folders/test_multiple';
 | CUSTOM SET ROUTE CLASS
 |---------------------------------------------------------------
 | 
-| If you want to have different rules in routing, create a
-| library that has this method:
-|
-|	public function set_route()
-|	{
-|		...
-|
-|		return array
-|		(
-|			'controller_name' => 'same/format/as/default/controller/name',
-|			'controller_class_name' => 'Settings',
-|			'controller_path' => '/real/path/to/Settings.php',
-|			'controller_method' => 'index',
-|			'params' => array('foo', 'bar')
-|		)
-|	}
-|
-| As with all library, you can declare dependencies. The
-| framework will have the Factory object instantiates your
-| class, and the Router will call your method. Leave empty to
-| use the default routing behavior. You can access uri segments
-| and
-|
-| If you are unable to determine the controller, return the
-| error message string and Router will load the 404 page.
-|
+| 
+| 
 |--------------------------------------------------------------- 
 */
 
@@ -119,30 +95,18 @@ $config['custom_set_route_class'] = '';
 
 /*
 |---------------------------------------------------------------
-| MYSQL DATABASE CONFIGURATIONS
-|---------------------------------------------------------------
-| 
-| When connecting, you can specify which connection to use:
-|
-|	$this->db->connect();
-|	$this->db->connect('default');
-|	$this->db->connect('statistics');
-|
-|--------------------------------------------------------------- 
-*/
-
-$config['db']['default']['dbhost'] = 'localhost';
-$config['db']['default']['dbname'] = 'milestone';
-$config['db']['default']['dbuser'] = 'root';
-$config['db']['default']['dbpass'] = 'root';
-
-/*
-|---------------------------------------------------------------
 | MAINTENANCE MODE
 |---------------------------------------------------------------
 | 
 | When set to TRUE, all visits to this website will be be
-| redirected to the maintenance template.
+| redirected to the maintenance template. You can bypass the
+| maintenance template by passing the passphrase via query
+| string:
+|
+| 	http://www.example.com/?passphrase=value
+|
+| This framework will create a session variable for you, which
+| would let you bypass every 
 |
 |--------------------------------------------------------------- 
 */
@@ -165,12 +129,80 @@ $config['live'] = FALSE;
 
 /*
 |---------------------------------------------------------------
-| DEPENDENCY INJECTION CONFIGURATION
+| DEPENDENCY INJECTION CONTAINER (DIC) DEPENDENCY LIST
 |---------------------------------------------------------------
 | 
-| Place any dependency injection configuration in the variable
-| below. The DIC configuration for core classes are defined
-| automatically by the framework, you won't be able to 
+| Place your dependency injection configuration below. The DIC
+| configuration defines parameters to be passed to construct an
+| object. If the parameter type is 'Object', DIC will pass an
+| instance of the object. DIC will instantiate dependencies
+| recursively.
+|
+| $dic['Class_name'] = array
+| (
+|	  array('Contents' => 'Some string value', 'Type' => 'Value'),
+|	  array('Contents' => $object_ref, 'Type' => 'Value'),
+|	  array('Contents' => array('pear', 'grape', 'lime'), 'Type' => 'Value'),
+|	  array('Contents' => 'Class_name', 'Type' => 'Object'),
+|	  array('Contents' => 'Class_name', 'Type' => 'Object:force')
+| );
+|
+| The DIC configuration for core classes are defined
+| automatically by the framework. You will be able to overwrite
+| it, but you are strictly discouraged to do so unless you know
+| what you are doing. List of this framework's core classes:
+|
+|	Carrot
+|	DI_Container
+|	Config
+|	Request
+|	Response
+|	Router
+|	Session
 |
 |--------------------------------------------------------------- 
 */
+
+$dic['Database_MySQL'] = array
+(
+	0 => array('Contents' => 'localhost', 'Type' => 'Value'),
+	1 => array('Contents' => 'milestone', 'Type' => 'Value'),
+	2 => array('Contents' => 'root', 'Type' => 'Value'),
+	3 => array('Contents' => 'root', 'Type' => 'Value')
+);
+
+/*
+|---------------------------------------------------------------
+| DIC LIST OF CLASSES WITH SINGLETON LIFECYCLE
+|---------------------------------------------------------------
+| 
+| Classes listed here as singleton will never be instantiated
+| twice. When the DIC found a class listed as a class that
+| should be handled using singleton lifecycle, the
+| 'Object:force' type is ignored.
+|
+| If by mistake, a class is listed in both transient and
+| singleton class list, it will be treated as a transient class.
+|
+|--------------------------------------------------------------- 
+*/
+
+$dic_singletons = array();
+
+/*
+|---------------------------------------------------------------
+| DIC LIST OF CLASSES WITH TRANSIENT LIFECYCLE
+|---------------------------------------------------------------
+| 
+| Classes listed in as transient will not be stored inside the
+| DIC's cache. This means if any class have dependency to a
+| transient class, the dependency injected will always be a
+| newly constructed object.
+|
+| If by mistake, a class is listed in both transient and
+| singleton class list, it will be treated as a transient class.
+| 
+|--------------------------------------------------------------- 
+*/
+
+$dic_transients = array();

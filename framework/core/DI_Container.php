@@ -1,7 +1,7 @@
 <?php
 
 /**
- * Dependency Injection Container.
+ * Dependency Injection Container
  *
  * Permission is hereby granted, free of charge, to any person obtaining a copy
  * of this software and associated documentation files (the "Software"), to deal
@@ -134,7 +134,7 @@ class DI_Container
 	 * There are three types of parameter types you can use:
 	 * 
 	 *	1. Object - means get an instance of this object, returns cache object
-	 *		   when available.
+	 *	   when available.
 	 *	2. Object:force - means get an instance of this object, ignore cache and
 	 *	   instantiate a new object no matter what.
 	 *	3. Array - contains an array of configuration, to be processed recursively.
@@ -158,7 +158,7 @@ class DI_Container
 	 * @param array $transients List of class names whose references will not be stored.
 	 *
 	 */
-	public function __construct(array $search_paths, array $config = array(), array $forbidden = array(), array $singletons = array(), array $transients = array())
+	public function __construct(array $search_paths = array(), array $config = array(), array $forbidden = array(), array $singletons = array(), array $transients = array())
 	{		
 		$this->search_paths = $search_paths;
 		$this->config = $config;
@@ -341,6 +341,17 @@ class DI_Container
 		
 		$this->config[$class_name] = $config;
 		return TRUE;
+	}
+	
+	/**
+	 * Add new path to the list of search paths.
+	 *
+	 * @param string $path;
+	 *
+	 */
+	public function add_search_path($path)
+	{
+		$this->search_paths[] = $path;
 	}
 	
 	// ---------------------------------------------------------------

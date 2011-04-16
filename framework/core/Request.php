@@ -1,28 +1,47 @@
 <?php
 
 /**
- * The short description
+ * Request object
  *
- * As many lines of extendend description as you want {@link element}
- * links to an element
- * {@link http://www.example.com Example hyperlink inline link} links to
- * a website. The inline
- * source tag displays function source code in the description:
- * {@source } 
+ * Permission is hereby granted, free of charge, to any person obtaining a copy
+ * of this software and associated documentation files (the "Software"), to deal
+ * in the Software without restriction, including without limitation the rights
+ * to use, copy, modify, merge, publish, distribute, sublicense, and/or sell
+ * copies of the Software, and to permit persons to whom the Software is
+ * furnished to do so, subject to the following conditions:
+ *
+ * The above copyright notice and this permission notice shall be included in
+ * all copies or substantial portions of the Software.
+ *
+ * THE SOFTWARE IS PROVIDED "AS IS", WITHOUT WARRANTY OF ANY KIND, EXPRESS OR
+ * IMPLIED, INCLUDING BUT NOT LIMITED TO THE WARRANTIES OF MERCHANTABILITY,
+ * FITNESS FOR A PARTICULAR PURPOSE AND NONINFRINGEMENT. IN NO EVENT SHALL THE
+ * AUTHORS OR COPYRIGHT HOLDERS BE LIABLE FOR ANY CLAIM, DAMAGES OR OTHER
+ * LIABILITY, WHETHER IN AN ACTION OF CONTRACT, TORT OR OTHERWISE, ARISING FROM,
+ * OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN
+ * THE SOFTWARE.
+ *
+ * @package		Carrot
+ * @author		Ricky Christie <seven.rchristie@gmail.com>
+ * @copyright	2011 Ricky Christie <seven.rchristie@gmail.com>
+ * @license		http://www.opensource.org/licenses/mit-license.php MIT License
+ * @since		0.1
+ * @version		0.1
+ */
+
+/**
+ * Request Object.
+ *
+ * Represents the actual request to the server. Accepts and stores $_SERVER,
+ * $_GET, $_POST, $_FILES, $_COOKIE, $_REQUEST, $_ENV.
  * 
- * {@link http://www.example.com Read more}
- *
- * @package			package_name
- * @subpackage		sub package name, groupings inside of a project
- * @author 		  	author name <author@email>
- * @copyright		name date
- * @deprecated	 	description
- * @param		 	type [$varname] description
- * @return		 	type description
- * @since		 	a version or a date
- * @todo			phpdoc.de compatibility
- * @var				type	a data type for a class variable
- * @version			version
+ * @package		Carrot
+ * @author		Ricky Christie <seven.rchristie@gmail.com>
+ * @copyright	2011 Ricky Christie <seven.rchristie@gmail.com>
+ * @license		http://www.opensource.org/licenses/mit-license.php MIT License
+ * @since		0.1
+ * @version		0.1
+ * @todo		
  */
 
 class Request

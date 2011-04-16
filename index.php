@@ -5,7 +5,7 @@
 | PERFORM PHP CONFIGURATION CHECKS
 | 
 | This framework runs assuming certain PHP configurations are
-| set. We have to quite if the required conditions are not
+| set. We have to quit if the required conditions are not
 | present.
 |
 |---------------------------------------------------------------
@@ -34,13 +34,6 @@ if (floatval(substr(phpversion(), 0, 3)) < 5.3)
 
 session_start();
 
-// Output buffering is only used by the system to reset the buffer
-// when an error or an exception occurs. This way we can drop what
-// we are doing and load a nice clean error template whenever an
-// error or uncaught exception occured
-
-ob_start();
-
 /*
 |---------------------------------------------------------------
 | LOAD CORE FILES
@@ -58,13 +51,94 @@ require($abspath . 'framework/core/Response.php');
 
 /*
 |---------------------------------------------------------------
+| GET REQUIRED CONFIG VARIABLES
+|---------------------------------------------------------------
+*/
+
+require($abspath . 'config.php');
+
+if (!isset($config) or !is_array($config))
+{
+	exit('Configuration file must contain $config and it must be an array.');
+}
+
+if (!isset($dic) or !is_array($dic))
+{
+	exit('Configuration file must contain $dic and it must be an array.');
+}
+
+/*
+|---------------------------------------------------------------
+| DETERMINE DEFAULT CONFIG ITEMS
+|---------------------------------------------------------------
+*/
+
+$default_protocol = strtolower(substr($_SERVER["SERVER_PROTOCOL"], 0, 5)) == 'https' ? 'https' : 'http';
+$default_domain = $_SERVER['SERVER_NAME'];
+$default_path = str_ireplace('/index.php', '', $_SERVER['SCRIPT_NAME']);
+
+// Add trailing slash to default path, if it doesn't have it
+if (empty($default_path) or substr($default_path, -1) != '/')
+{
+	$default_path .= '/';
+}
+
+$default_configurations = array
+(
+	'abspath' => $abspath,
+	'protocol' => $default_protocol,
+	'domain' => $default_domain,
+	'path' => $default_path
+);
+
+$required_configurations = array('abspath', 'protocol', 'domain', 'path', 'default_request_name');
+
+$search_paths = array
+(
+	$abspath . ''
+);
+
+/*
+|---------------------------------------------------------------
+| CONSTRUCT CORE CLASS DIC CONFIG
+|---------------------------------------------------------------
+*/
+
+$dic['Config'] = array
+(
+	array('Contents' => $config, 'Type' => 'Value'),
+	array('Contents' => $default_configurations, 'Type' => 'Value'),
+	array('Contents' => $required_configurations, 'Type' => 'Value')
+);
+
+$dic['Request'] = array
+(
+	array('Contents' => $_SERVER, 'Type' => 'Value'),
+	array('Contents' => $_GET, 'Type' => 'Value'),
+	array('Contents' => $_POST, 'Type' => 'Value'),
+	array('Contents' => $_FILES, 'Type' => 'Value'),
+	array('Contents' => $_COOKIE, 'Type' => 'Value'),
+	array('Contents' => $_REQUEST, 'Type' => 'Value'),
+	array('Contents' => $_ENV, 'Type' => 'Value')
+);
+
+$dic['Session'] = array
+(
+	array('Contents' => $_SESSION, 'Type' => 'Value')
+);
+
+/*
+|---------------------------------------------------------------
 | INSTANTIATE CONFIG, REQUEST, SESSION
 |---------------------------------------------------------------
 */
 
-$config = new Config($abspath);
+$required = array('default_request_name');
+
 $request = new Request($_SERVER, $_GET, $_POST, $_FILES, $_COOKIE, $_REQUEST, $_ENV);
+$config = new Config($abspath, $default_configurations, $required_configurations);
 $session = new Session($_SESSION);
+
 unset($abspath);
 
 /*
@@ -90,7 +164,7 @@ $router->set_route();
 
 //echo '<pre>', var_dump($router), '</pre>';
 
-$carrot = new Carrot($request, $session, $config);
+//$carrot = new Carrot($request, $session, $config);
 
 exit;
 

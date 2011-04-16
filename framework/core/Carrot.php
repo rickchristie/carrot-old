@@ -1,28 +1,48 @@
 <?php
 
 /**
- * Main carrot class.
+ * Carrot
  *
- * As many lines of extendend description as you want {@link element}
- * links to an element
- * {@link http://www.example.com Example hyperlink inline link} links to
- * a website. The inline
- * source tag displays function source code in the description:
- * {@source } 
+ * Permission is hereby granted, free of charge, to any person obtaining a copy
+ * of this software and associated documentation files (the "Software"), to deal
+ * in the Software without restriction, including without limitation the rights
+ * to use, copy, modify, merge, publish, distribute, sublicense, and/or sell
+ * copies of the Software, and to permit persons to whom the Software is
+ * furnished to do so, subject to the following conditions:
+ *
+ * The above copyright notice and this permission notice shall be included in
+ * all copies or substantial portions of the Software.
+ *
+ * THE SOFTWARE IS PROVIDED "AS IS", WITHOUT WARRANTY OF ANY KIND, EXPRESS OR
+ * IMPLIED, INCLUDING BUT NOT LIMITED TO THE WARRANTIES OF MERCHANTABILITY,
+ * FITNESS FOR A PARTICULAR PURPOSE AND NONINFRINGEMENT. IN NO EVENT SHALL THE
+ * AUTHORS OR COPYRIGHT HOLDERS BE LIABLE FOR ANY CLAIM, DAMAGES OR OTHER
+ * LIABILITY, WHETHER IN AN ACTION OF CONTRACT, TORT OR OTHERWISE, ARISING FROM,
+ * OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN
+ * THE SOFTWARE.
+ *
+ * @package		Carrot
+ * @author		Ricky Christie <seven.rchristie@gmail.com>
+ * @copyright	2011 Ricky Christie <seven.rchristie@gmail.com>
+ * @license		http://www.opensource.org/licenses/mit-license.php MIT License
+ * @since		0.1
+ * @version		0.1
+ */
+
+/**
+ * Carrot
+ *
+ * Main framework object. Accepts Request, Session, and Config objects as
+ * construction parameter. Provides error and exception handling after it
+ * is instantiated. 
  * 
- * {@link http://www.example.com Read more}
- *
- * @package			package_name
- * @subpackage		sub package name, groupings inside of a project
- * @author 		  	author name <author@email>
- * @copyright		name date
- * @deprecated	 	description
- * @param		 	type [$varname] description
- * @return		 	type description
- * @since		 	a version or a date
- * @todo			phpdoc.de compatibility
- * @var				type	a data type for a class variable
- * @version			version
+ * @package		Carrot
+ * @author		Ricky Christie <seven.rchristie@gmail.com>
+ * @copyright	2011 Ricky Christie <seven.rchristie@gmail.com>
+ * @license		http://www.opensource.org/licenses/mit-license.php MIT License
+ * @since		0.1
+ * @version		0.1
+ * @todo		
  */
  
 class Carrot
@@ -34,8 +54,10 @@ class Carrot
 	protected $response;
 	protected $router;
 	
-	public function __construct($request, $session, $config)
+	public function __construct(Request $request, Session $session, Config $config)
 	{
+		
+	
 		$search_paths = array
 		(
 			$config->item('abspath') . 'controllers/',
@@ -77,7 +99,21 @@ class Carrot
 		$transients = array();
 		
 		$dic = new DI_Container($search_paths, $config, $forbidden, $singletons, $transients);
-		$object = $dic->get_instance('Home');
+		
+		$dic->load_instance('Config', $config);
+		$dic->load_instance('Request', $request);
+		$dic->load_instance('Session', $session);
+		
+		$object = $dic->get_instance('Home', array(2 => array('Contents' => array
+			(
+				0 => array('Contents' => 'Value', 'Type' => 'Value'),
+				1 => array('Contents' => 'Rules', 'Type' => 'Object:force'),
+				2 => array('Contents' => array
+				(
+					0 => array('Contents' => 876548, 'Type' => 'Value'),
+					1 => array('Contents' => 'Request', 'Type' => 'Object')
+				), 'Type' => 'Array')
+			), 'Type' => 'Array')));
 		
 		$object->index();
 		
@@ -87,7 +123,10 @@ class Carrot
 	}
 	
 	/**
-	 * @var type comments
+	 * Runs the controller method.
+	 * 
+	 * Checks the router if 
+	 *
 	 */
 	public function run()
 	{
@@ -97,5 +136,16 @@ class Carrot
 	public function exception_handler()
 	{
 		echo 'exception handled!';
+	}
+	
+	public function error_handler()
+	{
+		
+	}
+	
+	public function __destruct()
+	{
+		restore_error_handler();
+		restore_exception_handler();
 	}
 }

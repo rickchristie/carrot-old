@@ -1,6 +1,10 @@
 <?php
 
+$test = '	';
 
+$test['sdf'] = 'ddd';
+
+echo '<pre>', var_dump($test), '</pre>';
 
 $blah = array(5 => 'ss', 10 => 'ss', 11 => 'ff', 1 => 'gjj', 'asdfs' => 'ss');
 
