@@ -171,6 +171,14 @@ $dic['Database_MySQL'] = array
 	3 => array('Contents' => 'root', 'Type' => 'Value')
 );
 
+$dic_config['Database_MySQL'] = function($dic)
+{
+	return new Database_MySQL
+	(
+		
+	);
+}
+
 /*
 |---------------------------------------------------------------
 | DIC LIST OF CLASSES WITH SINGLETON LIFECYCLE

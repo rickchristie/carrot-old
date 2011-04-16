@@ -1,7 +1,9 @@
 <?php
 
 /**
- * Carrot
+ * Carrot (Main application class)
+ *
+ * Copyright (c) 2011 Ricky Christie
  *
  * Permission is hereby granted, free of charge, to any person obtaining a copy
  * of this software and associated documentation files (the "Software"), to deal
@@ -30,11 +32,10 @@
  */
 
 /**
- * Carrot
+ * Carrot (Main application class)
  *
- * Main framework object. Accepts Request, Session, and Config objects as
- * construction parameter. Provides error and exception handling after it
- * is instantiated. 
+ * Main framework object. Accepts Request, Session, and DI_Container as
+ * construction parameter. Handles error and exception after it is instantiated.
  * 
  * @package		Carrot
  * @author		Ricky Christie <seven.rchristie@gmail.com>
@@ -54,72 +55,13 @@ class Carrot
 	protected $response;
 	protected $router;
 	
-	public function __construct(Request $request, Session $session, Config $config)
+	/**
+	 * Defies imagination, extends boundaries and saves the world ...all before breakfast!
+	 *
+	 */
+	public function __construct(Request $request, Session $session, DI_Container $dic)
 	{
 		
-	
-		$search_paths = array
-		(
-			$config->item('abspath') . 'controllers/',
-			$config->item('abspath') . 'libraries/',
-			$config->item('abspath') . 'views/',
-			$config->item('abspath') . 'framework/'
-		);
-		
-		$config = array();
-		
-		$config['Home'] = array
-		(
-			0 => array('Contents' => 'This is a value', 'Type' => 'Value'),
-			1 => array('Contents' => 'Test_view', 'Type' => 'Object'),
-			2 => array('Contents' => array
-			(
-				0 => array('Contents' => 'Value', 'Type' => 'Value'),
-				1 => array('Contents' => 'Foo', 'Type' => 'Object:force')
-			), 'Type' => 'Array')
-		);
-		
-		$config['Test_view'] = array
-		(
-			0 => array('Contents' => 'Foo', 'Type' => 'Object')
-		);
-		
-		$config['Foo'] = array
-		(
-			0 => array('Contents' => 'Bar', 'Type' => 'Object')
-		);
-		
-		$config['Bar'] = array
-		(
-			0 => array('Contents' => 'Database_mysql', 'Type' => 'Object')
-		);
-		
-		$forbidden = array();
-		$singletons = array();
-		$transients = array();
-		
-		$dic = new DI_Container($search_paths, $config, $forbidden, $singletons, $transients);
-		
-		$dic->load_instance('Config', $config);
-		$dic->load_instance('Request', $request);
-		$dic->load_instance('Session', $session);
-		
-		$object = $dic->get_instance('Home', array(2 => array('Contents' => array
-			(
-				0 => array('Contents' => 'Value', 'Type' => 'Value'),
-				1 => array('Contents' => 'Rules', 'Type' => 'Object:force'),
-				2 => array('Contents' => array
-				(
-					0 => array('Contents' => 876548, 'Type' => 'Value'),
-					1 => array('Contents' => 'Request', 'Type' => 'Object')
-				), 'Type' => 'Array')
-			), 'Type' => 'Array')));
-		
-		$object->index();
-		
-		//$this->response
-		
-		//$this->response = new Response();
 	}
 	
 	/**

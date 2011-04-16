@@ -3,22 +3,22 @@
 /*
 |---------------------------------------------------------------
 | PERFORM PHP CONFIGURATION CHECKS
+|---------------------------------------------------------------
 | 
 | This framework runs assuming certain PHP configurations are
-| set. We have to quit if the required conditions are not
-| present.
+| set. We have to quit if the required conditions are not met.
 |
 |---------------------------------------------------------------
 */
 
 if (get_magic_quotes_gpc())
 {
-	exit('Magic quotes are on. Turn off magic quotes.');
+	exit('Magic quotes are on. Please turn off magic quotes.');
 }
 
 if (ini_get('register_globals'))
 {
-	exit('Register globals are on. Turn off register globals.');
+	exit('Register globals are on. Please turn off register globals.');
 }
 
 if (floatval(substr(phpversion(), 0, 3)) < 5.3)
@@ -28,7 +28,7 @@ if (floatval(substr(phpversion(), 0, 3)) < 5.3)
 
 /*
 |---------------------------------------------------------------
-| START SESSION AND OUTPUT BUFFER
+| START SESSION
 |---------------------------------------------------------------
 */
 
@@ -36,18 +36,78 @@ session_start();
 
 /*
 |---------------------------------------------------------------
-| LOAD CORE FILES
+| START DEPENDENCY INJECTION CONTAINER
 |---------------------------------------------------------------
 */
 
-$abspath = dirname(__FILE__) . '/';
-require($abspath . 'framework/core/DI_Container.php');
-require($abspath . 'framework/core/Config.php');
-require($abspath . 'framework/core/Router.php');
-require($abspath . 'framework/core/Request.php');
-require($abspath . 'framework/core/Session.php');
-require($abspath . 'framework/core/Carrot.php');
-require($abspath . 'framework/core/Response.php');
+require(__DIR__ . '/framework/core/DI_Container.php');
+
+$dic = new DI_Container();
+$dic->add_search_path(__DIR__ . '/framework/');
+$dic->add_search_path(__DIR__ . '/framework/core/');
+
+/*
+|---------------------------------------------------------------
+| WRITE DEPENDENCY INJECTION CONFIG
+|---------------------------------------------------------------
+*/
+
+require(__DIR__ . '/dic.php');
+
+$dic->request = array('Request', function($dic)
+{
+	return new Request
+	(
+		$_SERVER,
+		$_GET,
+		$_POST,
+		$_FILES,
+		$_COOKIE,
+		$_REQUEST,
+		$_ENV
+	);
+});
+
+$dic->session = array('Session', function($dic)
+{
+	return new Session($_SESSION);
+});
+
+$dic->response = array('Response', function($dic)
+{
+	return new Response();
+});
+
+$dic->url = array('URL', function($dic)
+{
+	return new URL
+	(
+		$_SERVER
+	);
+});
+
+$dic->carrot = array('Carrot', function($dic)
+{
+	return new Carrot
+	(
+		$dic->request,
+		$dic->session,
+		$dic
+	);
+});
+
+$dic->set_global('request');
+$dic->set_global('carrot');
+$dic->set_global('session');
+$dic->set_global('response');
+$dic->set_global('url');
+
+$carrot = $dic->carrot;
+
+echo '<pre>', var_dump($_SERVER), '</pre>';
+
+exit;
+
 
 /*
 |---------------------------------------------------------------
