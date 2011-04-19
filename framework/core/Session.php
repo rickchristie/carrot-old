@@ -1,48 +1,87 @@
 <?php
 
 /**
- * The short description
+ * Session
  *
- * As many lines of extendend description as you want {@link element}
- * links to an element
- * {@link http://www.example.com Example hyperlink inline link} links to
- * a website. The inline
- * source tag displays function source code in the description:
- * {@source } 
- * 
- * {@link http://www.example.com Read more}
+ * Copyright (c) 2011 Ricky Christie
  *
- * @package			package_name
- * @subpackage		sub package name, groupings inside of a project
- * @author 		  	author name <author@email>
- * @copyright		name date
- * @deprecated	 	description
- * @param		 	type [$varname] description
- * @return		 	type description
- * @since		 	a version or a date
- * @todo			phpdoc.de compatibility
- * @var				type	a data type for a class variable
- * @version			version
+ * Licensed under the MIT License.
+ *
+ * This class serves as a wrapper for PHP superglobal $_SESSION. We need a wrapper
+ * so that we can easily mock and/or fake a session when testing. This class doesn't
+ * access the superglobal $_SESSION directly so it's best that it is cached and shared
+ * between objects. If two classes have different instances of this class, session
+ * variables written in one will not be reflected at the other.
+ *
+ * @package		Carrot
+ * @author		Ricky Christie <seven.rchristie@gmail.com>
+ * @copyright	2011 Ricky Christie <seven.rchristie@gmail.com>
+ * @license		http://www.opensource.org/licenses/mit-license.php MIT License
+ * @since		0.1
+ * @version		0.1
  */
 
 class Session
 {
+	/**
+	 * @var array List of session variables.
+	 */
 	protected $session;
 	
-	public function __construct($session)
+	/**
+	 * Constructs a Session object.
+	 *
+	 * @param array $session Current session variables.
+	 *
+	 */
+	public function __construct(array $session)
 	{
 		$this->session = $session;
 	}
 	
-	// ---------------------------------------------------------------
-	
-	public function get($item = '')
+	/**
+	 * Gets a session variable.
+	 *
+	 * Important Notice: This method doesn't access the superglobal
+	 * $_SESSION, it accesses the class' local session array property.
+	 * This means if there are two instances of Session, changes set
+	 * using one will not be reflected using another.
+	 *
+	 */
+	public function get($index = '')
 	{
-		if (empty($item))
+		if (empty($index))
 		{
 			return $this->session;
 		}
 		
-		return $this->session[$item];
+		return $this->session[$index];
+	}
+	
+	/**
+	 * Writes/overwrites a session variable.
+	 * 
+	 * 
+	 *
+	 */
+	public function set($index, $content)
+	{
+		$_SESSION[$index] = $content;
+		$this->session[$index] = $content;
+	}
+	
+	public function remove($index = '')
+	{
+		
+	}
+	
+	public function destroy()
+	{
+		
+	}
+	
+	public function close()
+	{
+		
 	}
 }

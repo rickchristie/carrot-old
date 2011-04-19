@@ -1,7 +1,7 @@
 <?php
 
 /**
- * Router
+ * Error Handler
  *
  * Copyright (c) 2011 Ricky Christie
  *
@@ -17,42 +17,20 @@
  * @version		0.1
  */
 
-class Router implements IRouter
+class Error_handler implements IError_handler
 {
-	protected $params = array();
-	
 	public function __construct()
 	{
 		
 	}
 	
-	public function set_route()
+	public function error_handler()
 	{
 		
 	}
 	
-	public function set_route_controller_not_found()
+	public function exception_handler()
 	{
 		
-	}
-	
-	public function destination_dic_id()
-	{
-		
-	}
-	
-	public function destination_method()
-	{
-		
-	}
-	
-	public function params($index = NULL)
-	{
-		if (!isset($this->params[$index]))
-		{
-			return NULL;
-		}
-		
-		return $this->params[$index];
 	}
 }

@@ -1,55 +1,33 @@
 <?php
 
 /**
- * Response object.
+ * Response
  *
- * Permission is hereby granted, free of charge, to any person obtaining a copy
- * of this software and associated documentation files (the "Software"), to deal
- * in the Software without restriction, including without limitation the rights
- * to use, copy, modify, merge, publish, distribute, sublicense, and/or sell
- * copies of the Software, and to permit persons to whom the Software is
- * furnished to do so, subject to the following conditions:
+ * Licensed under the MIT License.
  *
- * The above copyright notice and this permission notice shall be included in
- * all copies or substantial portions of the Software.
+ * Represents the response of the controller. Views and controllers can build their
+ * responses, which then can be appended on each other and returned to be examined
+ * or sent. Supports HTTP/1.0 and HTTP/1.1 only.
  *
- * THE SOFTWARE IS PROVIDED "AS IS", WITHOUT WARRANTY OF ANY KIND, EXPRESS OR
- * IMPLIED, INCLUDING BUT NOT LIMITED TO THE WARRANTIES OF MERCHANTABILITY,
- * FITNESS FOR A PARTICULAR PURPOSE AND NONINFRINGEMENT. IN NO EVENT SHALL THE
- * AUTHORS OR COPYRIGHT HOLDERS BE LIABLE FOR ANY CLAIM, DAMAGES OR OTHER
- * LIABILITY, WHETHER IN AN ACTION OF CONTRACT, TORT OR OTHERWISE, ARISING FROM,
- * OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN
- * THE SOFTWARE.
- *
- * @package			Carrot
- * @author 		  	Ricky Christie <seven.rchristie@gmail.com>
- * @copyright		2011 Ricky Christie <seven.rchristie@gmail.com>
- * @license			http://www.opensource.org/licenses/mit-license.php MIT License
- * @since		 	0.1
- * @version			0.1
- */
-
-/**
- * Response object.
- *
- * The object representing the framework's response to a particular request. It
- * doesn't support anything besides than HTTP 1.0 and HTTP 1.1 protocol.
- *
- * @package			Carrot
- * @author 		  	Ricky Christie <seven.rchristie@gmail.com>
- * @copyright		2011 Ricky Christie <seven.rchristie@gmail.com>
- * @license			http://www.opensource.org/licenses/mit-license.php MIT License
- * @since		 	0.1
- * @version			0.1
- * @todo			Make an abstract version so you can split it to HTTP 1.0, HTTP 1.1, WebSocket, etc
+ * @package		Carrot
+ * @author		Ricky Christie <seven.rchristie@gmail.com>
+ * @copyright	2011 Ricky Christie <seven.rchristie@gmail.com>
+ * @license		http://www.opensource.org/licenses/mit-license.php MIT License
+ * @since		0.1
+ * @version		0.1
  */
 
 class Response
 {
 	/**
-	 * @var string Array containing the headers set by user.
+	 * @var array List of headers set by the user.
 	 */
 	protected $headers = array();
+	
+	/**
+	 * @var array List of sent headers, grabbed using headers_list().
+	 */
+	protected $headers_list = array();
 	
 	/**
 	 * @var string A string containing the request body.
@@ -59,12 +37,22 @@ class Response
 	/**
 	 * @var int Variable containing the status code. Defaults to 200 (OK).
 	 */
-	protected $status = 200;
+	protected $status = '';
+	
+	/**
+	 * @var array The protocol to be written in header when returning status codes.
+	 */
+	protected $server_protocol;
+	
+	/**
+	 * @var bool TRUE if Response:send() is called, FALSE otherwise.
+	 */
+	protected $sent = FALSE;
 	
 	/**
 	 * @var array Array containing the list of status codes and their default message.
 	 */
-	protected $status_codes = array
+	protected $status_code_messages = array
 	(
 		// Class 1 - Informational
 		100 => 'Continue',
@@ -118,117 +106,23 @@ class Response
 		505 => 'HTTP Version Not Supported'
 	);
 	
-	/**
-	 * @var array List of allowed response header fields for HTTP 1.0.
-	 */
-	protected $header_fields_1_0 = array
-	(
-		'Allow',
-		'Content-Language',
-		'Content-Encoding',
-		'Content-Length',
-		'Content-Type',
-		'Date',
-		'Expires',
-		'Last-Modified',
-		'Link',
-		'Location',
-		'Pragma',
-		'Retry-After',
-		'Server',
-		'WWW-Authenticate'
-	);
 	
-	/**
-	 * @var array List of allowed response header fields for HTTP 1.1.
-	 */
-	protected $header_fields_1_1 = array
-	(
-		'Accept-Ranges',
-		'Age',
-		'Allow',
-		'Cache-Control',
-		'Content-Encoding',
-		'Content-Language',
-		'Content-Length',
-		'Content-Location',
-		'Content-MD5',
-		'Content-Disposition',
-		'Content-Range',
-		'Content-Type',
-		'Date',
-		'Etag',
-		'Expires',
-		'Last-Modified',
-		'Link',
-		'Location',
-		'Pragma',
-		'Proxy-Authenticate',
-		'Retry-After',
-		'Server',
-		'Trailer',
-		'Transfer-Encoding',
-		'Vary',
-		'Via',
-		'Warning',
-		'WWW-Authenticate'
-	);
-	
-	/**
-	 * @var array Array containing the allowed header fields, set at constructor.
-	 */
-	protected $header_fields;
-	
-	/**
-	 * @var array The protocol to be written in header when returning status codes.
-	 */
-	protected $server_protocol;
-	
-	/**
-	 * @var string The current status code.
-	 */
-	protected $status_code = NULL;
-	
-	/**
-	 * Creates the request object.
-	 *
-	 * This request object assumes that output buffering has
-	 * already started. Therefore it doesn't check if headers
-	 * are sent. This class only supports HTTP/1.0 and HTTP/1.1
-	 * protocol, anything other than that and it will throw
-	 * InvalidArgumentException.
-	 *
-	 * @param string $server_protocol Must be either 'HTTP/1.1' or 'HTTP/1.0'.
-	 * @throws InvalidArgumentException
-	 *
-	 */
 	public function __construct($server_protocol)
 	{
-		// Fill in header fields based on which protocol we are at.
-		if ($server_protocol == 'HTTP/1.0')
+		if (!in_array($server_protocol, array('HTTP/1.0', 'HTTP/1.1')))
 		{
-			$this->server_protocol = $server_protocol;
-			$this->header_fields = $this->header_fields_1_0;
-			return;
+			throw new InvalidArgumentException('Error in instantiating Response. Server protocol must be HTTP/1.0 or HTTP/1.1.');
 		}
 		
-		if ($server_protocol == 'HTTP/1.1')
-		{
-			$this->server_protocol = $server_protocol;
-			$this->header_fields = $this->header_fields_1_1;
-			return;
-		}
-		
-		throw new InvalidArgumentException('Error instantiating Response object. Server protocol must be HTTP/1.0 or HTTP/1.1.');
+		$this->server_protocol = $server_protocol;
 	}
 	
 	/**
 	 * Sets the header.
 	 *
-	 * Sets the header using header() and writes a
-	 * record of it in $this->headers. You cannot
-	 * set the status code using this method. Only
-	 * regular headers are supported. It automatically
+	 * Sets the header using header() and writes a record of it in
+	 * $this->headers. You cannot set the status code using this method.
+	 * Only regular headers can be set with this method. It automatically
 	 * adds the colon (:) for you.
 	 *
 	 * <code>$response->set_header('Content-Type', 'text/html');</code>
@@ -237,24 +131,13 @@ class Response
 	 *
 	 * <code>header('Content-Type: text/html');</code>
 	 *
-	 * This method also checks if the header field is allowed
-	 * for the HTTP version you are using as $this->server_protocol.
-	 * To skip the check, use $force optional parameter.
-	 *
 	 * @param string $header_name
 	 * @param string $contents
-	 * @param bool $force Optional. Use TRUE to skip header field validation. Defaults to FALSE.
 	 * @return bool TRUE if successful, FALSE if otherwise.
 	 *
 	 */
-	public function set_header($header_name, $contents, $force = FALSE)
-	{
-		// Checks if $header_name is allowed
-		if (!$force && !in_array($header_name, $this->header_fields))
-		{
-			return FALSE;
-		}
-		
+	public function set_header($header_name, $contents)
+	{	
 		if (!headers_sent())
 		{
 			$this->headers[$header_name] = $contents;
@@ -268,9 +151,8 @@ class Response
 	/**
 	 * Removes a header or all previously set headers.
 	 *
-	 * This is a wrapper for header_remove(). Other
-	 * than also removing the actual header, it 
-	 * also removes the record in $this->headers.
+	 * This is a wrapper for header_remove(). Other than also removing
+	 * the actual header, it also removes the record in $this->headers.
 	 *
 	 * @param string $header_name If not specified, all previously set headers will be removed.
 	 * @return bool TRUE if headers are not sent yet, FALSE if otherwise.
@@ -300,11 +182,9 @@ class Response
 	/**
 	 * Sets the status code.
 	 *
-	 * Checks if the status code is valid. If custom
-	 * message are not set, default message will be
-	 * used instead. If the status code is invalid it
-	 * will simply return FALSE. This method also
-	 * records the status code sent in $this->status_code.
+	 * Checks if the status code is valid. If custom message is not set, default message
+	 * will be used instead. If the status code is invalid it will simply return FALSE.
+	 * This method also records the status code set in $this->status_code.
 	 *
 	 * @param int $code HTTP status code.
 	 * @param string $message Message to accompany the status code.
@@ -312,16 +192,18 @@ class Response
 	 *
 	 */
 	public function set_status($code, $message = '')
-	{	
-		if (isset($this->status_codes[$code]))
+	{
+		if (!headers_sent())
 		{
-			if (empty($message))
+			if (empty($message) && isset($this->status_code_messages[$code]))
 			{
-				$message = $this->status_codes[$code];
+				$message = $this->status_code_messages[$code];
 			}
 			
-			$this->set_header("{$this->server_protocol} {$code} {$message}");
+			$code = intval($code);
 			$this->status_code = $code;
+			header("{$this->server_protocol} {$code} {$message}");
+			
 			return TRUE;
 		}
 		
@@ -329,14 +211,12 @@ class Response
 	}
 	
 	/**
-	 * Sends a quick redirection response header.
+	 * Creates a quick redirection response.
 	 * 
-	 * This method automatically clears all the
-	 * headers. If headers are sent already, it
-	 * simply returns FALSE. It doesn't exit the
-	 * PHP processing for you, so you can still
-	 * do some processing after we sent the
-	 * redirection header.
+	 * This method automatically clears all the headers. If headers 
+	 * are sent already, it simply returns FALSE. It doesn't exit the
+	 * PHP processing for you, so you can still do some processing
+	 * after we sent the redirection header.
 	 *
 	 * @param string $location The URL.
 	 * @return bool TRUE on success, FALSE of failure.
@@ -354,24 +234,86 @@ class Response
 		return FALSE;
 	}
 	
-	// ---------------------------------------------------------------
+	/**
+	 * Sends the response to the client.
+	 *
+	 * Echoes out the body of the response, which also automatically
+	 * sends the headers. Although this class already records each
+	 * headers set by Response::set_header(), it doesn't record headers
+	 * that are set directly by the user using PHP header() function -
+	 * so it uses headers_list() to get the actual headers sent and
+	 * stores them in Response::headers_list.
+	 *
+	 */
+	public function send()
+	{
+		$this->headers_list = headers_list();
+		$this->sent = TRUE;
+		echo $this->body;
+	}
+		
+	/**
+	 * Appends a response class.
+	 *
+	 * This method appends a response body and overwrites the current
+	 * headers with the new ones provided by the response object. Note
+	 * that it assumes that Response::set_header() has been called already
+	 * by the appended Response object, so it does nothing of the sort.
+	 *
+	 * @param Response $response Response object to be appended.
+	 *
+	 */
+	public function append_response(Response $response)
+	{
+		$this->body .= $response->get_body();
+		$new_headers = $response->get_header_records();
+		
+		foreach ($new_headers as $index => $contents)
+		{
+			$this->headers[$index] = $contents;
+		}
+	}
 	
+	/**
+	 * Sets the body of the response.
+	 *
+	 * @param string $body Body of the response.
+	 *
+	 */
+	public function set_body($body)
+	{
+		$this->body = $body;
+	}
+	
+	/**
+	 * Appends string to the response body.
+	 *
+	 * @param string $body_append String to be appended in the response body.
+	 *
+	 */
+	public function append_body($body_append)
+	{
+		$this->body .= $body_append;
+	}
+	
+	/**
+	 * Returns the response body.
+	 *
+	 * @return string
+	 *
+	 */
 	public function get_body()
 	{
 		return $this->body;
 	}
 	
-	public function set_body($string)
-	{
-		$this->body = $string;
-	}
-	
-	public function append_body($string)
-	{
-		$this->body .= $string;
-	}
-	
-	public function get_header()
+	/**
+	 * Returns the header records.
+	 *
+	 * @return array 
+	 *
+	 */
+	public function get_header_records()
 	{
 		return $this->headers;
 	}
