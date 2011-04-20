@@ -1,22 +1,13 @@
 <?php
 
-/*
-|---------------------------------------------------------------
-| CORE OBJECTS DEPENDENCIES
-|---------------------------------------------------------------
-| 
-| 
-| 
-|--------------------------------------------------------------- 
-*/
+namespace Carrot;
 
-$dic->url = array('URL', function($dic)
-{
-	return new URL
-	(
-		$dic->request->server()
-	);
-});
+/**
+ * Defies imagination, extends boundaries and saves the world ...all before breakfast!
+ *
+ */
+
+$dic->add_bundle('App', __DIR__ . '');
 
 $dic->router = array('Router', function($dic)
 {
@@ -26,7 +17,12 @@ $dic->router = array('Router', function($dic)
 	);
 });
 
-$dic->error = array('Error', function($dic)
+$dic->error_handler = array('Error', function($dic)
+{
+	
+});
+
+$dic->maintenance_handler = array('', function($dic)
 {
 	
 });

@@ -48,16 +48,9 @@ class Carrot
 	 */
 	public function dispatch()
 	{
-		// $this->test($this->dic->router->params(0));
-		
-		echo $this->dic->request->get_base_url();
+		$destination = $this->set_route();
 		
 		return $this->dic->response;
-	}
-	
-	public function test($string)
-	{
-		echo '<pre>', var_dump($string), '</pre>';
 	}
 	
 	public function __destruct()
@@ -66,20 +59,10 @@ class Carrot
 		restore_exception_handler();
 	}
 	
-	public function exception_handler()
-	{
-		echo 'exception handled!';
-	}
-	
-	public function error_handler()
-	{
-		echo 'error handled!';
-	}
-	
 	// ---------------------------------------------------------------
 	
-	protected function determine_route()
+	protected function get_destination(Application_Request_URI $application_request_uri)
 	{
-		
+		return $this->set_route($application_request_uri);
 	}
 }

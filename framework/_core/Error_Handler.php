@@ -1,7 +1,7 @@
 <?php
 
 /**
- * Session Interface
+ * Error Handler
  *
  * Copyright (c) 2011 Ricky Christie
  *
@@ -17,7 +17,20 @@
  * @version		0.1
  */
 
-interface ISession
+class Error_Handler
 {
+	public function __construct()
+	{
+		
+	}
 	
+	public function error_handler()
+	{
+		
+	}
+	
+	public function exception_handler()
+	{
+		
+	}
 }

@@ -5,8 +5,6 @@
  *
  * Licensed under the MIT License.
  *
- * Modified from the sample 
- *
  * Represents the actual request to the server. Accepts and stores $_SERVER,
  * $_GET, $_POST, $_FILES, $_COOKIE, $_REQUEST, $_ENV. Supports HTTP/HTTPS
  * protocol only. This class assumes that the main request handler is always
@@ -79,6 +77,7 @@ class Request
 		$this->attributes['url_protocol'] = strtolower(substr($this->server('SERVER_PROTOCOL'), 0, 5)) == 'https' ? 'https' : 'http';
 		$this->attributes['domain_name'] = $this->server('SERVER_NAME');
 		$this->attributes['base_path'] = $this->generate_base_path();
+		$this->attributes['application_request_uri'] = $this->generate_application_request_uri();
 	}
 	
 	/**
@@ -275,7 +274,13 @@ class Request
 		return $this->attributes['url_protocol'];
 	}
 	
-	public function get_query_string()
+	/**
+	 * Creates an instance of Application_Request_URI.
+	 *
+	 * 
+	 *
+	 */
+	public function get_application_request_uri()
 	{
 		
 	}
@@ -305,5 +310,11 @@ class Request
 		}
 		
 		return $path;
+	}
+	
+	
+	protected function generate_application_request_uri()
+	{
+		
 	}
 }

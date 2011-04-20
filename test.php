@@ -1,12 +1,15 @@
 <?php
 
-require('framework/core/DI_Container.php');
-
-$dic = new DI_Container();
-
-$dic->ab = array('Blah', function($dic)
+$x = function ($string)
 {
-	return new Blah();
-});
+	$b = function ($string)
+	{
+		require (__DIR__ . '/test2.php');
+		return $string;
+	};
+	
+	$blah = $b($string);
+	return $blah;
+};
 
-$blah = $dic->ab;
+echo $x('blah');

@@ -1,5 +1,14 @@
 <?php
 
+namespace Carrot;
+
+/**
+ * Defies imagination, extends boundaries and saves the world ...all before breakfast!
+ *
+ */
+ 
+require('autoload.php');
+
 /*
 |---------------------------------------------------------------
 | PERFORM PHP CONFIGURATION CHECKS
@@ -40,9 +49,6 @@ session_start();
 |---------------------------------------------------------------
 */
 
-require(__DIR__ . '/framework/core/IRouter.php');
-require(__DIR__ . '/framework/core/ISession.php');
-require(__DIR__ . '/framework/core/IError_handler.php');
 require(__DIR__ . '/framework/core/DI_Container.php');
 
 $dic = new DI_Container();
