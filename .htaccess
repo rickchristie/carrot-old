@@ -1,10 +1,5 @@
-# Redirect all requests to index.php
-# including requests to an existing directory
-Options +FollowSymlinks
-RewriteEngine on
-RewriteRule ^index\.php$ - [L]
-RewriteCond %{REQUEST_FILENAME} !-f
-RewriteRule . index.php [L]
-
-# Disable magic quotes
-php_flag magic_quotes_gpc Off
+<IfModule mod_rewrite.c>
+    RewriteEngine On
+    RewriteCond %{REQUEST_FILENAME} !-f
+    RewriteRule ^(.*)$ index.php [QSA,L]
+</IfModule>
