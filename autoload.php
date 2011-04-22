@@ -1,44 +1,42 @@
 <?php
 
-namespace Carrot;
+/**
+ * This file is part of the Carrot framework.
+ *
+ * Copyright (c) 2011 Ricky Christie <seven.rchristie@gmail.com>
+ *
+ * Licensed under the MIT License.
+ *
+ */
 
-spl_autoload_register(function ($class)
-{
-    if (substr($class, 0, strlen(__NAMESPACE__)) != __NAMESPACE__) {
-        //Only autoload libraries from this package
-        return;
-    }
-    
-    //echo $class;
-    
-    $path = substr(str_replace('\\', '/', $class), strlen(__NAMESPACE__));
-    
-    echo $path;
-    
-    $path = __DIR__ . $path . '.php';
-    
-    //echo $path;
-    
-    if (file_exists($path)) {
-        require $path;
-    }
-});
+/**
+ * Autoload behavior
+ *
+ * This autoload function ensures that if your class is properly namespaced,
+ * it will be loaded automatically when needed. Your namespace must match
+ * your class location. For example, the file /Foo/Bar/Baz.php must contain
+ * Baz class within \Foo\Bar namespace.
+ *
+ */
 
-class Blah
+spl_autoload_register(function($class)
 {
-	protected $data = 'blablah';
+	$class = ltrim($class, '\\');
+	$path = '';
+	$namespace = '';
 	
-	public function set_data($string)
+	// Separate namespace with class, change namespace to path
+	if ($last_namespace_pos = strripos($class, '\\'))
 	{
-		$this->data = $string;
+		$namespace = substr($class, 0, $last_namespace_pos);
+		$class = substr($class, $last_namespace_pos + 1);
+		$path = __DIR__ . DIRECTORY_SEPARATOR . str_replace('\\', DIRECTORY_SEPARATOR, $namespace) . DIRECTORY_SEPARATOR;
 	}
-}
-
-function dududu($obj)
-{
-	$obj->set_data('it works!');
-}
-
-$blah = new Blah();
-dududu($blah);
-echo '<pre>', var_dump($blah), '</pre>';
+	
+	$path .= str_replace('_', DIRECTORY_SEPARATOR, $class) . '.php';
+	
+	if (file_exists($path))
+	{
+		require $path;
+	}
+});

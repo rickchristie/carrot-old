@@ -1,23 +1,29 @@
 <?php
 
 /**
- * Response
+ * This file is part of the Carrot framework.
+ *
+ * Copyright (c) 2011 Ricky Christie <seven.rchristie@gmail.com>
  *
  * Licensed under the MIT License.
  *
+ */
+
+/**
+ * Default Response
+ * 
  * Represents the response of the controller. Views and controllers can build their
  * responses, which then can be appended on each other and returned to be examined
  * or sent. Supports HTTP/1.0 and HTTP/1.1 only.
  *
- * @package		Carrot
  * @author		Ricky Christie <seven.rchristie@gmail.com>
- * @copyright	2011 Ricky Christie <seven.rchristie@gmail.com>
  * @license		http://www.opensource.org/licenses/mit-license.php MIT License
- * @since		0.1
- * @version		0.1
+ *
  */
 
-class Response
+namespace Carrot\Core\Classes;
+
+class DefaultResponse
 {
 	/**
 	 * @var array List of headers set by the user.
@@ -292,7 +298,7 @@ class Response
 	 *
 	 */
 	public function append_body($body_append)
-	{
+	{	
 		$this->body .= $body_append;
 	}
 	

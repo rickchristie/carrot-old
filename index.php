@@ -1,24 +1,28 @@
 <?php
 
-namespace Carrot;
-
 /**
- * Defies imagination, extends boundaries and saves the world ...all before breakfast!
+ * Front Controller
+ * 
+ * Here is a short version of what the Front Controller does:
+ *
+ *    1. Bootstrap PHP.
+ *    2. Create a dependency injection container.
+ *    3. Constructs the error/exception handling class and assigns them.
+ *    4. Constructs the Router object (custom or default).
+ *    5. Get the destination from Router.
+ *    6. Instantiates the controller and runs the method.
+ *    7. Get the response object from the method and send it to the client.
+ *
+ * You can edit config.php to replace DefaultRouter and DefaultErrorHandler
+ * with your own custom classes.
  *
  */
- 
-require('autoload.php');
 
-/*
-|---------------------------------------------------------------
-| PERFORM PHP CONFIGURATION CHECKS
-|---------------------------------------------------------------
-| 
-| This framework runs assuming certain PHP configurations are
-| set. We have to quit if the required conditions are not met.
-|
-|---------------------------------------------------------------
-*/
+/**
+ * This framework runs assuming certain PHP conditions are set
+ * We have to quit if the required conditions aren't met.
+ *
+ */
 
 if (get_magic_quotes_gpc())
 {
@@ -35,57 +39,100 @@ if (floatval(substr(phpversion(), 0, 3)) < 5.3)
 	exit('This framework requires PHP 5, please upgrade.');
 }
 
-/*
-|---------------------------------------------------------------
-| START SESSION
-|---------------------------------------------------------------
-*/
-
+/**
+ * Starts session, we are going to need $_SESSION
+ * to instantiate session classes.
+ *
+ */
+ 
 session_start();
 
-/*
-|---------------------------------------------------------------
-| START DEPENDENCY INJECTION CONTAINER
-|---------------------------------------------------------------
-*/
+/**
+ * 
+ *
+ */
 
-require(__DIR__ . '/framework/core/DI_Container.php');
+require __DIR__ . DIRECTORY_SEPARATOR . 'autoload.php';
+require __DIR__ . DIRECTORY_SEPARATOR . 'config.php';
+require __DIR__ . DIRECTORY_SEPARATOR . 'registrations.php';
 
-$dic = new DI_Container();
-$dic->add_search_path(__DIR__ . '/framework/');
-$dic->add_search_path(__DIR__ . '/framework/core/');
-$dic->add_search_path(__DIR__ . '/classes/');
+/**
+ * If values are not set by the user, replace the variables
+ * with the framework's default variables.
+ *
+ */
 
-/*
-|---------------------------------------------------------------
-| WRITE DEPENDENCY INJECTION CONFIG
-|---------------------------------------------------------------
-*/
-
-require(__DIR__ . '/dic.php');
-
-$dic->request = array('Request', function($dic)
+if (!isset($registrations) or !$registrations)
 {
-	return new Request
-	(
-		$_SERVER,
-		$_GET,
-		$_POST,
-		$_FILES,
-		$_COOKIE,
-		$_REQUEST,
-		$_ENV
-	);
-});
+	$registrations = array();
+}
 
-$dic->carrot = array('Carrot', function($dic)
+if (!isset($router) or !$router)
 {
-	return new Carrot($dic);
-});
+	$router = '\Carrot\Core\Classes\Router:main';
+}
 
-$dic->set_global('carrot');
-$dic->set_global('session');
+if (!isset($error_handler) or !$error_handler)
+{
+	$error_handler = '\Carrot\Core\Classes\ErrorHandler:shared';
+}
 
-$carrot = $dic->carrot;
-$response = $carrot->dispatch();
-$response->send();
+/**
+ * Instantiates dependency injection container.
+ */
+
+$dic = new Carrot\Core\Classes\DependencyInjectionContainer(__DIR__, $registrations);
+
+/**
+ * Instantiates the error handler.
+ *
+ */
+
+$error_handler = $dic->getInstance($error_handler);
+$error_handler->set();
+
+/**
+ * Defies imagination, extends boundaries and saves the world ...all before breakfast!
+ *
+ */
+
+$router = $dic->getInstance($router);
+$request = $dic->getInstance('\Carrot\Core\Classes\Request:shared');
+//$destination = $router->getDestination();
+
+echo '<pre>', var_dump($request->getAppRequestURISegments()), '</pre>';
+
+exit;
+
+/**
+ * Defies imagination, extends boundaries and saves the world ...all before breakfast!
+ *
+ */
+
+$temp = $destination;
+$count = 0;
+
+while (is_a($temp, '\Carrot\Core\Classes\Destination'))
+{	
+	if (++$count >= 10)
+	{
+		throw new RuntimeException('Front Controller error in getting Response, too much controller redirection.');
+	}
+	
+	// Try to get an instance of the controller. If failed
+	// (i.e. DIC fails to get the instance, or the method
+	// doesn't exist), use default router 404 destination
+	// 
+	
+	try
+	{
+		$controller = $dic->getInstance($temp->getControllerDICRegistrationID());
+		//if (method_exists($controller, $temp->))
+	}
+	catch (\Exception $e)
+	{
+		
+	}
+	
+	//if ()
+}
