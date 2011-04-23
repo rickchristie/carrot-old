@@ -81,7 +81,7 @@ if (!isset($error_handler) or !$error_handler)
  * Instantiates dependency injection container.
  */
 
-$dic = new Carrot\Core\Classes\DependencyInjectionContainer(__DIR__, $registrations);
+$dic = new Carrot\Core\Classes\DependencyInjectionContainer(__DIR__ . DIRECTORY_SEPARATOR . 'vendors', $registrations);
 
 /**
  * Instantiates the error handler.

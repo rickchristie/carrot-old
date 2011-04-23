@@ -30,7 +30,7 @@ spl_autoload_register(function($class)
 	{
 		$namespace = substr($class, 0, $last_namespace_pos);
 		$class = substr($class, $last_namespace_pos + 1);
-		$path = __DIR__ . DIRECTORY_SEPARATOR . str_replace('\\', DIRECTORY_SEPARATOR, $namespace) . DIRECTORY_SEPARATOR;
+		$path = __DIR__ . DIRECTORY_SEPARATOR . 'vendors' . DIRECTORY_SEPARATOR . str_replace('\\', DIRECTORY_SEPARATOR, $namespace) . DIRECTORY_SEPARATOR;
 	}
 	
 	$path .= str_replace('_', DIRECTORY_SEPARATOR, $class) . '.php';
