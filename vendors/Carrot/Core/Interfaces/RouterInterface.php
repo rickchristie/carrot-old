@@ -31,6 +31,4 @@ interface RouterInterface
 	 * 
 	 */
 	public function getDestination();
-	
-	public function 
 }

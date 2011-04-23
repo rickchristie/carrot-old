@@ -71,7 +71,7 @@ class Session
 	 * @param string $index
 	 *
 	 */
-	public function is_set($index)
+	public function indexIsset($index)
 	{
 		return isset($this->session[$index]);
 	}

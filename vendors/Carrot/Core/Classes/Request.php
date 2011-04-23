@@ -251,12 +251,18 @@ class Request implements \Carrot\Core\Interfaces\RequestInterface
 	 * array('item', 'id')
 	 * </code>
 	 *
-	 * @return array Application request URI in segments.
+	 * @param int $index Index of the segment to be returned, leave empty to return the whole array.
+	 * @return mixed Either one segment or the entire segment array.
 	 *
 	 */
-	public function getAppRequestURISegments()
+	public function getAppRequestURISegments($index = '')
 	{
-		return $this->app_request_uri_segments;
+		if (empty($index))
+		{
+			return $this->app_request_uri_segments;
+		}
+		
+		return $this->app_request_uri_segments[$index];
 	}
 	
 	// ---------------------------------------------------------------

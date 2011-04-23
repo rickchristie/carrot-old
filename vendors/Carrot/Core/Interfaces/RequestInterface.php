@@ -118,7 +118,7 @@ interface RequestInterface
 	 * @return array Application request URI in segments.
 	 *
 	 */
-	public function getAppRequestURISegments();
+	public function getAppRequestURISegments($index = '');
 	
 	// ---------------------------------------------------------------
 	
