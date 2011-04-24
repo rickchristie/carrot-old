@@ -323,7 +323,7 @@ class DependencyInjectionContainer
 	 *
 	 */
 	protected function loadBundle($bundle_name)
-	{
+	{	
 		if (in_array($bundle_name, $this->bundles_loaded))
 		{
 			return;

@@ -55,7 +55,8 @@ $dic->register('\Carrot\Core\Classes\ErrorHandler:shared', function($dic)
 {	
 	$error_handler = new \Carrot\Core\Classes\ErrorHandler
 	(
-		
+		$dic->getInstance('\Carrot\Core\Classes\Request:shared')->getServer('SERVER_PROTOCOL'),
+		TRUE
 	);
 	
 	$dic->saveShared('\Carrot\Core\Classes\ErrorHandler:shared', $error_handler);
@@ -101,4 +102,35 @@ $dic->register('\Carrot\Core\Classes\Session:shared', function($dic)
 	$session = new \Carrot\Core\Classes\Session($_SESSION);
 	$dic->saveShared('\Carrot\Core\Classes\Session:shared', $session);
 	return $session;
+});
+
+/**
+ * \Carrot\Core\Classes\Response:main
+ *
+ * 
+ *
+ */
+
+$dic->register('\Carrot\Core\Classes\Response:main', function($dic)
+{
+	return new \Carrot\Core\Classes\Response
+	(
+		$dic->getInstance('\Carrot\Core\Classes\Request:shared')->getServer('SERVER_PROTOCOL')
+	);
+});
+
+/**
+ * \Carrot\Core\Classes\PageNotFound:main
+ *
+ * 
+ *
+ */
+
+$dic->register('\Carrot\Core\Classes\PageNotFound:main', function($dic)
+{	
+	return new \Carrot\Core\Classes\PageNotFound
+	(
+		$dic->getInstance('\Carrot\Core\Classes\Response:main'),
+		$dic->getInstance('\Carrot\Core\Classes\Request:shared')
+	);
 });

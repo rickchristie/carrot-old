@@ -23,7 +23,7 @@
 
 namespace Carrot\Core\Classes;
 
-class DefaultResponse
+class Response implements \Carrot\Core\Interfaces\ResponseInterface
 {
 	/**
 	 * @var array List of headers set by the user.
@@ -112,7 +112,12 @@ class DefaultResponse
 		505 => 'HTTP Version Not Supported'
 	);
 	
-	
+	/**
+	 * Constructs a Response object.
+	 *
+	 * @param string $server_protocol Used when setting the response code, either 'HTTP/1.0' or 'HTTP/1.1'.
+	 *
+	 */
 	public function __construct($server_protocol)
 	{
 		if (!in_array($server_protocol, array('HTTP/1.0', 'HTTP/1.1')))
@@ -131,7 +136,7 @@ class DefaultResponse
 	 * Only regular headers can be set with this method. It automatically
 	 * adds the colon (:) for you.
 	 *
-	 * <code>$response->set_header('Content-Type', 'text/html');</code>
+	 * <code>$response->setHeader('Content-Type', 'text/html');</code>
 	 *
 	 * Will result in:
 	 *
@@ -142,7 +147,7 @@ class DefaultResponse
 	 * @return bool TRUE if successful, FALSE if otherwise.
 	 *
 	 */
-	public function set_header($header_name, $contents)
+	public function setHeader($header_name, $contents)
 	{	
 		if (!headers_sent())
 		{
@@ -164,7 +169,7 @@ class DefaultResponse
 	 * @return bool TRUE if headers are not sent yet, FALSE if otherwise.
 	 *
 	 */
-	public function remove_header($header_name = '')
+	public function removeHeader($header_name = '')
 	{
 		if (!headers_sent())
 		{
@@ -197,7 +202,7 @@ class DefaultResponse
 	 * @return bool TRUE if successful, FALSE if not.
 	 *
 	 */
-	public function set_status($code, $message = '')
+	public function setStatus($code, $message = '')
 	{
 		if (!headers_sent())
 		{
@@ -232,8 +237,8 @@ class DefaultResponse
 	{
 		if (!headers_sent())
 		{
-			$this->remove_header();
-			$this->set_header('Location', $location);
+			$this->removeHeader();
+			$this->setHeader('Location', $location);
 			return TRUE;
 		}
 		
@@ -245,7 +250,7 @@ class DefaultResponse
 	 *
 	 * Echoes out the body of the response, which also automatically
 	 * sends the headers. Although this class already records each
-	 * headers set by Response::set_header(), it doesn't record headers
+	 * headers set by Response::setHeader(), it doesn't record headers
 	 * that are set directly by the user using PHP header() function -
 	 * so it uses headers_list() to get the actual headers sent and
 	 * stores them in Response::headers_list.
@@ -257,28 +262,6 @@ class DefaultResponse
 		$this->sent = TRUE;
 		echo $this->body;
 	}
-		
-	/**
-	 * Appends a response class.
-	 *
-	 * This method appends a response body and overwrites the current
-	 * headers with the new ones provided by the response object. Note
-	 * that it assumes that Response::set_header() has been called already
-	 * by the appended Response object, so it does nothing of the sort.
-	 *
-	 * @param Response $response Response object to be appended.
-	 *
-	 */
-	public function append_response(Response $response)
-	{
-		$this->body .= $response->get_body();
-		$new_headers = $response->get_header_records();
-		
-		foreach ($new_headers as $index => $contents)
-		{
-			$this->headers[$index] = $contents;
-		}
-	}
 	
 	/**
 	 * Sets the body of the response.
@@ -286,7 +269,7 @@ class DefaultResponse
 	 * @param string $body Body of the response.
 	 *
 	 */
-	public function set_body($body)
+	public function setBody($body)
 	{
 		$this->body = $body;
 	}
@@ -297,7 +280,7 @@ class DefaultResponse
 	 * @param string $body_append String to be appended in the response body.
 	 *
 	 */
-	public function append_body($body_append)
+	public function appendBody($body_append)
 	{	
 		$this->body .= $body_append;
 	}
@@ -308,7 +291,7 @@ class DefaultResponse
 	 * @return string
 	 *
 	 */
-	public function get_body()
+	public function getBody()
 	{
 		return $this->body;
 	}
@@ -319,7 +302,7 @@ class DefaultResponse
 	 * @return array 
 	 *
 	 */
-	public function get_header_records()
+	public function getHeaderRecords()
 	{
 		return $this->headers;
 	}

@@ -48,7 +48,11 @@ if (floatval(substr(phpversion(), 0, 3)) < 5.3)
 session_start();
 
 /**
- * 
+ * Load configuration files.
+ *
+ * > autoload.php - Registers autoloading functions.
+ * > config.php - Loads router and error handler class DIC item ID.
+ * > registrations.php - Loads DIC registration file paths.
  *
  */
 
@@ -78,61 +82,133 @@ if (!isset($error_handler) or !$error_handler)
 }
 
 /**
- * Instantiates dependency injection container.
- */
-
-$dic = new Carrot\Core\Classes\DependencyInjectionContainer(__DIR__ . DIRECTORY_SEPARATOR . 'vendors', $registrations);
-
-/**
- * Instantiates the error handler.
+ * Instantiates dependency injection container and set the error
+ * and exception handler.
  *
  */
 
+$dic = new Carrot\Core\Classes\DependencyInjectionContainer(__DIR__ . DIRECTORY_SEPARATOR . 'vendors', $registrations);
 $error_handler = $dic->getInstance($error_handler);
 $error_handler->set();
 
 /**
- * Defies imagination, extends boundaries and saves the world ...all before breakfast!
+ * Defines a couple of functions to be used. So that we don't
+ * pollute the environment with global functions, we define
+ * anonymous functions instead.
  *
  */
 
-$router = $dic->getInstance($router);
-$request = $dic->getInstance('\Carrot\Core\Classes\Request:shared');
-//$destination = $router->getDestination();
-
-echo '<pre>', var_dump($request->getAppRequestURISegments()), '</pre>';
-
-exit;
+$checkDestination = function($destination, $error_message)
+{
+	if (!is_a($destination, '\Carrot\Core\Classes\Destination'))
+	{
+		if (is_object($destination))
+		{
+			$type = get_class($destination);
+		}
+		else
+		{
+			$type = gettype($destination);
+		}
+		
+		throw new \RuntimeException(sprintf($error_message, $type));
+	}
+};
 
 /**
- * Defies imagination, extends boundaries and saves the world ...all before breakfast!
+ * Instantiates router and gets the destination from Router.
+ * At this point, the destination could be valid or invalid.
+ * Front controller will make sure that it returns a valid
+ * Destination object.
+ *
+ */
+
+// Get variables
+$router = $dic->getInstance($router);
+$router->loadRoutesFile(__DIR__ . DIRECTORY_SEPARATOR . 'routes.php');
+$destination = $router->getDestination();
+
+// Check destination
+$checkDestination($destination, "Front controller error when getting destination from Router. Expected an instance of \Carrot\Core\Classes\Destination from Router, got '%s' instead.");
+
+/**
+ * Loop through the response from the user controller. If the
+ * controller returns an instance of Destination, do an internal
+ * redirection. If it's not, then assume it's a response and
+ * proceed to sending it.
  *
  */
 
 $temp = $destination;
-$count = 0;
+$internal_redirection_count = 0;
+$having_no_matching_route_as_destination = FALSE;
+$destination_history = '';
 
 while (is_a($temp, '\Carrot\Core\Classes\Destination'))
-{	
-	if (++$count >= 10)
+{
+	++$internal_redirection_count;
+	$destination_history .= " ({$internal_redirection_count}. {$temp->getControllerDICItemID()}:{$temp->getMethodName()})";
+	
+	if ($internal_redirection_count > 10)
 	{
-		throw new RuntimeException('Front Controller error in getting Response, too much controller redirection.');
+		throw new \RuntimeException("Front controller error, too many internal redirections, possibly an infinite loop. Destination history:{$destination_history}.");
 	}
 	
-	// Try to get an instance of the controller. If failed
-	// (i.e. DIC fails to get the instance, or the method
-	// doesn't exist), use default router 404 destination
-	// 
-	
-	try
+	// If class doesn't exist, change destination to 'no matching route'
+	if (!class_exists($temp->getClassName()))
 	{
-		$controller = $dic->getInstance($temp->getControllerDICRegistrationID());
-		//if (method_exists($controller, $temp->))
-	}
-	catch (\Exception $e)
-	{
+		// If we are using the no matching route destination, throw exception
+		if ($having_no_matching_route_as_destination)
+		{
+			throw new \RuntimeException("Front controller error, class not found when attempting to use 'having no matching route' destination. Class does not exist ({$temp->getClassName()}). Destination history:{$destination_history}.");
+		}
 		
+		$having_no_matching_route_as_destination = TRUE;
+		$temp = $router->getDestinationForNoMatchingRoute();
+		$checkDestination($temp, "Front controller error when getting 'destination for no matching route' from Router. Expected an instance of \Carrot\Core\Classes\Destination from Router, got '%s' instead. Destination history:{$destination_history}.");
+		continue;
 	}
 	
-	//if ()
+	// Instantiate controller
+	$controller = $dic->getInstance($temp->getControllerDICItemID());
+	
+	// If method doesn't exist, change destination to 'no matching route'
+	if (!method_exists($controller, $temp->getMethodName()))
+	{
+		// If we are using the no matching route destination, throw exception
+		if ($having_no_matching_route_as_destination)
+		{
+			throw new \RuntimeException("Front controller error, class not found when attempting to use 'having no matching route' destination. Method doesn't exist ({$temp->getMethodName()}). Destination history:{$destination_history}");
+		}
+		
+		$having_no_matching_route_as_destination = TRUE;
+		$temp = $router->getDestinationForNoMatchingRoute();
+		$checkDestination($temp, "Front controller error when getting 'destination for no matching route' from Router. Expected an instance of \Carrot\Core\Classes\Destination from Router, got '%s' instead. Destination history:{$destination_history}.");
+		continue;
+	}
+	
+	// Run the method using call_user_func
+	$temp = call_user_func_array(array($controller, $temp->getMethodName()), $temp->getParams());
 }
+
+// We just got our response
+$response = $temp;
+unset($temp);
+
+// Check if it's a valid response
+if (!is_a($response, '\Carrot\Core\Interfaces\ResponseInterface'))
+{
+	if (is_object($response))
+	{
+		$type = get_class($response);
+	}
+	else
+	{
+		$type = gettype($response);
+	}
+	
+	throw new \RuntimeException("Front controller error, expected \Carrot\Core\Interfaces\ResponseInterface instance from controller method return, got '{$type}' instead. Destination history:{$destination_history}.");
+}
+
+// Send the response to the client
+$response->send();

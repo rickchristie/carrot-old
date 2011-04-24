@@ -23,7 +23,7 @@
 
 namespace Carrot\Core\Classes;
 
-class Router 
+class Router implements \Carrot\Core\Interfaces\RouterInterface
 {
 	/**
 	 * @var array List of anonymous functions as chain of responsibility.
@@ -61,7 +61,7 @@ class Router
 	{
 		$this->request = $request;
 		$this->session = $session;
-		$this->router_chain = $router_chain;
+		$this->no_matching_route_destination = new Destination('\Carrot\Core\Classes\PageNotFound:main', 'index');
 	}
 	
 	/**
@@ -108,7 +108,7 @@ class Router
 	}
 	
 	/**
-	 * Starts the chain of responsibility.
+	 * Starts the chain of responsibility to get the Destination object.
 	 *
 	 * If the returned value is not an instance of Destination, this method
 	 * will return the no matching route destination instead.
@@ -116,7 +116,7 @@ class Router
 	 * @return Destination
 	 *
 	 */
-	public function run()
+	public function getDestination()
 	{
 		$this->active_index = -1;
 		$destination = $this->next($this->request, $this->session);
@@ -141,14 +141,14 @@ class Router
 	 */
 	public function next($request, $session)
 	{
-		++$active_index;
+		++$this->active_index;
 		
-		if (!isset($this->chains[$active_index]) or !is_callable($this->chains[$active_index]))
+		if (!isset($this->chains[$this->active_index]) or !is_callable($this->chains[$this->active_index]))
 		{
 			return $this->no_matching_route_destination;
 		}
 		
-		return $this->chains[$active_index]($request, $session, $this);
+		return $this->chains[$this->active_index]($request, $session, $this);
 	}
 	
 	/**
@@ -163,7 +163,7 @@ class Router
 	 */
 	public function rewind($request, $session)
 	{
-		$active_index = -1;
+		$this->active_index = -1;
 		return $this->next($request, $session);
 	}
 	
@@ -179,7 +179,7 @@ class Router
 	}
 	
 	/**
-	 * Gets the destination for no matching route.
+	 * Gets the default destination to go if there's no matching route.
 	 *
 	 * @return Destination
 	 *
@@ -187,5 +187,20 @@ class Router
 	public function getDestinationForNoMatchingRoute()
 	{	
 		return $this->no_matching_route_destination;
+	}
+	
+	/**
+	 * Loads a file that defines routes.
+	 *
+	 * @param string $path Absolute path to the file.
+	 *
+	 */
+	public function loadRoutesFile($path)
+	{
+		if (file_exists($path))
+		{
+			$router = $this;
+			require($path);
+		}
 	}
 }

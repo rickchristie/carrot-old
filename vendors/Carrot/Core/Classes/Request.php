@@ -24,7 +24,7 @@
 
 namespace Carrot\Core\Classes;
 
-class Request implements \Carrot\Core\Interfaces\RequestInterface
+class Request
 {
 	/**
 	 * @var array Wrapper for $_SERVER.

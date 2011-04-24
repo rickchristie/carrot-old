@@ -3,13 +3,12 @@
 /**
  * List of routes, loaded by Carrot's DefaultRouter class.
  *
- * -NOTICE- If you don't use the default router provided by Carrot,
- * this file would never be loaded let a lone examined.
+ * <<< IF YOU ARE USING THE DEFAULT ROUTER >>>
  *
  * Create a new chain by using RouterChain::add(), like this:
  *
  * <code>
- * $chain->add(function($request, $session, $chain)
+ * $router->add(function($request, $session, $router)
  * {
  *    if ($request->getAppRequestURISegments(0) == 'about')
  *    {
@@ -22,9 +21,33 @@
  *    }
  *    
  *    // We can't handle this route, pass the responsibility to the next chain
- *    return $chain->next($request, $session, $chain);
+ *    return $router->next($request, $session, $router);
  * });
  * </code>
  *
+ * <<< IF YOU ARE USING CUSTOM ROUTER >>>
+ *
+ * If you build the class yourself, you should know what whether this file
+ * is needed or not and what to write here. If you are using somebody
+ * else's router, read their documentation. Depending on the router class,
+ * this file may not be loaded at all.
+ *
  */
 
+use \Carrot\Core\Classes\Destination;
+
+$router->add(function($request, $session, $router)
+{
+	$app_request_uri = $request->getAppRequestURISegments();
+	
+	if (empty($app_request_uri))
+	{
+		return new Destination
+		(
+			'\ACME\App\Controllers\HomeController:main',
+			'index'
+		);
+	}
+	
+	return $router->next($request, $session, $router);
+});

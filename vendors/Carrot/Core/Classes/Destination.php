@@ -84,6 +84,61 @@ class Destination
 		$this->bundle_name = $this->getBundleNameFromID($controller_dic_id);
 	}
 	
+	/**
+	 * Returns the controller DIC item registration ID.
+	 *
+	 * @return string Controller DIC item registration ID.
+	 *
+	 */
+	public function getControllerDICItemID()
+	{
+		return $this->controller_dic_id;
+	}
+	
+	/**
+	 * Returns the method to call from the controller.
+	 *
+	 * @return string Method name to call.
+	 *
+	 */
+	public function getMethodName()
+	{
+		return $this->method;
+	}
+	
+	/**
+	 * Returns parameters to pass to the method.
+	 *
+	 * @return array Parameters to be passed to the controller method, sequentially.
+	 *
+	 */
+	public function getParams()
+	{
+		return $this->params;
+	}
+	
+	/**
+	 * Returns the bundle name (\Vendor\Namespace).
+	 *
+	 * @return string Bundle name (\Vendor\Namespace).
+	 *
+	 */
+	public function getBundleName()
+	{
+		return $this->bundle_name;
+	}
+	
+	/**
+	 * Returns class name.
+	 *
+	 * @return string The controller's class name, generated from the DIC item ID.
+	 *
+	 */
+	public function getClassName()
+	{
+		return $this->class_name;
+	}
+	
 	// ---------------------------------------------------------------
 	
 	/**
