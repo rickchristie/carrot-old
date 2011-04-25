@@ -12,10 +12,13 @@
 /**
  * Autoload behavior
  *
- * This autoload function ensures that if your class is properly namespaced,
- * it will be loaded automatically when needed. Your namespace must match
- * your class location. For example, the file /Foo/Bar/Baz.php must contain
- * Baz class within \Foo\Bar namespace.
+ * Implementation adheres to the PSR-0 universal autoloader final proposal. Modified
+ * from a sample found in: {@link http://groups.google.com/group/php-standards/web/psr-0-final-proposal?pli=1}
+ *
+ * If you want to put your classes in folder other than /vendors, simply add
+ * another function to the spl_autoload_register list. This file is part of the
+ * core, so it may be updated at the future, so remember to write your autoloader
+ * functions after each update.
  *
  */
 

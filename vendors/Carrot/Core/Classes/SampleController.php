@@ -10,7 +10,11 @@
  */
 
 /**
- * Page Not Found
+ * Sample Controller
+ *
+ * Controller's responsibility is to return an instance of Response to the front
+ * controller. This is a sample controller, it doesn't have dependencies to
+ *
  * 
  * Default page not found controller. You can replace this class with your
  * very own page not found controller by editing the routes.php file. Use
@@ -24,12 +28,12 @@
 
 namespace Carrot\Core\Classes;
 
-class PageNotFound
+class SampleController
 {
 	/**
 	 * @var Response Response object to send back.
 	 */
-	protected $response;
+	protected $request;
 	
 	/**
 	 * Constructs default PageNotFound controller.
@@ -37,9 +41,21 @@ class PageNotFound
 	 * @param Response Response instance.
 	 *
 	 */
-	public function __construct(\Carrot\Core\Classes\Response $response)
+	public function __construct(\Carrot\Core\Classes\Request $request)
 	{
-		$this->response = $response;
+		$this->request = $request;
+	}
+	
+	public function welcome()
+	{
+		// Get the template, but get it as string with output buffering
+		ob_start();
+		require(__DIR__ . DIRECTORY_SEPARATOR . 'Templates' . DIRECTORY_SEPARATOR . 'Welcome.php');
+		$string = ob_get_clean();
+		
+		$response = new Response($this->request->getServer('SERVER_PROTOCOL'));
+		$response->setBody($string);
+		return $response;
 	}
 	
 	/**
@@ -48,14 +64,17 @@ class PageNotFound
 	 * @return Response
 	 *
 	 */
-	public function index()
+	public function pageNotFound()
 	{
+		// Get the template, but get it as string with output buffering
 		ob_start();
 		require(__DIR__ . DIRECTORY_SEPARATOR . 'Templates' . DIRECTORY_SEPARATOR . 'PageNotFound.php');
 		$string = ob_get_clean();
 		
-		$this->response->setStatus(404);
-		$this->response->setBody($string);
-		return $this->response;
+		// Create the request and return it
+		$response = new Response($this->request->getServer('SERVER_PROTOCOL'));
+		$response->setStatus(404);
+		$response->setBody($string);
+		return $response;
 	}
 }

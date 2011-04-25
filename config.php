@@ -3,8 +3,7 @@
 /**
  * Front Controller Configuration File.
  * 
- * This is the front controller's (index.php) configuration file.
- * You can use it to modify the behavior of the front controller.
+ * 
  *
  */
 

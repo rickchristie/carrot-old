@@ -1,13 +1,14 @@
 <!DOCTYPE HTML PUBLIC "-//W3C//DTD HTML 4.01//EN" "http://www.w3.org/TR/html4/strict.dtd">
 <html>
 <head>
-	<title>404 Not Found - Have a carrot instead!</title>
+	<title>Welcome to Carrot, an experimental PHP framework</title>
 	<style>
 		body, html
 		{
 			font-family: 'Helvetica', 'Arial', sans-serif;
 			margin: 0;
 			padding: 0;
+			font-size: 13px;
 		}
 		
 		.grey
@@ -15,10 +16,163 @@
 			color: #666;
 		}
 		
-		code, pre
+		code
 		{
 			font-family: 'Monaco', 'Consolas', 'Courier', 'Courier New', monospace;
-			font-size: 95%;
+			font-size: 90%;
+		}
+		
+		pre
+		{
+			font-family: 'Monaco', 'Consolas', 'Courier', 'Courier New', monospace;
+			font-size: 12px;
+			display: block;
+			overflow: auto;
+			background: #edf0f3;
+			border: 1px solid #cbd3db;
+			line-height: 17px;
+			-moz-border-radius: 5px;
+			border-radius: 5px;
+			padding: 15px;
+		}
+		
+		.code-container
+		{
+			font-family: 'Monaco', 'Consolas', 'Courier', 'Courier New', monospace;
+			font-size: 12px;
+			display: block;
+			overflow: auto;
+			background: #edf0f3;
+			border: 1px solid #cbd3db;
+			line-height: 15px;
+			-moz-border-radius: 5px;
+			border-radius: 5px;
+			overflow: hidden;
+			padding: 0;
+			margin: 15px 0;
+		}
+		
+		.code-container ol > li:last-child span
+		{
+			border-bottom-left-radius: 5px;
+			-moz-border-radius-bottomleft: 5px;
+		}
+		
+		.code-container ol > li:last-child pre
+		{
+			border-bottom-right-radius: 5px;
+			-moz-border-radius-bottomright: 5px;
+		}
+		
+		.code-container ol > li:first-child span
+		{
+			border-top-left-radius: 5px;
+			-moz-border-radius-topleft: 5px;
+		}
+		
+		.code-container ol > li:first-child pre
+		{
+			border-top-right-radius: 5px;
+			-moz-border-radius-topright: 5px;
+		}
+		
+		.code-container ol
+		{
+			margin: 0;
+			padding: 0;
+			list-style-type: none;
+		}
+		
+		.code-container ol li
+		{
+			margin: 0;
+			padding: 0 0 0 0px;
+		}
+		
+		.code-container ol li span.line-num
+		{
+			display: block;
+			float: left;
+			margin: 0;
+			padding: 4px 6px;
+			background: #e1eeff;
+			border-right: 1px solid #cbd3db;
+			width: 25px;
+			text-align: right;
+			overflow: hidden;
+		}
+		
+		.code-container ol li.current span.line-num
+		{
+			background: #fe6b6b;
+			border-right: 1px solid #fe6b6b;
+			color: #fff;
+		}
+		
+		.code-container ol li pre
+		{
+			margin: 0;
+			padding: 4px 0 4px 0px;
+			width: auto;
+			overflow: hidden;
+			background: transparent;
+			border: none;
+			line-height: 15px;
+			-moz-border-radius: 0px;
+			border-radius: 0px;
+		}
+		
+		.code-container ol li.odd pre
+		{
+			background: #f5f8fb;
+		}
+		
+		.code-container ol li.current pre
+		{
+			background: #fe6b6b;
+			color: #fff;
+		}
+		
+		.stacktrace
+		{
+			font-family: 'Monaco', 'Consolas', 'Courier', 'Courier New', monospace;
+			font-size: 12px;
+			margin: 20px 0;
+		}
+		
+		.stacktrace .filename
+		{
+			background: #f5f9fb;
+			border-left: 1px solid #cbd3db;
+			border-right: 1px solid #cbd3db;
+			border-top: 1px solid #cbd3db;
+			border-bottom: 1px solid #cbd3db;
+			padding: 10px;
+			border-top-right-radius: 5px;
+			-moz-border-radius-topright: 5px;
+			border-top-left-radius: 5px;
+			-moz-border-radius-topleft: 5px;
+		}
+		
+		.stacktrace .funcname
+		{
+			background: #edf0f3;
+			padding: 10px;
+			border-left: 1px solid #cbd3db;
+			border-right: 1px solid #cbd3db;
+			border-bottom: 1px dotted #cbd3db;
+		}
+		
+		.stacktrace .args pre
+		{
+			margin: 0;
+			padding: 10px;
+			border-top: none;
+			border-top-right-radius: 0px;
+			-moz-border-radius-topright: 0px;
+			border-top-left-radius: 0px;
+			-moz-border-radius-topleft: 0px;
+			max-height: 300px;
 		}
 		
 		#wrapper
@@ -27,6 +181,7 @@
 			margin-left: 127px;
 			margin-right: 80px;
 			margin-top: 30px;
+			margin-bottom: 120px;
 		}
 		
 		#header
@@ -39,21 +194,26 @@
 		a:link
 		{
 			color: #f13900;
+			text-decoration: none;
 		}
 		
 		a:visited
 		{
 			color: #ff5825;
+			text-decoration: none;
 		}
 		
 		a:hover
 		{
 			color: #ff843a;
+			text-decoration: none;
+			border-bottom: 1px solid #ccc;
 		}
 		
 		a:active
 		{
 			color: #f13900;
+			text-decoration: none;
 		}
 		
 		p
@@ -66,6 +226,11 @@
 		h2
 		{
 			font-size: 19px;
+		}
+		
+		h3
+		{
+			font-size: 17px;
 		}
 		
 		h1, h2, h3, h4, h5, h6
@@ -102,10 +267,69 @@
 	</h1>
 </div>
 <div id="wrapper">
-	<h2>The page you requested doesn't exist in our server.</h2>
+	<h2>Welcome to Carrot, an experimental PHP framework</h2>
 	<p>
-		Your requested URL doesn't exist in our server. Additionaly, there is no <code>Destination</code> to go to
-		when there is no matching route, leading Carrot to use this default 404 page.
+		Carrot is an experimental micro framework that utilises anonymous functions and dependency injection
+		container heavily. Its core parts are the Front Controller (<code>index.php</code>), <code>Router</code>,
+		<code>DependencyInjectionContainer</code>, and <code>ErrorHandler</code>. Carrot is flexible enough
+		so that you can define your own <code>Router</code> and <code>ErrorHandler</code> class by implementing
+		the appropriate interface.
+	</p>
+	<h3>Why is this framework experimental?</h3>
+	<p>
+		It's experimental because it relies on anonymous functions to define routes and to describe dependency
+		registrations (other popular frameworks uses configuration files). It's also experimental because it is
+		designed to rely on dependency injection container so that there will be no need for <code>static</code>
+		and <code>global</code> variables.
+	</p>
+	<p>
+		For example, this is how you define a route in the default router (<code>/routes.php</code>):
+	</p>
+	<pre>$router->add(function($request, $session, $router)
+{
+    // Let's define a route for home page (http://localhost/)
+    if (empty($request->getAppRequestURISegments()))
+    {
+        return new Destination
+        (
+            '\ACME\App\Controllers\HomeController:main',
+            'index',
+            array('Key Lime Pie', 'Cupcake', 'Orange Juice')
+        );
+    }
+    
+    // Otherwise not my responsibility
+    return $router->next($request, $session, $router);
+});</pre>
+	<p>
+		Using anonymous functions should allow more flexibility with little to no performance penalty. The
+		<code>DependencyInjectionContainer</code> class is heavily influenced by
+		<a href="http://www.slideshare.net/fabpot/dependency-injection-with-php-53">Fabien Potencier's sample
+		DIC code</a> (where he stated that he doesn't advocate lambda function anywhere).
+	</p>
+	<h3>Why am I seeing this page?</h3>
+	<p>
+		It means that either you just installed Carrot or you haven't
+		defined any routes yet for the default <code>Router</code> class. This page is handled by
+		<code>Carrot\Core\Classes\SampleController</code> (which also handles the default 404 page).
+		The method responsible for this page is <code>welcome()</code>. This is the default <code>Destination</code>
+		that the default <code>Router</code> returns when there is no route defined.
+	</p>
+	<h3>How do I use this framework?</h3>
+	<p>
+		Carrot does things a little bit differently compared to other popular PHP frameworks, for starters,
+		the usage of dependency injection container is mandatory, at least for instantiating your controller.
+		You can also replace almost all of its core classes like <code>Request</code> or <code>Response</code>,
+		or even the <code>Router</code>. For detailed introduction for this framework, please read the
+		<a href="">&lsquo;Complete introduction to Carrot&rsquo;</a>. For 
+	</p>
+	<h3>Bah! This is the most stupid thing I've ever seen!</h3>
+	<p>
+		Carrot does not state nor pretend that it will solve all your development needs. It's a tool
+		that should be used only if the situation requires it. The author welcomes any sort of healthy
+		discussions and criticisms. If you have anything to say, you are encouraged to write to the author.
+		Send your thoughts to <a href="mailto:seven.rchristie@gmail.com">
+		<code>seven.rchristie@gmail.com</code></a>.
 	</p>
 </div>
 </body>

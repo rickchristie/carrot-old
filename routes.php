@@ -36,6 +36,8 @@
 
 use \Carrot\Core\Classes\Destination;
 
+/*
+
 $router->add(function($request, $session, $router)
 {
 	$app_request_uri = $request->getAppRequestURISegments();
@@ -51,3 +53,5 @@ $router->add(function($request, $session, $router)
 	
 	return $router->next($request, $session, $router);
 });
+
+*/

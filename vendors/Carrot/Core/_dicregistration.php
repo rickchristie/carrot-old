@@ -120,17 +120,16 @@ $dic->register('\Carrot\Core\Classes\Response:main', function($dic)
 });
 
 /**
- * \Carrot\Core\Classes\PageNotFound:main
+ * \Carrot\Core\Classes\SampleController:main
  *
  * 
  *
  */
 
-$dic->register('\Carrot\Core\Classes\PageNotFound:main', function($dic)
+$dic->register('\Carrot\Core\Classes\SampleController:main', function($dic)
 {	
-	return new \Carrot\Core\Classes\PageNotFound
+	return new \Carrot\Core\Classes\SampleController
 	(
-		$dic->getInstance('\Carrot\Core\Classes\Response:main'),
 		$dic->getInstance('\Carrot\Core\Classes\Request:shared')
 	);
 });
