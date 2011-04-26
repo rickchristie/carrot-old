@@ -52,16 +52,15 @@ class SampleController
 		$this->root_directory = $root_directory;
 	}
 	
-	public function noRoute()
-	{
-		
-	}
-	
 	public function welcome()
 	{
+		// Variables to be used in the template
+		$root_directory = $this->root_directory;
+		$http_host = $this->request->getServer('HTTP_HOST');
+		$base_path = $this->request->getBasePath();
+		
 		// Get the template, but get it as string with output buffering
 		ob_start();
-		$root_directory = $this->root_directory;
 		require(__DIR__ . DIRECTORY_SEPARATOR . 'Templates' . DIRECTORY_SEPARATOR . 'Welcome.php');
 		$string = ob_get_clean();
 		

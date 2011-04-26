@@ -286,13 +286,12 @@
 	
 	<p>
 		When you create your controller in Carrot, remember that each of its method that got called by the front controller
-		has a responsibility to return an instance of an implementation of <code>Carrot\Core\Interfaces\ResponseInterface</code>.
-		How your controller class gets the response is none of the front controller's business. 
+		has a responsibility to return an implementation of <code>Carrot\Core\Interfaces\ResponseInterface</code>.
+		How your controller class gets the response is none of the front controller's business.
 	</p>
 	
 	<p>
-		Write the class <code>HomeController</code> at the file - we are going to need an instance of <code>Request</code>,
-		so we inject it via the constructor:
+		We are going to need an instance of <code>Request</code>, so we inject it via the constructor:
 	</p>
 	
 	<pre>&lt;?php
@@ -303,15 +302,15 @@ class HomeController
 {
     protected $request;
     
-    public function __construct(Carrot\Core\Classes\Request $request)
+    public function __construct(\Carrot\Core\Classes\Request $request)
     {
         $this->request = $request;
     }
 }</pre>
 	
 	<p>
-		You can create your own response class by implementing this interface, but for now let's stick to the default that
-		Carrot provides. For a sample, let's create a method that uses <code>Request</code> to create a simple response:
+		You can create your own response class by implementing <code>ResponseInterface</code>, but for now let's stick to the default
+		that Carrot provides. Let's create a method in the controller that uses <code>Request</code> to create a simple response:
 	</p>
 	
 	<pre>public function sample()
@@ -322,7 +321,7 @@ class HomeController
     
     // Get some data using output buffering
     ob_start();
-    var_dump($request);
+    echo '&lt;pre&gt;', var_dump($this->request), '&lt;/pre&gt;';
     $string .= ob_get_clean();
     
     // Set the body and return the response
@@ -333,24 +332,84 @@ class HomeController
 	
 	<p>
 		Voila, we just created a simple controller class. Now we need to tell <code>DependencyInjectionContainer</code> to inject
-		a <code>Request</code> instance when constructing <code>HomeController</code>. We do this by creating a 
+		a <code>Request</code> instance when constructing <code>HomeController</code>. We do this by <em>registering</em> the dependencies
+		of <code>HomeController</code> via a dependency registration file.
+	</p>
+	
+	<h3>Registering dependencies to the dependency injection container</h3>
+	
+	<p>
+		Carrot's default <code>DependencyInjectionContainer</code> (DIC) uses registration files to store DIC configuration. Each
+		namespace (<code>Vendor\Namespace</code>) have their own registration file. If no custom registration
+		file path is defined for the namespace in question, the DIC will try to find this <code>_dicregistration.php</code> at the namespace's folder.
+		Since our newly created controller's namespace is <code>ACME\Site</code> and we didn't specify a custom registration
+		file path at <code>/registrations.php</code>, DIC will try to load this file when the front controller gets an instance
+		of our controller:
+	</p>
+	
+	<pre><?php echo htmlspecialchars($root_directory), DIRECTORY_SEPARATOR, 'ACME', DIRECTORY_SEPARATOR, 'Site', DIRECTORY_SEPARATOR, '_dicregistration.php' ?></pre>
+	
+	<p>
+		Note that you don't need to create this file if you don't want your class to be managed by the DIC. You only need to
+		do this if your class <em>has a dependency that needs to be injected by the default DIC object</em>. If your class doesn't have
+		a dependency registration file/item, when <code>DependencyInjectionContainer::getInstance()</code> is called it will try to
+		construct an instance of your class without construction parameters. The usage of DIC allows your controller to be a Plain Old
+		PHP Object without any restriction other than its responsibility to return a <code>ResponseInterface</code> implementation for
+		each method called by the front controller.
+	</p>
+	
+	<p>
+		We use <code>DependencyInjectionContainer::register()</code> to register an anonymous function inside the registration file.
+		The anonymous function must return an instance of the class registered. We have to create a DIC identification according to this syntax:
+	</p>
+	
+	<pre>\Vendor\Namespace\Subnamespace\...\ClassName@registration_name</pre>
+	
+	<p>
+		The point of having a registration name is that it allows you to register two instances of the same class. So if you need more than one
+		configuration for <code>ACME\Lib\Database</code> class you can register two different DIC item with different identifications:
+	</p>
+	
+	<pre>\ACME\Lib\Database@main_db
+\ACME\Lib\Database@logging_db</pre>
+	
+	<p>
+		In our anonymous function, we tell <code>DependencyInjectionContainer</code> to get an instance of the <code>Carrot\Core\Classes\Request</code>
+		using the DIC registration ID of the core request object. You can find out the core classes' DIC identification simply by opening its
+		<code>_dicregistration.php</code> file. Here is our registration code:
+	</p>
+	
+	<pre>&lt;?php
+
+$dic->register('\ACME\Site\Controllers\HomeController@main', function($dic)
+{
+    return new \ACME\Site\Controllers\HomeController
+    (
+        $dic->getInstance('\Carrot\Core\Classes\Request@shared')
+    );
+});</pre>
+
+	<p>
+		While our controller is finished, it doesn't mean that the front controller will automatically call it. After creating
+		a controller, we need to tell <code>Router</code> to translate a route to our controller method, namely
+		<code>HomeController::sample()</code>.
 	</p>
 	
 	<h3>Adding a route that points to the controller we just created</h3>
 	
 	<p>
-		The default router uses anonymous functions to describe routes. It also uses a simplified implementation
-		of chain of responsibility pattern, the function must accept three parameters: an instance of <code>Request</code>,
-		<code>Session</code>, and <code>Router</code> itself.
+		Carrot's default <code>Router</code> uses a simplified version of the chain of responsibility pattern. For each route,
+		we create an anonymous function that either returns an instance of <code>Destination</code> or pass that responsibility
+		and arguments to the next function in the chain. Your anonymous function must accept three arguments, <code>$request</code>,
+		<code>$session</code>, and <code>$router</code> itself.
 	</p>
 	
 	<p>
-		The responsibility of the anonymous function is to return an instance of <code>Destination</code> or
-		pass the arguments to the next function in the chain of responsibility, so in <code>/routes.php</code>
-		we can add a route for <code>http://<?php echo htmlspecialchars($this->request->getServer('HTTP_HOST') . $this->request->getBasePath()) ?>sample</code>:
+		We will add a route for <code>http://<?php echo htmlentities($http_host . $base_path) ?>sample</code>. Open <code>/routes.php</code>
+		and add the code below:
 	</p>
 	
-	<pre>// Translates {/site} to HomeController
+	<pre>// Translates {/site} to HomeController::sample()
 $router->add(function($request, $session, $router)
 {
     $app_request_uri = $request->getAppRequestURISegments();
@@ -368,72 +427,14 @@ $router->add(function($request, $session, $router)
 });</pre>
 
 	<p>
-		Destination 
+		The <code>Destination</code> class is a simple class that denotes a <em>destination</em>. A destination is defined as
+		the controller DIC registration ID, the method to call, and the arguments to pass to the method (optional). The front
+		controller uses this object to instantiate your controller and call its method. Now you can visit
+		<a href="http://<?php echo htmlentities($http_host . $base_path) ?>sample">your newly defined route</a> and get
+		the response that we've been working on.
 	</p>
 	
-	<p>
-		Carrot is an experimental micro framework that utilises anonymous functions and dependency injection
-		container heavily. Its core parts are the Front Controller (<code>index.php</code>), <code>Router</code>,
-		<code>DependencyInjectionContainer</code>, and <code>ErrorHandler</code>. Carrot is flexible enough
-		so that you can define your own <code>Router</code> and <code>ErrorHandler</code> class by implementing
-		the appropriate interface.
-	</p>
-	<h3>Why is this framework experimental?</h3>
-	<p>
-		It's experimental because it relies on anonymous functions to define routes and to describe dependency
-		registrations (other popular frameworks uses configuration files). It's also experimental because it is
-		designed to rely on dependency injection container so that there will be no need for <code>static</code>
-		and <code>global</code> variables.
-	</p>
-	<p>
-		For example, this is how you define a route in the default router (<code>/routes.php</code>):
-	</p>
-	<pre>$router->add(function($request, $session, $router)
-{
-    // Let's define a route for home page (http://localhost/)
-    if (empty($request->getAppRequestURISegments()))
-    {
-        return new Destination
-        (
-            '\ACME\App\Controllers\HomeController:main',
-            'index',
-            array('Key Lime Pie', 'Cupcake', 'Orange Juice')
-        );
-    }
-    
-    // Otherwise not my responsibility
-    return $router->next($request, $session, $router);
-});</pre>
-	<p>
-		Using anonymous functions should allow more flexibility with little to no performance penalty. The
-		<code>DependencyInjectionContainer</code> class is heavily influenced by
-		<a href="http://www.slideshare.net/fabpot/dependency-injection-with-php-53">Fabien Potencier's sample
-		DIC code</a> (where he stated that he doesn't advocate lambda function anywhere).
-	</p>
-	<h3>Why am I seeing this page?</h3>
-	<p>
-		It means that either you just installed Carrot or you haven't
-		defined any routes yet for the default <code>Router</code> class. This page is handled by
-		<code>Carrot\Core\Classes\SampleController</code> (which also handles the default 404 page).
-		The method responsible for this page is <code>welcome()</code>. This is the default <code>Destination</code>
-		that the default <code>Router</code> returns when there is no route defined.
-	</p>
-	<h3>How do I use this framework?</h3>
-	<p>
-		Carrot does things a little bit differently compared to other popular PHP frameworks, for starters,
-		the usage of dependency injection container is mandatory, at least for instantiating your controller.
-		You can also replace almost all of its core classes like <code>Request</code> or <code>Response</code>,
-		or even the <code>Router</code>. For detailed introduction for this framework, please read the
-		<a href="">&lsquo;Complete introduction to Carrot&rsquo;</a>. For 
-	</p>
-	<h3>Bah! This is the most stupid thing I've ever seen!</h3>
-	<p>
-		Carrot does not state nor pretend that it will solve all your development needs. It's a tool
-		that should be used only if the situation requires it. The author welcomes any sort of healthy
-		discussions and criticisms. If you have anything to say, you are encouraged to write to the author.
-		Send your thoughts to <a href="mailto:seven.rchristie@gmail.com">
-		<code>seven.rchristie@gmail.com</code></a>.
-	</p>
+	<h3>That's Carrot at a glance, we hope you like it!</h3>
 </div>
 </body>
 </html>

@@ -36,7 +36,7 @@
 
 use \Carrot\Core\Classes\Destination;
 
-// Translates {/} to SampleController
+// Translates {/} to SampleController::welcome()
 $router->add(function($request, $session, $router)
 {
 	$app_request_uri = $request->getAppRequestURISegments();

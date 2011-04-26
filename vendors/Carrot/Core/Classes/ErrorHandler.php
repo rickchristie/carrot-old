@@ -138,7 +138,7 @@ class ErrorHandler implements \Carrot\Core\Interfaces\ErrorHandlerInterface
 		
 		while (ob_get_level())
 		{
-			$output_buffer .= $ob_get_clean();
+			$output_buffer .= ob_get_clean();
 		}
 		
 		// Define an associative array of error string
