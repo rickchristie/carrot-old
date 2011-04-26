@@ -49,8 +49,10 @@ interface RouterInterface
 	/**
 	 * Gets the default destination to go if there's no matching route.
 	 *
-	 * @return Destination
+	 * @return \Carrot\Core\Classes\Destination
 	 *
 	 */
 	public function getDestinationForNoMatchingRoute();
+	
+	public function setDestinationForNoMatchingRoute(\Carrot\Core\Classes\Destination $destination);
 }

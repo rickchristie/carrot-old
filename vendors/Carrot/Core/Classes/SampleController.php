@@ -43,7 +43,8 @@ class SampleController
 	/**
 	 * Constructs default PageNotFound controller.
 	 *
-	 * @param Response Response instance.
+	 * @param Request $request Instance of \Carrot\Core\Classes\Request.
+	 * @param string $root_directory Path to the DIC root directory (/vendors), without trailing slash.
 	 *
 	 */
 	public function __construct(\Carrot\Core\Classes\Request $request, $root_directory)

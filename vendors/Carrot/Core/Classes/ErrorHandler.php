@@ -59,11 +59,11 @@ class ErrorHandler implements \Carrot\Core\Interfaces\ErrorHandlerInterface
 	 * Constructs the error handler.
 	 * 
 	 * @param string $server_protocol Either 'HTTPS 1.0' or 'HTTP 1.1', used to set the status code to 500.
-	 * @param bool $display_errors When set to TRUE, will use development error/exception templates, otherwise will use production error/exception templates.
-	 * @param string $error_template Absolute path to the production error template. Used when ErrorHandler::display_errors is FALSE.
-	 * @param string $exception_template Absolute path to the production uncaught exception template. Used when ErrorHandler::display_errors is FALSE. 
-	 * @param string $error_template_div Absolute path to the development error template. Used when ErrorHandler::display_errors is TRUE.
-	 * @param string $exception_template_div Absolute path to the development uncaught exception template. Used when ErrorHandler::display_errors is TRUE.
+	 * @param bool $display_errors Optional. When set to TRUE, will use development error/exception templates, otherwise will use production error/exception templates.
+	 * @param string $error_template Optional. Absolute path to the production error template. Used when ErrorHandler::display_errors is FALSE.
+	 * @param string $exception_template Optional. Absolute path to the production uncaught exception template. Used when ErrorHandler::display_errors is FALSE. 
+	 * @param string $error_template_div Optional. Absolute path to the development error template. Used when ErrorHandler::display_errors is TRUE.
+	 * @param string $exception_template_div Optional. Absolute path to the development uncaught exception template. Used when ErrorHandler::display_errors is TRUE.
 	 *
 	 */
 	public function __construct ($server_protocol, $display_errors = FALSE, $error_template = '', $exception_template = '', $error_template_dev = '', $exception_template_dev = '')

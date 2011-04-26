@@ -1,22 +1,29 @@
 <?php
 
 /**
- * Front Controller Configuration File.
- * 
- * 
+ * This file is part of the Carrot framework.
+ *
+ * Copyright (c) 2011 Ricky Christie <seven.rchristie@gmail.com>
+ *
+ * Licensed under the MIT License.
  *
  */
 
 /**
- * Custom Router 
+ * Replace the default router with your own class.
+ *
+ * You will have to implement Carrot\Core\Interfaces\RouterInterface.
+ * Fill in the variable with your custom router's DIC registration ID.
  *
  */
  
 $router_dic_id = '';
 
 /**
- * You can replace Carrot's default error and exception handler
- * class. Create a new class that implements 
+ * Replace the default error handler with your own class.
+ *
+ * You will have to implement Carrot\Core\Interfaces\ErrorHandler.
+ * Fill in the variable with your custom error handler's DIC registration ID.
  *
  */
 

@@ -1,20 +1,30 @@
 <?php
 
 /**
+ * This file is part of the Carrot framework.
+ *
+ * Copyright (c) 2011 Ricky Christie <seven.rchristie@gmail.com>
+ *
+ * Licensed under the MIT License.
+ *
+ */
+
+/**
  * Front Controller
  * 
- * Here is a short version of what the Front Controller does:
+ * Here is a short chronological list of what the Front Controller does:
  *
  *    1. Bootstrap PHP.
- *    2. Create a dependency injection container.
- *    3. Constructs the error/exception handling class and assigns them.
- *    4. Constructs the Router object (custom or default).
+ *    2. Create a dependency injection container (DIC).
+ *    3. Use the DIC to get the error/exception handling class and assigns them.
+ *    4. Use the DIC to get the Router instance.
  *    5. Get the destination from Router.
  *    6. Instantiates the controller and runs the method.
  *    7. Get the response object from the method and send it to the client.
  *
- * You can edit config.php to replace DefaultRouter and DefaultErrorHandler
- * with your own custom classes.
+ * You can edit config.php to replace Router and ErrorHandler with your own
+ * custom class. Your custom Router/ErrorHandler have to implement the appropriate
+ * interfaces.
  *
  */
 
@@ -36,23 +46,15 @@ if (ini_get('register_globals'))
 
 if (floatval(substr(phpversion(), 0, 3)) < 5.3)
 {
-	exit('This framework requires PHP 5, please upgrade.');
+	exit('This framework requires PHP 5.3, please upgrade.');
 }
-
-/**
- * Starts session, we are going to need $_SESSION
- * to instantiate session classes.
- *
- */
- 
-session_start();
 
 /**
  * Load configuration files.
  *
  * > autoload.php - Registers autoloading functions.
  * > config.php - Loads router and error handler class DIC item ID.
- * > registrations.php - Loads DIC registration file paths.
+ * > registrations.php - Loads DIC registration file path array.
  *
  */
 
@@ -96,6 +98,10 @@ $error_handler->set();
  * pollute the environment with global functions, we define
  * anonymous functions instead.
  *
+ * This anonymous function checks if $destination is really an
+ * instance of \Carrot\Core\Classes\Destination. If it's not,
+ * it throws a RuntimeException.
+ *
  */
 
 $checkDestination = function($destination, $error_message)
@@ -123,19 +129,29 @@ $checkDestination = function($destination, $error_message)
  *
  */
 
-// Get variables
 $router = $dic->getInstance($router);
 $router->loadRoutesFile(__DIR__ . DIRECTORY_SEPARATOR . 'routes.php');
 $destination = $router->getDestination();
-
-// Check destination
 $checkDestination($destination, "Front controller error when getting destination from Router. Expected an instance of \Carrot\Core\Classes\Destination from Router, got '%s' instead.");
 
 /**
  * Loop through the response from the user controller. If the
  * controller returns an instance of Destination, do an internal
  * redirection. If it's not, then assume it's a response and
- * proceed to sending it.
+ * proceed to send it to the user.
+ *
+ * Each loop, we do this:
+ *
+ *   1. Check if the controller class exists, if not, use RouterInterface::getDestinationForNoMatchingRoute() to get new Destination and start over.
+ *   2. Instantiate the controller class with DIC. If it fails, it will throw an exception.
+ *   3. Check if the method exist, if not, use RouterInterface::getDestinationForNoMatchingRoute() to get a new Destination and start over.
+ *   4. Run the controller's method with call_user_func_array() and get the return.
+ *
+ * If your controller method returns an instance of Destination,
+ * the process starts over again. This is called internal redirection.
+ * This goes on until the controller method returns something
+ * other than Destination (preferably a Response) or we have done
+ * too many internal redirection (limit is 10, hard coded).
  *
  */
 
@@ -191,6 +207,15 @@ while (is_a($temp, '\Carrot\Core\Classes\Destination'))
 	$temp = call_user_func_array(array($controller, $temp->getMethodName()), $temp->getParams());
 }
 
+/**
+ * If we have reached this line then the controller method has
+ * returned something other than an instance of Destination.
+ * We properly name it as our response and check if it's an
+ * implementation of Carrot\Core\Interfaces\ResponseInterface.
+ * With that done, we send the response the client.
+ *
+ */
+
 // We just got our response
 $response = $temp;
 unset($temp);
@@ -210,5 +235,5 @@ if (!is_a($response, '\Carrot\Core\Interfaces\ResponseInterface'))
 	throw new \RuntimeException("Front controller error, expected \Carrot\Core\Interfaces\ResponseInterface instance from controller method return, got '{$type}' instead. Destination history:{$destination_history}.");
 }
 
-// Send the response to the client
+// Send the response
 $response->send();

@@ -35,12 +35,15 @@ class Session
 	/**
 	 * Constructs a Session object.
 	 *
-	 * @param array $session Current session variables.
+	 * Also starts the session using session_start(). Be sure to only
+	 * instantiate this class only once, otherwise the session will
+	 * be started more than once.
 	 *
 	 */
-	public function __construct(array $session)
+	public function __construct()
 	{
-		$this->session = $session;
+		session_start();
+		$this->session = $_SESSION;
 	}
 	
 	/**
@@ -126,5 +129,10 @@ class Session
 	public function close()
 	{
 		session_write_close();
+	}
+	
+	public function __destruct()
+	{
+		$this->close();
 	}
 }

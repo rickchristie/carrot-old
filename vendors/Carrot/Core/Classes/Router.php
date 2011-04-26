@@ -128,7 +128,7 @@ class Router implements \Carrot\Core\Interfaces\RouterInterface
 		
 		if (!is_a($destination, '\Carrot\Core\Classes\Destination'))
 		{
-			$destination = $this->no_matching_route_destination;
+			throw new \RuntimeException("Router error in getting Destination, route #{$this->active_index} does not return an instance of \Carrot\Core\Classes\Destination.");
 		}
 		
 		return $destination;

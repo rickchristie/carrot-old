@@ -435,6 +435,10 @@ $router->add(function($request, $session, $router)
 	</p>
 	
 	<h3>That's Carrot at a glance, we hope you like it!</h3>
+	
+	<p>
+		Send your critcisms, suggestions, fixes to me.
+	</p>
 </div>
 </body>
 </html>

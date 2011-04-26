@@ -81,7 +81,7 @@ class Request
 	 * @param array $cookie $_COOKIE variable.
 	 * @param array $request $_REQUEST variable.
 	 * @param array $env $_ENV variable.
-	 * @param string $base_path Base path, with starting and trailing slash.
+	 * @param string $base_path Optional. Base path, with starting and trailing slash.
 	 *
 	 */
 	public function __construct($server, $get, $post, $files, $cookie, $request, $env, $base_path = '')
