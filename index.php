@@ -73,12 +73,12 @@ if (!isset($registrations) or !$registrations)
 
 if (!isset($router) or !$router)
 {
-	$router = '\Carrot\Core\Classes\Router:main';
+	$router = '\Carrot\Core\Classes\Router@main';
 }
 
 if (!isset($error_handler) or !$error_handler)
 {
-	$error_handler = '\Carrot\Core\Classes\ErrorHandler:shared';
+	$error_handler = '\Carrot\Core\Classes\ErrorHandler@shared';
 }
 
 /**

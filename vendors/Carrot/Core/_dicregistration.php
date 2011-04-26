@@ -29,12 +29,12 @@
  * 
  */
 
-$dic->register('\Carrot\Core\Classes\Router:main', function($dic)
+$dic->register('\Carrot\Core\Classes\Router@main', function($dic)
 {	
 	return new \Carrot\Core\Classes\Router
 	(
-		$dic->getInstance('\Carrot\Core\Classes\Request:shared'),
-		$dic->getInstance('\Carrot\Core\Classes\Session:shared')
+		$dic->getInstance('\Carrot\Core\Classes\Request@shared'),
+		$dic->getInstance('\Carrot\Core\Classes\Session@shared')
 	);
 });
 
@@ -51,15 +51,15 @@ $dic->register('\Carrot\Core\Classes\Router:main', function($dic)
  *
  */
 
-$dic->register('\Carrot\Core\Classes\ErrorHandler:shared', function($dic)
+$dic->register('\Carrot\Core\Classes\ErrorHandler@shared', function($dic)
 {	
 	$error_handler = new \Carrot\Core\Classes\ErrorHandler
 	(
-		$dic->getInstance('\Carrot\Core\Classes\Request:shared')->getServer('SERVER_PROTOCOL'),
+		$dic->getInstance('\Carrot\Core\Classes\Request@shared')->getServer('SERVER_PROTOCOL'),
 		TRUE
 	);
 	
-	$dic->saveShared('\Carrot\Core\Classes\ErrorHandler:shared', $error_handler);
+	$dic->saveShared('\Carrot\Core\Classes\ErrorHandler@shared', $error_handler);
 	return $error_handler;
 });
 
@@ -71,7 +71,7 @@ $dic->register('\Carrot\Core\Classes\ErrorHandler:shared', function($dic)
  *
  */
  
-$dic->register('\Carrot\Core\Classes\Request:shared', function($dic)
+$dic->register('\Carrot\Core\Classes\Request@shared', function($dic)
 {
 	$object = new \Carrot\Core\Classes\Request
 	(
@@ -84,7 +84,7 @@ $dic->register('\Carrot\Core\Classes\Request:shared', function($dic)
 		$_ENV
 	);
 	
-	$dic->saveShared('\Carrot\Core\Classes\Request:shared', $object);
+	$dic->saveShared('\Carrot\Core\Classes\Request@shared', $object);
 	
 	return $object;
 });
@@ -97,10 +97,10 @@ $dic->register('\Carrot\Core\Classes\Request:shared', function($dic)
  *
  */
 
-$dic->register('\Carrot\Core\Classes\Session:shared', function($dic)
+$dic->register('\Carrot\Core\Classes\Session@shared', function($dic)
 {
 	$session = new \Carrot\Core\Classes\Session($_SESSION);
-	$dic->saveShared('\Carrot\Core\Classes\Session:shared', $session);
+	$dic->saveShared('\Carrot\Core\Classes\Session@shared', $session);
 	return $session;
 });
 
@@ -111,11 +111,11 @@ $dic->register('\Carrot\Core\Classes\Session:shared', function($dic)
  *
  */
 
-$dic->register('\Carrot\Core\Classes\Response:main', function($dic)
+$dic->register('\Carrot\Core\Classes\Response@main', function($dic)
 {
 	return new \Carrot\Core\Classes\Response
 	(
-		$dic->getInstance('\Carrot\Core\Classes\Request:shared')->getServer('SERVER_PROTOCOL')
+		$dic->getInstance('\Carrot\Core\Classes\Request@shared')->getServer('SERVER_PROTOCOL')
 	);
 });
 
@@ -126,10 +126,11 @@ $dic->register('\Carrot\Core\Classes\Response:main', function($dic)
  *
  */
 
-$dic->register('\Carrot\Core\Classes\SampleController:main', function($dic)
+$dic->register('\Carrot\Core\Classes\SampleController@main', function($dic)
 {	
 	return new \Carrot\Core\Classes\SampleController
 	(
-		$dic->getInstance('\Carrot\Core\Classes\Request:shared')
+		$dic->getInstance('\Carrot\Core\Classes\Request@shared'),
+		$dic->getRootDirectory()
 	);
 });

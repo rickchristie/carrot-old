@@ -150,7 +150,7 @@ class Destination
 	 */
 	protected function validateID($id)
 	{
-		$id_exploded = explode(':', $id);
+		$id_exploded = explode('@', $id);
 		
 		return
 		(
@@ -171,7 +171,7 @@ class Destination
 	 */
 	protected function getClassNameFromID($id)
 	{
-		$id_exploded = explode(':', $id);
+		$id_exploded = explode('@', $id);
 		return $id_exploded[0];
 	}
 	
@@ -187,7 +187,7 @@ class Destination
 	 */
 	protected function getBundleNameFromID($id)
 	{
-		$id_exploded = explode(':', $id);
+		$id_exploded = explode('@', $id);
 		$namespaces = explode('\\', $id_exploded[0]);
 		$fragment_saved = 0;
 		$bundle_name = '';

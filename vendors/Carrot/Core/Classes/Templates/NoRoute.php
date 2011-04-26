@@ -1,7 +1,7 @@
 <!DOCTYPE HTML PUBLIC "-//W3C//DTD HTML 4.01//EN" "http://www.w3.org/TR/html4/strict.dtd">
 <html>
 <head>
-	<title>Welcome to Carrot, an experimental PHP framework</title>
+	<title>There is no route</title>
 	<style>
 		body, html
 		{
@@ -268,30 +268,30 @@
 </div>
 <div id="wrapper">
 	<h2>Welcome to Carrot, an experimental PHP framework!</h2>
-	
 	<p>
-		This is a response returned from <code>Carrot\Core\Classes\SampleController::welcome()</code>,
-		it should mean that Carrot is working okay at your server. You can learn how Carrot works at
-		a glance simply by reading the introduction below, or you can read a detailed introduction
-		at <a href="http://carrot.rickchristie.com">Carrot's main site</a>.
+		If you're seeing this, then the installation of Carrot is successful. This is also the page that
+		the default <code>Router</code> class displays when there you don't define any routes. The class
+		that is responsible for this welcome page is <code>Carrot\Core\Classes\SampleController</code>, which
+		is also responsible for the default 404 class.
 	</p>
 	
 	<h3>Creating your own controller</h3>
 	<p>
 		Carrot uses the universal autoloader as defined in the <a href="http://groups.google.com/group/php-standards/web/psr-0-final-proposal?pli=1">PSR-0 Final Proposal</a>,
-		which means your controller have at least two namespace (<code>Vendor\Namespace</code>) and properly placed. For starters,
+		which means your controller have to be properly namespaced to be autoloaded. For starters,
 		let's create the controller class <code>ACME\Site\Controllers\HomeController</code>. Create this file:
 	</p>
 	<pre><?php echo htmlspecialchars($root_directory), DIRECTORY_SEPARATOR, 'ACME', DIRECTORY_SEPARATOR, 'Site', DIRECTORY_SEPARATOR, 'Controllers', DIRECTORY_SEPARATOR, 'HomeController.php' ?></pre>
 	
 	<p>
-		When you create your controller in Carrot, remember that each of its method that got called by the front controller
-		has a responsibility to return an instance of an implementation of <code>Carrot\Core\Interfaces\ResponseInterface</code>.
-		How your controller class gets the response is none of the front controller's business. 
+		Carrot doesn't care for a lot of things. For controller, the only responsibility it has to the
+		framework is to return an instance of an implementation of <code>Carrot\Core\Interfaces\ResponseInterface</code>.
+		You can create your own <code>Response</code> class by implementing this interface, but for now
+		let's stick to the default that Carrot provides.
 	</p>
 	
 	<p>
-		Write the class <code>HomeController</code> at the file - we are going to need an instance of <code>Request</code>,
+		Create a properly namespaced class in <code>HomeController.php</code> - we need an instance of <code>Request</code>
 		so we inject it via the constructor:
 	</p>
 	
@@ -310,8 +310,7 @@ class HomeController
 }</pre>
 	
 	<p>
-		You can create your own response class by implementing this interface, but for now let's stick to the default that
-		Carrot provides. For a sample, let's create a method that uses <code>Request</code> to create a simple response:
+		For a sample, let's create a method that uses <code>Request</code> to create a simple response:
 	</p>
 	
 	<pre>public function sample()
@@ -331,11 +330,6 @@ class HomeController
 }
 </pre>
 	
-	<p>
-		Voila, we just created a simple controller class. Now we need to tell <code>DependencyInjectionContainer</code> to inject
-		a <code>Request</code> instance when constructing <code>HomeController</code>. We do this by creating a 
-	</p>
-	
 	<h3>Adding a route that points to the controller we just created</h3>
 	
 	<p>
@@ -350,8 +344,7 @@ class HomeController
 		we can add a route for <code>http://<?php echo htmlspecialchars($this->request->getServer('HTTP_HOST') . $this->request->getBasePath()) ?>sample</code>:
 	</p>
 	
-	<pre>// Translates {/site} to HomeController
-$router->add(function($request, $session, $router)
+	<pre>$router->add(function($request, $session, $router)
 {
     $app_request_uri = $request->getAppRequestURISegments();
 
@@ -359,17 +352,13 @@ $router->add(function($request, $session, $router)
     {
         return new Destination
         (
-            '\ACME\Site\Controllers\HomeController@main',
+            '\ACME\Site\Controllers\HomeController:main',
             'sample'
         );
     }
 
     return $router->next($request, $session, $router);
 });</pre>
-
-	<p>
-		Destination 
-	</p>
 	
 	<p>
 		Carrot is an experimental micro framework that utilises anonymous functions and dependency injection

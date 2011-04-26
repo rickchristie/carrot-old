@@ -36,8 +36,7 @@
 
 use \Carrot\Core\Classes\Destination;
 
-/*
-
+// Translates {/} to SampleController
 $router->add(function($request, $session, $router)
 {
 	$app_request_uri = $request->getAppRequestURISegments();
@@ -46,12 +45,10 @@ $router->add(function($request, $session, $router)
 	{
 		return new Destination
 		(
-			'\ACME\App\Controllers\HomeController:main',
-			'index'
+			'\Carrot\Core\Classes\SampleController@main',
+			'welcome'
 		);
 	}
 	
 	return $router->next($request, $session, $router);
 });
-
-*/

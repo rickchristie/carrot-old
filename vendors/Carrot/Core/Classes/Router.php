@@ -51,11 +51,6 @@ class Router implements \Carrot\Core\Interfaces\RouterInterface
 	protected $no_matching_route_destination;
 	
 	/**
-	 * @var Destination Default destination to go to if there is no route defined.
-	 */
-	protected $no_route_default_destination;
-	
-	/**
 	 * Constructs a Router object.
 	 *
 	 * @param mixed $request Preferably a Request object.
@@ -66,8 +61,7 @@ class Router implements \Carrot\Core\Interfaces\RouterInterface
 	{
 		$this->request = $request;
 		$this->session = $session;
-		$this->no_matching_route_destination = new Destination('\Carrot\Core\Classes\SampleController:main', 'pageNotFound');
-		$this->no_route_default_destination = new Destination('\Carrot\Core\Classes\SampleController:main', 'welcome');
+		$this->no_matching_route_destination = new Destination('\Carrot\Core\Classes\SampleController@main', 'pageNotFound');
 	}
 	
 	/**
@@ -126,7 +120,7 @@ class Router implements \Carrot\Core\Interfaces\RouterInterface
 	{
 		if (empty($this->chains))
 		{
-			return $this->no_route_default_destination;
+			throw new \RuntimeException('Router error in getting Destination, it doesn\'t have any route defined.');
 		}
 		
 		$this->active_index = -1;

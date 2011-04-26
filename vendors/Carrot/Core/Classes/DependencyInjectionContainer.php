@@ -106,7 +106,7 @@ class DependencyInjectionContainer
 	protected $shared = array();
 	
 	/**
-	 * @var string Path to the root directory, without trailing slash.
+	 * @var string Path to the root directory to search for default dependency registration files, without trailing slash.
 	 */
 	protected $root_directory;
 	
@@ -129,7 +129,7 @@ class DependencyInjectionContainer
 	 * An example, registering \Carrot\Library\Config's parameters:
 	 *
 	 * <code> 
-	 * $dic->register('\Carrot\Library\Config:main', function($dic)
+	 * $dic->register('\Carrot\Library\Config@main', function($dic)
 	 * {
 	 *    // Get the request instance to fill in details
 	 *    $request = $dic->getInstance('\Carrot\Core\Classes\Request:shared');
@@ -150,8 +150,8 @@ class DependencyInjectionContainer
 	 * register two different instances of the same class.
 	 *
 	 * <code>
-	 * \Carrot\Library\Config:main
-	 * \Carrot\Library\Config:sitemap
+	 * \Carrot\Library\Config@main
+	 * \Carrot\Library\Config@sitemap
 	 * </code>
 	 * 
 	 * @param string $id DIC item registration ID.
@@ -356,7 +356,7 @@ class DependencyInjectionContainer
 	 */
 	protected function validateID($id)
 	{
-		$id_exploded = explode(':', $id);
+		$id_exploded = explode('@', $id);
 		
 		return
 		(
@@ -377,7 +377,7 @@ class DependencyInjectionContainer
 	 */
 	protected function getClassNameFromID($id)
 	{
-		$id_exploded = explode(':', $id);
+		$id_exploded = explode('@', $id);
 		return $id_exploded[0];
 	}
 	
@@ -393,7 +393,7 @@ class DependencyInjectionContainer
 	 */
 	protected function getBundleNameFromID($id)
 	{
-		$id_exploded = explode(':', $id);
+		$id_exploded = explode('@', $id);
 		$namespaces = explode('\\', $id_exploded[0]);
 		$fragment_saved = 0;
 		$bundle_name = '';

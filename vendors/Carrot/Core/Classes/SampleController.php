@@ -36,20 +36,32 @@ class SampleController
 	protected $request;
 	
 	/**
+	 * @var string The directory where the front controller resides.
+	 */
+	protected $root_directory;
+	
+	/**
 	 * Constructs default PageNotFound controller.
 	 *
 	 * @param Response Response instance.
 	 *
 	 */
-	public function __construct(\Carrot\Core\Classes\Request $request)
+	public function __construct(\Carrot\Core\Classes\Request $request, $root_directory)
 	{
 		$this->request = $request;
+		$this->root_directory = $root_directory;
+	}
+	
+	public function noRoute()
+	{
+		
 	}
 	
 	public function welcome()
 	{
 		// Get the template, but get it as string with output buffering
 		ob_start();
+		$root_directory = $this->root_directory;
 		require(__DIR__ . DIRECTORY_SEPARATOR . 'Templates' . DIRECTORY_SEPARATOR . 'Welcome.php');
 		$string = ob_get_clean();
 		
