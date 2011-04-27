@@ -26,17 +26,16 @@
  * @param mixed $session Preferably a Session object, used as an argument when calling anonymous functions.
  * @param Destination $no_matching_route_destination Default destination to return when there is no matching route.
  * 
- * 
  */
 
 $dic->register('\Carrot\Core\Classes\Router@main', function($dic)
-{	
-	return new \Carrot\Core\Classes\Router
-	(
-		$dic->getInstance('\Carrot\Core\Classes\Request@shared'),
-		$dic->getInstance('\Carrot\Core\Classes\Session@shared'),
-		new \Carrot\Core\Classes\Destination('\Carrot\Core\Classes\SampleController@main', 'pageNotFound')
-	);
+{   
+    return new \Carrot\Core\Classes\Router
+    (
+        $dic->getInstance('\Carrot\Core\Classes\Request@shared'),
+        $dic->getInstance('\Carrot\Core\Classes\Session@shared'),
+        new \Carrot\Core\Classes\Destination('\Carrot\Core\Classes\SampleController@main', 'pageNotFound')
+    );
 });
 
 /**
@@ -59,15 +58,15 @@ $dic->register('\Carrot\Core\Classes\Router@main', function($dic)
  */
 
 $dic->register('\Carrot\Core\Classes\ErrorHandler@shared', function($dic)
-{	
-	$error_handler = new \Carrot\Core\Classes\ErrorHandler
-	(
-		$dic->getInstance('\Carrot\Core\Classes\Request@shared')->getServer('SERVER_PROTOCOL'),
-		TRUE
-	);
-	
-	$dic->saveShared('\Carrot\Core\Classes\ErrorHandler@shared', $error_handler);
-	return $error_handler;
+{   
+    $error_handler = new \Carrot\Core\Classes\ErrorHandler
+    (
+        $dic->getInstance('\Carrot\Core\Classes\Request@shared')->getServer('SERVER_PROTOCOL'),
+        TRUE
+    );
+    
+    $dic->saveShared('\Carrot\Core\Classes\ErrorHandler@shared', $error_handler);
+    return $error_handler;
 });
 
 /**
@@ -98,20 +97,20 @@ $dic->register('\Carrot\Core\Classes\ErrorHandler@shared', function($dic)
  
 $dic->register('\Carrot\Core\Classes\Request@shared', function($dic)
 {
-	$object = new \Carrot\Core\Classes\Request
-	(
-		$_SERVER,
-		$_GET,
-		$_POST,
-		$_FILES,
-		$_COOKIE,
-		$_REQUEST,
-		$_ENV
-	);
-	
-	$dic->saveShared('\Carrot\Core\Classes\Request@shared', $object);
-	
-	return $object;
+    $object = new \Carrot\Core\Classes\Request
+    (
+        $_SERVER,
+        $_GET,
+        $_POST,
+        $_FILES,
+        $_COOKIE,
+        $_REQUEST,
+        $_ENV
+    );
+    
+    $dic->saveShared('\Carrot\Core\Classes\Request@shared', $object);
+    
+    return $object;
 });
 
 /**
@@ -128,9 +127,9 @@ $dic->register('\Carrot\Core\Classes\Request@shared', function($dic)
 
 $dic->register('\Carrot\Core\Classes\Session@shared', function($dic)
 {
-	$session = new \Carrot\Core\Classes\Session();
-	$dic->saveShared('\Carrot\Core\Classes\Session@shared', $session);
-	return $session;
+    $session = new \Carrot\Core\Classes\Session();
+    $dic->saveShared('\Carrot\Core\Classes\Session@shared', $session);
+    return $session;
 });
 
 /**
@@ -147,10 +146,10 @@ $dic->register('\Carrot\Core\Classes\Session@shared', function($dic)
 
 $dic->register('\Carrot\Core\Classes\Response@main', function($dic)
 {
-	return new \Carrot\Core\Classes\Response
-	(
-		$dic->getInstance('\Carrot\Core\Classes\Request@shared')->getServer('SERVER_PROTOCOL')
-	);
+    return new \Carrot\Core\Classes\Response
+    (
+        $dic->getInstance('\Carrot\Core\Classes\Request@shared')->getServer('SERVER_PROTOCOL')
+    );
 });
 
 /**
@@ -166,10 +165,10 @@ $dic->register('\Carrot\Core\Classes\Response@main', function($dic)
  */
 
 $dic->register('\Carrot\Core\Classes\SampleController@main', function($dic)
-{	
-	return new \Carrot\Core\Classes\SampleController
-	(
-		$dic->getInstance('\Carrot\Core\Classes\Request@shared'),
-		$dic->getRootDirectory()
-	);
+{   
+    return new \Carrot\Core\Classes\SampleController
+    (
+        $dic->getInstance('\Carrot\Core\Classes\Request@shared'),
+        $dic->getRootDirectory()
+    );
 });

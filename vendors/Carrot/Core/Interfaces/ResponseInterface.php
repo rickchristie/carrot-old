@@ -18,8 +18,8 @@
  * calls. The response object represents the application's response to a
  * specific request.
  *
- * @author		Ricky Christie <seven.rchristie@gmail.com>
- * @license		http://www.opensource.org/licenses/mit-license.php MIT License
+ * @author      Ricky Christie <seven.rchristie@gmail.com>
+ * @license     http://www.opensource.org/licenses/mit-license.php MIT License
  *
  */
 
@@ -27,9 +27,9 @@ namespace Carrot\Core\Interfaces;
 
 interface ResponseInterface
 {
-	/**
-	 * Sends (echoes out) the response to the client.
-	 *
-	 */
-	public function send();
+    /**
+     * Sends (echoes out) the response to the client.
+     *
+     */
+    public function send();
 }

@@ -45,7 +45,7 @@
  *             array('Arguments')
  *         );
  *     }
- *	
+ *  
  *     // Otherwise, not my responsibility, pass arguments to the next chain
  *     return $router->next($request, $session, $router);
  * });
@@ -62,19 +62,19 @@ use \Carrot\Core\Classes\Destination;
 // Translates {/} to SampleController::welcome()
 $router->add(function($request, $session, $router)
 {
-	// Get app request uri in segments
-	$app_request_uri = $request->getAppRequestURISegments();
-	
-	// Return destination if uri segment array is empty
-	if (empty($app_request_uri))
-	{
-		return new Destination
-		(
-			'\Carrot\Core\Classes\SampleController@main',
-			'welcome'
-		);
-	}
-	
-	// Otherwise, not my responsibility, pass arguments to the next chain
-	return $router->next($request, $session, $router);
+    // Get app request uri in segments
+    $app_request_uri = $request->getAppRequestURISegments();
+    
+    // Return destination if uri segment array is empty
+    if (empty($app_request_uri))
+    {
+        return new Destination
+        (
+            '\Carrot\Core\Classes\SampleController@main',
+            'welcome'
+        );
+    }
+    
+    // Otherwise, not my responsibility, pass arguments to the next chain
+    return $router->next($request, $session, $router);
 });

@@ -257,6 +257,24 @@
 			background-repeat: no-repeat;
 		}
 		
+		ul
+		{
+			margin: 0 0 0 25px;
+			padding: 0 0 0 0;
+			list-style-type: none;
+			font-size: 13px;
+			line-height: 20px;
+		}
+		
+		ul li
+		{
+			margin: 15px 0;
+			padding: 0 0 0 22px;
+			background: url(data:image/png;base64,iVBORw0KGgoAAAANSUhEUgAAABAAAAAQCAYAAAAf8/9hAAAAGXRFWHRTb2Z0d2FyZQBBZG9iZSBJbWFnZVJlYWR5ccllPAAAAaRJREFUeNqc0l8oQ1EcB/DvuXfW7v4gWY3JrNGWPKiJlELhDSnlAU8elPLiyYNXj548+fO49qgm7/IkL1LTZCzNljQMubYx9x6/W1eNdGd+dfqdfuf26Xd+5zLzqh9amCxV+C1el6IwCkHPzfhnfAH2j0JxGxyLtA9WApj0HLOo5lCxoGwxizABhonwcaKG6s/6Mu6gVrF7q7hpn3Heai4ogyvxm5hk5kk6SkZmrMNlgSdRvhIhBGxcwkL6DqPVucaRPqDbp2hdRAgJlpsBZNvb+VQm09Mvy+iQFCoADU0iOj2qpCMuQ4CGiKHHh2ies9vUJRXShDyp8LgFBFzcrSPST4Cuzb8V6KNeSnvt7x91bfV05qI524HTayBxzzbHQ7l5Q0BHtP9ix5dXgh02le4iAg6GoxTD7SvGCdk1BHREa3fDIyuzLSYVtU4BGUnAYYZlqd5GSNYQKIHmKK0FZKXGb+U4s4qIF1iYgOk/ATqivcC6K6dOermKC5uIe7ABQg7+BJRAYxrke1GbEw7hhPZdFQEls1mitUxrvmKgBHJSyn8KMAD+06jQNTPITwAAAABJRU5ErkJggg==);
+			background-repeat: no-repeat;
+			background-position: 0px 0px;
+		}
+		
 	</style>
 </head>
 <body>
@@ -275,6 +293,42 @@
 		a glance simply by reading the introduction below, or you can read a detailed introduction
 		at <a href="http://carrot.rickchristie.com">Carrot's main site</a>.
 	</p>
+	
+	<h3>Framework design goals</h3>
+	
+	<ul>
+	   <li>
+	       Create a framework without using the keyword <code>global</code> or <code>static</code>. Fully recognize the
+	       dangerous nature of global state and avoid it at all costs.
+	   </li>
+	   <li>
+	       Relying on dependency injection container to manage the dependencies of user classes, thus eliminating the need
+	       for a global registry of object.
+	   </li>
+	   <li>
+	       Fully utilize PHP's new features by refusing to support outdated PHP installations. One of those features
+	       are anonymous functions, which are used extensively throughout the framework.
+	   </li>
+	   <li>
+	       Build and make use of decoupled classes, avoid inheritance whenever possible. This, for one, allows the user's
+	       controller class to be a plain old PHP object managed by the dependency injection container. You can even
+	       pick one of Carrot's core classes and use it as a standalone class.
+	   </li>
+	   <li>
+	       Make the core as small and focused as possible. Carrot's only job is to be the front controller, setting up the
+	       dependency injection container, instantiating the user's controller and getting a response from it. It does
+	       not know, much less dictate <em>how</em> the controller is getting the response.
+	   </li>
+	   <li>
+	       Allow the user to replace core classes of Carrot using their own class only by implementing an interface as
+	       a contract to the front controller, thereby creating an environment that does not disturb the user's
+	       programming routine.
+	   </li>
+	   <li>
+	       Continue the development by adding libraries, which are essentially just decoupled classes that are properly
+	       namespaced. Each library <em>must not know</em> that it is being used inside a framework.
+	   </li>
+	</ul>
 	
 	<h3>Creating your own controller</h3>
 	<p>
@@ -437,7 +491,12 @@ $router->add(function($request, $session, $router)
 	<h3>That's Carrot at a glance, we hope you like it!</h3>
 	
 	<p>
-		Send your critcisms, suggestions, fixes to me.
+		The author welcomes any healthy critcisms, suggestions, and (especially) patches. Send them all to
+		<a href="mailto:seven.rchristie@gmail.com">seven.rchristie@gmail.com</a>. Special thanks to Fabien
+		Potencier for his awesome dependency injection slide and the people
+		at <a href="http://chat.stackoverflow.com/rooms/11/php">Stack Overflow PHP Chat</a>, especially Gordon,
+		ircmaxell, edorian, markus, zerkms, without them this thing wouldn't get done, so I'm gonna put their nick
+		here even though they protest.
 	</p>
 </div>
 </body>

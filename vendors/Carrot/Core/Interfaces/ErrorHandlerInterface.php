@@ -17,8 +17,8 @@
  * with your own class, you should implement this interface. The front controller
  * will use these methods.
  *
- * @author		Ricky Christie <seven.rchristie@gmail.com>
- * @license		http://www.opensource.org/licenses/mit-license.php MIT License
+ * @author      Ricky Christie <seven.rchristie@gmail.com>
+ * @license     http://www.opensource.org/licenses/mit-license.php MIT License
  *
  */
 
@@ -26,15 +26,15 @@ namespace Carrot\Core\Interfaces;
 
 interface ErrorHandlerInterface
 {
-	/**
-	 * Set error and exception handler, preferably to a method in this class.
-	 *
-	 */
-	public function set();
-	
-	/**
-	 * Restore error and exception handler previously set by ErrorHandlerInterface::set().
-	 *
-	 */
-	public function restore();
+    /**
+     * Set error and exception handler, preferably to a method in this class.
+     *
+     */
+    public function set();
+    
+    /**
+     * Restore error and exception handler previously set by ErrorHandlerInterface::set().
+     *
+     */
+    public function restore();
 }

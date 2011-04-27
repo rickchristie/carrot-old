@@ -36,17 +36,17 @@
 
 if (get_magic_quotes_gpc())
 {
-	exit('Magic quotes are on. Please turn off magic quotes.');
+    exit('Magic quotes are on. Please turn off magic quotes.');
 }
 
 if (ini_get('register_globals'))
 {
-	exit('Register globals are on. Please turn off register globals.');
+    exit('Register globals are on. Please turn off register globals.');
 }
 
 if (floatval(substr(phpversion(), 0, 3)) < 5.3)
 {
-	exit('This framework requires PHP 5.3, please upgrade.');
+    exit('This framework requires PHP 5.3, please upgrade.');
 }
 
 /**
@@ -70,17 +70,17 @@ require __DIR__ . DIRECTORY_SEPARATOR . 'registrations.php';
 
 if (!isset($registrations) or !$registrations)
 {
-	$registrations = array();
+    $registrations = array();
 }
 
 if (!isset($router) or !$router)
 {
-	$router = '\Carrot\Core\Classes\Router@main';
+    $router = '\Carrot\Core\Classes\Router@main';
 }
 
 if (!isset($error_handler) or !$error_handler)
 {
-	$error_handler = '\Carrot\Core\Classes\ErrorHandler@shared';
+    $error_handler = '\Carrot\Core\Classes\ErrorHandler@shared';
 }
 
 /**
@@ -106,19 +106,19 @@ $error_handler->set();
 
 $checkDestination = function($destination, $error_message)
 {
-	if (!is_a($destination, '\Carrot\Core\Classes\Destination'))
-	{
-		if (is_object($destination))
-		{
-			$type = get_class($destination);
-		}
-		else
-		{
-			$type = gettype($destination);
-		}
-		
-		throw new \RuntimeException(sprintf($error_message, $type));
-	}
+    if (!is_a($destination, '\Carrot\Core\Classes\Destination'))
+    {
+        if (is_object($destination))
+        {
+            $type = get_class($destination);
+        }
+        else
+        {
+            $type = gettype($destination);
+        }
+        
+        throw new \RuntimeException(sprintf($error_message, $type));
+    }
 };
 
 /**
@@ -162,49 +162,49 @@ $destination_history = '';
 
 while (is_a($temp, '\Carrot\Core\Classes\Destination'))
 {
-	++$internal_redirection_count;
-	$destination_history .= " ({$internal_redirection_count}. {$temp->getControllerDICItemID()}:{$temp->getMethodName()})";
-	
-	if ($internal_redirection_count > 10)
-	{
-		throw new \RuntimeException("Front controller error, too many internal redirections, possibly an infinite loop. Destination history:{$destination_history}.");
-	}
-	
-	// If class doesn't exist, change destination to 'no matching route'
-	if (!class_exists($temp->getClassName()))
-	{
-		// If we are using the no matching route destination, throw exception
-		if ($having_no_matching_route_as_destination)
-		{
-			throw new \RuntimeException("Front controller error, class not found when attempting to use 'having no matching route' destination. Class does not exist ({$temp->getClassName()}). Destination history:{$destination_history}.");
-		}
-		
-		$having_no_matching_route_as_destination = TRUE;
-		$temp = $router->getDestinationForNoMatchingRoute();
-		$checkDestination($temp, "Front controller error when getting 'destination for no matching route' from Router. Expected an instance of \Carrot\Core\Classes\Destination from Router, got '%s' instead. Destination history:{$destination_history}.");
-		continue;
-	}
-	
-	// Instantiate controller
-	$controller = $dic->getInstance($temp->getControllerDICItemID());
-	
-	// If method doesn't exist, change destination to 'no matching route'
-	if (!method_exists($controller, $temp->getMethodName()))
-	{
-		// If we are using the no matching route destination, throw exception
-		if ($having_no_matching_route_as_destination)
-		{
-			throw new \RuntimeException("Front controller error, class not found when attempting to use 'having no matching route' destination. Method doesn't exist ({$temp->getMethodName()}). Destination history:{$destination_history}");
-		}
-		
-		$having_no_matching_route_as_destination = TRUE;
-		$temp = $router->getDestinationForNoMatchingRoute();
-		$checkDestination($temp, "Front controller error when getting 'destination for no matching route' from Router. Expected an instance of \Carrot\Core\Classes\Destination from Router, got '%s' instead. Destination history:{$destination_history}.");
-		continue;
-	}
-	
-	// Run the method using call_user_func
-	$temp = call_user_func_array(array($controller, $temp->getMethodName()), $temp->getParams());
+    ++$internal_redirection_count;
+    $destination_history .= " ({$internal_redirection_count}. {$temp->getControllerDICItemID()}:{$temp->getMethodName()})";
+    
+    if ($internal_redirection_count > 10)
+    {
+        throw new \RuntimeException("Front controller error, too many internal redirections, possibly an infinite loop. Destination history:{$destination_history}.");
+    }
+    
+    // If class doesn't exist, change destination to 'no matching route'
+    if (!class_exists($temp->getClassName()))
+    {
+        // If we are using the no matching route destination, throw exception
+        if ($having_no_matching_route_as_destination)
+        {
+            throw new \RuntimeException("Front controller error, class not found when attempting to use 'having no matching route' destination. Class does not exist ({$temp->getClassName()}). Destination history:{$destination_history}.");
+        }
+        
+        $having_no_matching_route_as_destination = TRUE;
+        $temp = $router->getDestinationForNoMatchingRoute();
+        $checkDestination($temp, "Front controller error when getting 'destination for no matching route' from Router. Expected an instance of \Carrot\Core\Classes\Destination from Router, got '%s' instead. Destination history:{$destination_history}.");
+        continue;
+    }
+    
+    // Instantiate controller
+    $controller = $dic->getInstance($temp->getControllerDICItemID());
+    
+    // If method doesn't exist, change destination to 'no matching route'
+    if (!method_exists($controller, $temp->getMethodName()))
+    {
+        // If we are using the no matching route destination, throw exception
+        if ($having_no_matching_route_as_destination)
+        {
+            throw new \RuntimeException("Front controller error, class not found when attempting to use 'having no matching route' destination. Method doesn't exist ({$temp->getMethodName()}). Destination history:{$destination_history}");
+        }
+        
+        $having_no_matching_route_as_destination = TRUE;
+        $temp = $router->getDestinationForNoMatchingRoute();
+        $checkDestination($temp, "Front controller error when getting 'destination for no matching route' from Router. Expected an instance of \Carrot\Core\Classes\Destination from Router, got '%s' instead. Destination history:{$destination_history}.");
+        continue;
+    }
+    
+    // Run the method using call_user_func
+    $temp = call_user_func_array(array($controller, $temp->getMethodName()), $temp->getParams());
 }
 
 /**
@@ -223,16 +223,16 @@ unset($temp);
 // Check if it's a valid response
 if (!is_a($response, '\Carrot\Core\Interfaces\ResponseInterface'))
 {
-	if (is_object($response))
-	{
-		$type = get_class($response);
-	}
-	else
-	{
-		$type = gettype($response);
-	}
-	
-	throw new \RuntimeException("Front controller error, expected \Carrot\Core\Interfaces\ResponseInterface instance from controller method return, got '{$type}' instead. Destination history:{$destination_history}.");
+    if (is_object($response))
+    {
+        $type = get_class($response);
+    }
+    else
+    {
+        $type = gettype($response);
+    }
+    
+    throw new \RuntimeException("Front controller error, expected \Carrot\Core\Interfaces\ResponseInterface instance from controller method return, got '{$type}' instead. Destination history:{$destination_history}.");
 }
 
 // Send the response
