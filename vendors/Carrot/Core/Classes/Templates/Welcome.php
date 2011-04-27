@@ -330,7 +330,7 @@
 	   </li>
 	</ul>
 	
-	<h3>Creating your own controller</h3>
+	<h3>Guide: Creating your own controller</h3>
 	<p>
 		Carrot uses the universal autoloader as defined in the <a href="http://groups.google.com/group/php-standards/web/psr-0-final-proposal?pli=1">PSR-0 Final Proposal</a>,
 		which means your controller have at least two namespace (<code>Vendor\Namespace</code>) and properly placed. For starters,
@@ -390,7 +390,7 @@ class HomeController
 		of <code>HomeController</code> via a dependency registration file.
 	</p>
 	
-	<h3>Registering dependencies to the dependency injection container</h3>
+	<h3>Guide: Registering dependencies to the dependency injection container</h3>
 	
 	<p>
 		Carrot's default <code>DependencyInjectionContainer</code> (DIC) uses registration files to store DIC configuration. Each
@@ -449,7 +449,7 @@ $dic->register('\ACME\Site\Controllers\HomeController@main', function($dic)
 		<code>HomeController::sample()</code>.
 	</p>
 	
-	<h3>Adding a route that points to the controller we just created</h3>
+	<h3>Guide: Adding a route that points to the controller we just created</h3>
 	
 	<p>
 		Carrot's default <code>Router</code> uses a simplified version of the chain of responsibility pattern. For each route,
@@ -496,7 +496,7 @@ $router->add(function($request, $session, $router)
 		Potencier for his awesome dependency injection slide and the people
 		at <a href="http://chat.stackoverflow.com/rooms/11/php">Stack Overflow PHP Chat</a>, especially Gordon,
 		ircmaxell, edorian, markus, zerkms, without them this thing wouldn't get done, so I'm gonna put their nick
-		here even though they protest.
+		here even though they might protest.
 	</p>
 </div>
 </body>
