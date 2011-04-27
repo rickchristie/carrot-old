@@ -12,9 +12,9 @@
 /**
  * Destination
  * 
- * Represents the destination, Router's responsibility is to check the routes
- * and return a valid Destination object. The front controller will read this
- * object, instantiate the controller, and run the method needed.
+ * Represents a Destination, namely, the controller's DIC item ID (for instantiation),
+ * the method to call and the arguments to pass to the method. Returned by Router
+ * class, used by the front controller.
  *
  * @author		Ricky Christie <seven.rchristie@gmail.com>
  * @license		http://www.opensource.org/licenses/mit-license.php MIT License
@@ -26,7 +26,7 @@ namespace Carrot\Core\Classes;
 class Destination
 {
 	/**
-	 * @var string Controller class' DIC item ID.
+	 * @var string Controller's DIC item ID.
 	 */
 	protected $controller_dic_id;
 	
@@ -41,9 +41,9 @@ class Destination
 	protected $params;
 	
 	/**
-	 * @var string Bundle name means the two top level namespace (\Vendor\Namespace).
+	 * @var string Package name means the two top level namespace (\Vendor\Namespace).
 	 */
-	protected $bundle_name;
+	protected $package_name;
 	
 	/**
 	 * @var string The name of the controller class derived from the DIC ID.
@@ -59,7 +59,7 @@ class Destination
 	 * <code>
 	 * $destination = new Destination
 	 * (
-	 *     '\Vendor\Namespace\Subnamespace\BlogController:main',
+	 *     '\Vendor\Namespace\Subnamespace\BlogController@main',
 	 *     'index',
 	 *     array(5, 'Foo', 'Bar')
 	 * );
@@ -81,7 +81,7 @@ class Destination
 		$this->method = $method;
 		$this->params = $params;
 		$this->class_name = $this->getClassNameFromID($controller_dic_id);
-		$this->bundle_name = $this->getBundleNameFromID($controller_dic_id);
+		$this->package_name = $this->getPackageNameFromID($controller_dic_id);
 	}
 	
 	/**
@@ -118,14 +118,14 @@ class Destination
 	}
 	
 	/**
-	 * Returns the bundle name (\Vendor\Namespace).
+	 * Returns the package name (\Vendor\Namespace).
 	 *
-	 * @return string Bundle name (\Vendor\Namespace).
+	 * @return string Package name (\Vendor\Namespace).
 	 *
 	 */
-	public function getBundleName()
+	public function getPackageName()
 	{
-		return $this->bundle_name;
+		return $this->package_name;
 	}
 	
 	/**
@@ -142,7 +142,13 @@ class Destination
 	// ---------------------------------------------------------------
 	
 	/**
-	 * Validates DIC configuration item ID.
+	 * Validates DIC registration ID.
+	 *
+	 * The following rules must be satisfied:
+	 * 
+	 *  1. Must have at least two namespaces to form a package name (\Vendor\Namespace).
+	 *  2. Must be a fully qualified name (with starting backslash).
+	 *  3. Must have a configuration name after the FQN, separated by '@'.
 	 *
 	 * @param string $id DIC item ID.
 	 * @return bool TRUE if valid, FALSE otherwise.
@@ -176,21 +182,21 @@ class Destination
 	}
 	
 	/**
-	 * Gets the bundle name (\Vendor\Namespace) from DIC item ID.
+	 * Gets the package name (\Vendor\Namespace) from DIC item ID.
 	 *
-	 * Bundle name means the top level namespace (vendor) and the namespace
-	 * of the class, according to PSR-0 Final Proposal. 
+	 * Package name means the top level namespace (vendor) and the namespace
+	 * of the class, according to PSR-0 Final Proposal.
 	 *
 	 * @param string $id DIC item ID.
-	 * @return string Bundle name (\Vendor\Namespace).
+	 * @return string Package name (\Vendor\Namespace).
 	 *
 	 */
-	protected function getBundleNameFromID($id)
+	protected function getPackageNameFromID($id)
 	{
 		$id_exploded = explode('@', $id);
 		$namespaces = explode('\\', $id_exploded[0]);
 		$fragment_saved = 0;
-		$bundle_name = '';
+		$package_name = '';
 		
 		// Get the first two fragment
 		foreach ($namespaces as $fragment)
@@ -202,16 +208,16 @@ class Destination
 			
 			if (!empty($fragment))
 			{
-				$bundle_name .= '\\' . $fragment;
+				$package_name .= '\\' . $fragment;
 				$fragment_saved++;
 			}
 		}
 		
 		if ($fragment_saved != 2)
 		{
-			throw new \InvalidArgumentException("Error in getting bundle name from DIC configuration item, '{$id}' does not have a proper namespace.");
+			throw new \InvalidArgumentException("Error in getting package name from DIC configuration item, '{$id}' does not have a proper namespace.");
 		}
 		
-		return $bundle_name;
+		return $package_name;
 	}
 }

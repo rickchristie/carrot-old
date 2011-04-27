@@ -3,7 +3,7 @@
 /**
  * Default dependency registration file for {\Carrot\Core}
  *
- * Registers the dependencies of the core bundle of Carrot framework.
+ * Registers the dependencies of Carrot framework's core classes.
  * This file is defines default dependencies between core classes
  * used by Carrot.
  *
@@ -25,8 +25,9 @@
  * function. You can replace the Request and Session object with
  * your own custom Request and Session class.
  *
- * @param mixed $request Preferably a Request object.
- * @param mixed $session Preferably a Session object.
+ * @param mixed $request Preferably a Request object, used as an argument when calling anonymous functions.
+ * @param mixed $session Preferably a Session object, used as an argument when calling anonymous functions.
+ * @param Destination $no_matching_route_destination Default destination to return when there is no matching route.
  * 
  */
 
@@ -35,7 +36,8 @@ $dic->register('\Carrot\Core\Classes\Router@main', function($dic)
 	return new \Carrot\Core\Classes\Router
 	(
 		$dic->getInstance('\Carrot\Core\Classes\Request@shared'),
-		$dic->getInstance('\Carrot\Core\Classes\Session@shared')
+		$dic->getInstance('\Carrot\Core\Classes\Session@shared'),
+		new \Carrot\Core\Classes\Destination('\Carrot\Core\Classes\SampleController@main', 'pageNotFound')
 	);
 });
 
@@ -50,11 +52,11 @@ $dic->register('\Carrot\Core\Classes\Router@main', function($dic)
  * we save an instance of it as shared.
  *
  * @param string $server_protocol Either 'HTTPS 1.0' or 'HTTP 1.1', used to set the status code to 500.
- * @param bool $display_errors Optional. When set to TRUE, will use development error/exception templates, otherwise will use production error/exception templates.
- * @param string $error_template Optional. Absolute path to the production error template. Used when ErrorHandler::display_errors is FALSE.
- * @param string $exception_template Optional. Absolute path to the production uncaught exception template. Used when ErrorHandler::display_errors is FALSE. 
- * @param string $error_template_div Optional. Absolute path to the development error template. Used when ErrorHandler::display_errors is TRUE.
- * @param string $exception_template_div Optional. Absolute path to the development uncaught exception template. Used when ErrorHandler::display_errors is TRUE.
+ * @param bool $development_mode Optional. When set to TRUE, will use development error/exception templates, otherwise will use production error/exception templates.
+ * @param string $error_template Optional. Absolute path to the production error template. Used when ErrorHandler::development_mode is FALSE.
+ * @param string $exception_template Optional. Absolute path to the production uncaught exception template. Used when ErrorHandler::development_mode is FALSE. 
+ * @param string $error_template_div Optional. Absolute path to the development error template. Used when ErrorHandler::development_mode is TRUE.
+ * @param string $exception_template_div Optional. Absolute path to the development uncaught exception template. Used when ErrorHandler::development_mode is TRUE.
  *
  */
 

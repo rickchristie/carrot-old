@@ -12,9 +12,8 @@
 /**
  * Default Response
  * 
- * Represents the response of the controller. Views and controllers can build their
- * responses, which then can be appended on each other and returned to be examined
- * or sent. Supports HTTP/1.0 and HTTP/1.1 only.
+ * Carrot's default ResponseInterface implementation. Should be used by controllers
+ * to built their responses. Supports only HTTP/1.0 and HTTP/1.1.
  *
  * @author		Ricky Christie <seven.rchristie@gmail.com>
  * @license		http://www.opensource.org/licenses/mit-license.php MIT License
@@ -43,17 +42,12 @@ class Response implements \Carrot\Core\Interfaces\ResponseInterface
 	/**
 	 * @var int Variable containing the status code. Defaults to 200 (OK).
 	 */
-	protected $status = '';
+	protected $status = 200;
 	
 	/**
 	 * @var array The protocol to be written in header when returning status codes.
 	 */
 	protected $server_protocol;
-	
-	/**
-	 * @var bool TRUE if Response:send() is called, FALSE otherwise.
-	 */
-	protected $sent = FALSE;
 	
 	/**
 	 * @var array Array containing the list of status codes and their default message.
@@ -193,9 +187,9 @@ class Response implements \Carrot\Core\Interfaces\ResponseInterface
 	/**
 	 * Sets the status code.
 	 *
-	 * Checks if the status code is valid. If custom message is not set, default message
-	 * will be used instead. If the status code is invalid it will simply return FALSE.
-	 * This method also records the status code set in $this->status_code.
+	 * If custom message is not set, default message will be used instead.
+	 * If the status code is invalid it will simply return FALSE. This method
+	 * also records the status code set in $this->status_code.
 	 *
 	 * @param int $code HTTP status code.
 	 * @param string $message Message to accompany the status code.
@@ -206,6 +200,11 @@ class Response implements \Carrot\Core\Interfaces\ResponseInterface
 	{
 		if (!headers_sent())
 		{
+			if (!array_key_exists($code, $this->status_code_messages))
+			{
+				return FALSE;
+			}
+			
 			if (empty($message) && isset($this->status_code_messages[$code]))
 			{
 				$message = $this->status_code_messages[$code];
@@ -222,11 +221,11 @@ class Response implements \Carrot\Core\Interfaces\ResponseInterface
 	}
 	
 	/**
-	 * Creates a quick redirection response.
+	 * Changes the response into a quick redirection response.
 	 * 
-	 * This method automatically clears all the headers. If headers 
-	 * are sent already, it simply returns FALSE. It doesn't exit the
-	 * PHP processing for you, so you can still do some processing
+	 * This method automatically clears all the headers. If headers are sent
+	 * already, it simply returns FALSE (and does not attempt to redirect). It
+	 * doesn't exit the PHP processing for you, so you can still do some processing
 	 * after we sent the redirection header.
 	 *
 	 * @param string $location The URL.
@@ -248,18 +247,16 @@ class Response implements \Carrot\Core\Interfaces\ResponseInterface
 	/**
 	 * Sends the response to the client.
 	 *
-	 * Echoes out the body of the response, which also automatically
-	 * sends the headers. Although this class already records each
-	 * headers set by Response::setHeader(), it doesn't record headers
-	 * that are set directly by the user using PHP header() function -
-	 * so it uses headers_list() to get the actual headers sent and
-	 * stores them in Response::headers_list.
+	 * Echoes out the body of the response, which also automatically sends the headers.
+	 * Although this class already records each headers set by Response::setHeader(), it
+	 * doesn't record headers that are set directly by the user using PHP header() function -
+	 * so it uses headers_list() to get the actual headers sent and stores them in
+	 * Response::headers_list.
 	 *
 	 */
 	public function send()
 	{
 		$this->headers_list = headers_list();
-		$this->sent = TRUE;
 		echo $this->body;
 	}
 	
@@ -305,5 +302,19 @@ class Response implements \Carrot\Core\Interfaces\ResponseInterface
 	public function getHeaderRecords()
 	{
 		return $this->headers;
+	}
+	
+	/**
+	 * Returns the actual headers sent, obtained via headers_list().
+	 *
+	 * This function will return an empty array if the method Response::send()
+	 * is not called yet.
+	 *
+	 * @return array 
+	 *
+	 */
+	public function getHeaderList()
+	{
+		return $this->headers_list;
 	}
 }

@@ -17,48 +17,54 @@
  *
  * This DIC implementation uses anonymous functions to describe how to create
  * an instance without actually creating it. You use it by registering an anonymous
- * function that returns the class instance to a key/ID:
+ * function that returns the class instance to an identification:
  *
  * <code>
- * $dic->register('\Carrot\Core\Classes\DependencyInjectionContainer:main', function($dic)
+ * $dic->register('\Carrot\Core\Classes\DependencyInjectionContainer@main', function($dic)
  * {
  *    return new \Carrot\Core\Classes\DependencyInjectionContainer();
  * });
  * </code>
  *
- * You have to use a fully qualified class name plus another name separated by colon
- * as the registration name/ID. This way you can have different anonymous functions
+ * You can then call it using its identification:
+ *
+ * <code>
+ * $object = $dic->getInstance('\Carrot\Core\Classes\DependencyInjectionContainer@main');
+ * </code>
+ *
+ * You have to use a fully qualified class name plus a configuration name separated
+ * by '@' sign as the registration ID. This way you can have different anonymous functions
  * registered on the same class:
  *
  * <code>
- * \Carrot\Library\MySQLDatabase:primary_database
- * \Carrot\Library\MySQLDatabase:backup_database
+ * \Vendor\Namespace\ClassName@configuration_name
+ * \Carrot\Library\MySQLDatabase@primary_database
+ * \Carrot\Library\MySQLDatabase@backup_database
  * </code>
+ *
+ * Since this class adheres to the PSR-0 universal autoloader final proposal, it expects
+ * at least two namespaces, the vendor name and the namespace (\Vendor\Namespace).
  * 
- * Namespaces must also adhere to the PSR-O Final Proposal, this class expects at
- * least two namespace, the vendor name and the namespace. You don't have to register
- * your dependencies all at once. You can separate them according to their 'bundle',
- * which is a term used to describe a top level namespace after the vendor name.
+ * Whenever this file mentions 'package' or 'package name' it meant the combination
+ * of Vendor and Namespace, with a starting backslash (\Vendor\Namespace).
  *
- * When someone tries to load an item that doesn't exist:
+ * Dependency registration is done in dependency registration files. Each package name
+ * (\Vendor\Namespace) have their own registration file. Registration file paths for
+ * each package are determined via a constructor parameter. If no registration file path
+ * is defined for the package in question, the DIC will try to find '_dicregistration.php'
+ * file at the package's folder.
  *
- * <code>
- * // Loading an item that hasn't been registered yet
- * $db = $dic->getInstance('\Carrot\Library\MySQLDatabase:primary');
- * </code>
- *
- * This class will search for registration file paths for the bundle name, in this
- * example, the bundle name is '\Carrot\Library'. If user defined registration file
- * path for that bundle doesn't exist, it will search the namespace folder for 
- * '_dicregistration.php' and load it. This allows you to load any item you want
- * without worrying if it has been registered or not.
+ * When someone tries to load an item that hasn't been registered yet, this class will
+ * try to load the registration file path for the package in question. You can safely
+ * get the instance of any item without worrying it has been registered or not.
  *
  * If after loading the registration file the item still doesn't exist, it will
- * try to instantiate the class without any construction parameter.
+ * try to instantiate the class without any construction parameter. This will throw
+ * a warning if your class needs constructor parameter(s).
  *
- * Default behavior is to instantiate new object every time it is needed, if
- * you want an object to have a singleton lifecycle, save an instance of the
- * object to the cache before returning it:
+ * Default behavior is to instantiate new object every time it is needed (transient
+ * lifecycle). If you want an object to have a singleton lifecycle, save an instance
+ * of the object to the cache before returning it:
  *
  * <code>
  * // We don't want another database instance created
@@ -86,14 +92,14 @@ namespace Carrot\Core\Classes;
 class DependencyInjectionContainer
 {
 	/**
-	 * @var array List of first bundles whose dependency registration file has been loaded (if exists).
+	 * @var array List of package names whose dependency registration file has been loaded (if exists).
 	 */
-	protected $bundles_loaded = array();
+	protected $dependency_registration_files_loaded = array();
 	
 	/**
-	 * @var type List of dependency registration file paths along with the bundle they belong to.
+	 * @var type List of dependency registration file paths along with the package name they belong to.
 	 */
-	protected $bundle_registration_file_paths = array();
+	protected $dependency_registration_file_paths = array();
 	
 	/**
 	 * @var array List of formatted configuration items with their registration ID.
@@ -113,26 +119,27 @@ class DependencyInjectionContainer
 	/**
 	 * Constructs a DIC object.
 	 *
-	 * @param string $root_directory Path to the root directory, without trailing slash.
-	 * @param array $bundle_registration_file_paths List of dependency registration file paths along with the bundle they belong too.
+	 * @param string $root_directory Path to the root directory to search for default dependency registration files, without trailing slash.
+	 * @param array $dependency_registration_file_paths List of dependency registration file paths along with the package name they belong too.
 	 *
 	 */
-	public function __construct($root_directory, array $bundle_registration_file_paths)
+	public function __construct($root_directory, array $dependency_registration_file_paths)
 	{
 		$this->root_directory = $root_directory;
-		$this->bundle_registration_file_paths = $bundle_registration_file_paths;
+		$this->dependency_registration_file_paths = $dependency_registration_file_paths;
 	}
 	
 	/**
 	 * Registers a DIC item.
 	 *
-	 * An example, registering \Carrot\Library\Config's parameters:
+	 * Example usage, registering an instantiation configuration for a Config
+	 * object:
 	 *
 	 * <code> 
 	 * $dic->register('\Carrot\Library\Config@main', function($dic)
 	 * {
 	 *    // Get the request instance to fill in details
-	 *    $request = $dic->getInstance('\Carrot\Core\Classes\Request:shared');
+	 *    $request = $dic->getInstance('\Carrot\Core\Classes\Request@shared');
 	 *
 	 *    // Returns the instance
 	 *    return new \Carrot\Library\Config
@@ -146,8 +153,9 @@ class DependencyInjectionContainer
 	 *
 	 * The DIC item registration ID must use fully qualified name. This is so
 	 * that we can determine which namespace it belongs to. After the fully
-	 * qualified name, type the item name prefixed by colon (:). You can
-	 * register two different instances of the same class.
+	 * qualified name, type the configuration name prefixed by '@'. You can
+	 * register two different instances of the same class with different
+	 * configuration name:
 	 *
 	 * <code>
 	 * \Carrot\Library\Config@main
@@ -177,7 +185,6 @@ class DependencyInjectionContainer
 		
 		$this->items[$id]['function'] = $function;
 		$this->items[$id]['class_name'] = $this->getClassNameFromID($id);
-		$this->items[$id]['bundle'] = $this->getBundleNameFromID($id);
 	}
 	
 	/**
@@ -187,7 +194,7 @@ class DependencyInjectionContainer
 	 * instantiated once (singleton lifecycle):
 	 *
 	 * <code> 
-	 * $dic->register('\Carrot\Library\Config:shared', function($dic)
+	 * $dic->register('\Carrot\Library\Config@shared', function($dic)
 	 * {
 	 *    // Instantiate the object first
 	 *    $config = new \Carrot\Library\Config
@@ -197,7 +204,7 @@ class DependencyInjectionContainer
 	 *    );
 	 *
 	 *    // Save as shared
-	 *    $dic->saveShared('\Carrot\Library\Config:shared', $config);
+	 *    $dic->saveShared('\Carrot\Library\Config@shared', $config);
 	 *    
 	 *    // Return the object
 	 *    return $config;
@@ -241,13 +248,14 @@ class DependencyInjectionContainer
 	 * Use it to get an instance of a registered DIC item:
 	 * 
 	 * <code>
-	 * $object = $dic->getInstance('\Carrot\Library\Config:main');
+	 * $object = $dic->getInstance('\Carrot\Library\Config@main');
 	 * </code>
 	 *
 	 * If the registration item does not exist, it will try to load the dependency
-	 * registration file. It will first check for user defined path for the bundle.
-	 * If not found, it will try to load '_dicregistration.php' inside the namespace's
-	 * folder, for the example above, it is:
+	 * registration file. It will first check for user defined registration file path
+	 * for the package, if not found, it will try to load '_dicregistration.php' inside
+	 * the package's folder, for '\Carrot\Library\Config', the default registration
+	 * file path is:
 	 *
 	 * \path\to\root\directory\Carrot\Library\_dicregisration.php
 	 *
@@ -271,8 +279,8 @@ class DependencyInjectionContainer
 			return $this->shared[$id];
 		}
 		
-		// Load bundle if we haven't already
-		$this->loadBundle($this->getBundleNameFromID($id));
+		// Load dependency registration file for the package in question if we haven't already
+		$this->loadDependencyRegistrationFile($this->getPackageNameFromID($id));
 		$class_name = $this->getClassNameFromID($id);
 		
 		// If it doesn't exist, try to instantiate it without parameters
@@ -302,6 +310,9 @@ class DependencyInjectionContainer
 	/**
 	 * Returns the root directory (without trailing slash).
 	 *
+	 * Root directory is the directory where the packages are contained.
+	 * It's the path where we look for default _dicregistration.php files.
+	 *
 	 * @return string
 	 *
 	 */
@@ -319,36 +330,42 @@ class DependencyInjectionContainer
 	 * will mark a registration file as loaded even if the file
 	 * doesn't exist.
 	 *
-	 * @param string $bundle_name Bundle name (\Vendor\Namespace). 
+	 * @param string $package_name Package name (\Vendor\Namespace). 
 	 *
 	 */
-	protected function loadBundle($bundle_name)
+	protected function loadDependencyRegistrationFile($package_name)
 	{	
-		if (in_array($bundle_name, $this->bundles_loaded))
+		if (in_array($package_name, $this->dependency_registration_files_loaded))
 		{
 			return;
 		}
 		
 		// Default _dicregistration.php path
-		$bundle_registration_file_path = $this->root_directory . str_ireplace('\\', DIRECTORY_SEPARATOR, $bundle_name) . DIRECTORY_SEPARATOR . '_dicregistration.php';
+		$package_registration_file_path = $this->root_directory . str_ireplace('\\', DIRECTORY_SEPARATOR, $package_name) . DIRECTORY_SEPARATOR . '_dicregistration.php';
 		
-		// Replace default bundle path with user defined _dicregistration.php path (if exists)
-		if (isset($this->bundle_registration_file_paths[$bundle_name]))
+		// Replace default package path with user defined _dicregistration.php path (if exists)
+		if (isset($this->dependency_registration_file_paths[$package_name]))
 		{
-			$bundle_registration_file_path = $this->bundle_registration_file_paths[$bundle_name];
+			$package_registration_file_path = $this->dependency_registration_file_paths[$package_name];
 		}
 		
-		if (file_exists($bundle_registration_file_path))
+		if (file_exists($package_registration_file_path))
 		{
 			$dic = $this;
-			require_once($bundle_registration_file_path);
+			require_once($package_registration_file_path);
 		}
 		
-		$this->bundles_loaded[] = $bundle_name;
+		$this->dependency_registration_files_loaded[] = $package_name;
 	}
 	
 	/**
-	 * Validates DIC configuration item ID.
+	 * Validates DIC registration ID.
+	 *
+	 * The following rules must be satisfied:
+	 * 
+	 *  1. Must have at least two namespaces to form a package name (\Vendor\Namespace).
+	 *  2. Must be a fully qualified name (with starting backslash).
+	 *  3. Must have a configuration name after the FQN, separated by '@'.
 	 *
 	 * @param string $id DIC item ID.
 	 * @return bool TRUE if valid, FALSE otherwise.
@@ -382,21 +399,21 @@ class DependencyInjectionContainer
 	}
 	
 	/**
-	 * Gets the bundle name (\Vendor\Namespace) from DIC item ID.
+	 * Gets the package name (\Vendor\Namespace) from DIC item ID.
 	 *
-	 * Bundle name means the top level namespace (vendor) and the namespace
-	 * of the class, according to PSR-0 Final Proposal. 
+	 * Package name means the top level namespace (vendor) and the namespace
+	 * of the class, according to PSR-0 Final Proposal.
 	 *
 	 * @param string $id DIC item ID.
-	 * @return string Bundle name (\Vendor\Namespace).
+	 * @return string Package name (\Vendor\Namespace).
 	 *
 	 */
-	protected function getBundleNameFromID($id)
+	protected function getPackageNameFromID($id)
 	{
 		$id_exploded = explode('@', $id);
 		$namespaces = explode('\\', $id_exploded[0]);
 		$fragment_saved = 0;
-		$bundle_name = '';
+		$package_name = '';
 		
 		// Get the first two fragment
 		foreach ($namespaces as $fragment)
@@ -408,16 +425,16 @@ class DependencyInjectionContainer
 			
 			if (!empty($fragment))
 			{
-				$bundle_name .= '\\' . $fragment;
+				$package_name .= '\\' . $fragment;
 				$fragment_saved++;
 			}
 		}
 		
 		if ($fragment_saved != 2)
 		{
-			throw new \InvalidArgumentException("Error in getting bundle name from DIC configuration item, '{$id}' does not have a proper namespace.");
+			throw new \InvalidArgumentException("Error in getting package name from DIC configuration item, '{$id}' does not have a proper namespace.");
 		}
 		
-		return $bundle_name;
+		return $package_name;
 	}
 }

@@ -12,9 +12,12 @@
 /**
  * Error Handler
  * 
- * Default error and exception handler used by Carrot. You can replace this
- * with your own error/exception handler class by editing /config.php. Your error
- * handler class must implement the ErrorHandlerInterface.
+ * Carrot's default error and exception handler class. It loads default templates
+ * located at 'Templates' folder in this file's directory. You can replace the templates
+ * with your own. Sets development_mode at constructor initialization.
+ *
+ * You can replace this class with your own error/exception handler by editing
+ * config.php. Your class must implement \Carrot\Core\Classes\ErrorHandlerInterface.
  *
  * @author		Ricky Christie <seven.rchristie@gmail.com>
  * @license		http://www.opensource.org/licenses/mit-license.php MIT License
@@ -31,27 +34,27 @@ class ErrorHandler implements \Carrot\Core\Interfaces\ErrorHandlerInterface
 	protected $set = FALSE;
 	
 	/**
-	 * @var bool When set to TRUE, development error/exception page will be used instead.
+	 * @var bool When set to TRUE, development error/exception page will be used instead, also affects error_reporting and display_errors.
 	 */
-	protected $display_errors;
+	protected $development_mode;
 	
 	/**
-	 * @var string Absolute path to the production error template. Used when ErrorHandler::display_errors is FALSE.
+	 * @var string Absolute path to the production error template. Used when ErrorHandler::development_mode is FALSE.
 	 */
 	protected $error_template;
 	
 	/**
-	 * @var string Absolute path to the production uncaught exception template. Used when ErrorHandler::display_errors is FALSE. 
+	 * @var string Absolute path to the production uncaught exception template. Used when ErrorHandler::development_mode is FALSE. 
 	 */
 	protected $exception_template;
 	
 	/**
-	 * @var string Absolute path to the development error template. Used when ErrorHandler::display_errors is TRUE.
+	 * @var string Absolute path to the development error template. Used when ErrorHandler::development_mode is TRUE.
 	 */
 	protected $error_template_dev;
 	
 	/**
-	 * @var string Absolute path to the development uncaught exception template. Used when ErrorHandler::display_errors is TRUE.
+	 * @var string Absolute path to the development uncaught exception template. Used when ErrorHandler::development_mode is TRUE.
 	 */
 	protected $exception_template_dev;
 	
@@ -59,32 +62,37 @@ class ErrorHandler implements \Carrot\Core\Interfaces\ErrorHandlerInterface
 	 * Constructs the error handler.
 	 * 
 	 * @param string $server_protocol Either 'HTTPS 1.0' or 'HTTP 1.1', used to set the status code to 500.
-	 * @param bool $display_errors Optional. When set to TRUE, will use development error/exception templates, otherwise will use production error/exception templates.
-	 * @param string $error_template Optional. Absolute path to the production error template. Used when ErrorHandler::display_errors is FALSE.
-	 * @param string $exception_template Optional. Absolute path to the production uncaught exception template. Used when ErrorHandler::display_errors is FALSE. 
-	 * @param string $error_template_div Optional. Absolute path to the development error template. Used when ErrorHandler::display_errors is TRUE.
-	 * @param string $exception_template_div Optional. Absolute path to the development uncaught exception template. Used when ErrorHandler::display_errors is TRUE.
+	 * @param bool $development_mode Optional. When set to TRUE, will use development error/exception templates, otherwise will use production error/exception templates.
+	 * @param string $error_template Optional. Absolute path to the production error template. Used when ErrorHandler::development_mode is FALSE.
+	 * @param string $exception_template Optional. Absolute path to the production uncaught exception template. Used when ErrorHandler::development_mode is FALSE. 
+	 * @param string $error_template_div Optional. Absolute path to the development error template. Used when ErrorHandler::development_mode is TRUE.
+	 * @param string $exception_template_div Optional. Absolute path to the development uncaught exception template. Used when ErrorHandler::development_mode is TRUE.
 	 *
 	 */
-	public function __construct ($server_protocol, $display_errors = FALSE, $error_template = '', $exception_template = '', $error_template_dev = '', $exception_template_dev = '')
+	public function __construct ($server_protocol, $development_mode = FALSE, $error_template = '', $exception_template = '', $error_template_dev = '', $exception_template_dev = '')
 	{
-		$display_errors = (bool) $display_errors;
+		$development_mode = (bool) $development_mode;
 		
-		if ($display_errors)
+		if ($development_mode)
 		{
 			error_reporting(E_STRICT | E_ALL);
+			ini_set('display_errors', 1);
 		}
 		else
 		{
 			error_reporting(0);
+			ini_set('display_errors', 0);
 		}
 		
+		$sep = DIRECTORY_SEPARATOR;
+		$curdir = __DIR__;
 		$this->server_protocol = $server_protocol;
-		$this->display_errors = $display_errors;
-		$this->error_template = $this->getDefaultIfEmpty($error_template, __DIR__ . DIRECTORY_SEPARATOR . 'Templates' . DIRECTORY_SEPARATOR . 'ErrorPage.php');
-		$this->exception_template = $this->getDefaultIfEmpty($exception_template, __DIR__ . DIRECTORY_SEPARATOR . 'Templates' . DIRECTORY_SEPARATOR . 'ExceptionPage.php');
-		$this->error_template_dev = $this->getDefaultIfEmpty($error_template_dev, __DIR__ . DIRECTORY_SEPARATOR . 'Templates' . DIRECTORY_SEPARATOR . 'ErrorPageDev.php');
-		$this->exception_template_dev = $this->getDefaultIfEmpty($exception_template_dev, __DIR__ . DIRECTORY_SEPARATOR . 'Templates' . DIRECTORY_SEPARATOR . 'ExceptionPageDev.php');
+		$this->development_mode = $development_mode;
+		
+		$this->error_template = $this->getDefaultIfEmpty($error_template, "{$curdir}{$sep}Templates{$sep}ErrorPage.php");
+		$this->exception_template = $this->getDefaultIfEmpty($exception_template, "{$curdir}{$sep}Templates{$sep}ExceptionPage.php");
+		$this->error_template_dev = $this->getDefaultIfEmpty($error_template_dev, "{$curdir}{$sep}Templates{$sep}ErrorPageDev.php");
+		$this->exception_template_dev = $this->getDefaultIfEmpty($exception_template_dev, "{$curdir}{$sep}Templates{$sep}ExceptionPageDev.php");
 	}
 	
 	/**
@@ -121,8 +129,8 @@ class ErrorHandler implements \Carrot\Core\Interfaces\ErrorHandlerInterface
 	 * Error handler method.
 	 *
 	 * Carrot's default error handler. Will call error_log() and use PHP's default
-	 * error logger. Displays production error template when ErrorHandler::display_errors
-	 * is set to FALSE, otherwise will display development error template.
+	 * error logger. Displays development error template when ErrorHandler::development_mode
+	 * is set to TRUE, otherwise will display production error template.
 	 * 
 	 * @param $err_number
 	 * @param $err_string
@@ -204,7 +212,7 @@ class ErrorHandler implements \Carrot\Core\Interfaces\ErrorHandlerInterface
 			header($this->server_protocol . ' 500 Internal Server Error');
 		}
 		
-		if ($this->display_errors)
+		if ($this->development_mode)
 		{
 			require($this->error_template_dev);
 		}
@@ -220,8 +228,8 @@ class ErrorHandler implements \Carrot\Core\Interfaces\ErrorHandlerInterface
 	 * Exception handler method.
 	 *
 	 * Carrot's default exception handler. Will call error_log() and use PHP's
-	 * default error logger. Displays production exception template when ErrorHandler::display_errors
-	 * is set to FALSE, otherwise will display development exception template.
+	 * default error logger. Displays development exception template when ErrorHandler::development_mode
+	 * is set to TRUE, otherwise will display production exception template.
 	 * 
 	 * @param Exception $exception
 	 * 
@@ -249,7 +257,7 @@ class ErrorHandler implements \Carrot\Core\Interfaces\ErrorHandlerInterface
 			header($this->server_protocol . ' 500 Internal Server Error');
 		}
 		
-		if ($this->display_errors)
+		if ($this->development_mode)
 		{
 			require($this->exception_template_dev);
 		}
@@ -281,9 +289,17 @@ class ErrorHandler implements \Carrot\Core\Interfaces\ErrorHandlerInterface
 	
 	// ---------------------------------------------------------------
 	
-	protected function getDefaultIfEmpty($value, $default)
+	/**
+	 * Returns default value if the user value is empty().
+	 *
+	 * @param mixed $user_value User defined value.
+	 * @param mixed $default Default value.
+	 * @return mixed Default value if the user defined value is empty, returns user defined value otherwise.
+	 *
+	 */
+	protected function getDefaultIfEmpty($user_value, $default)
 	{
-		if (empty($value))
+		if (empty($user_value))
 		{
 			return $default;
 		}
@@ -291,10 +307,17 @@ class ErrorHandler implements \Carrot\Core\Interfaces\ErrorHandlerInterface
 		return $value;
 	}
 	
+	/**
+	 * Returns variable dump in a string, encoding it using htmlentities().
+	 *
+	 * @param mixed $var Variable to be dumped.
+	 * @return string The variable dump, safe for HTML output.
+	 *
+	 */
 	protected function getVarDump($var)
 	{
 		ob_start();
 		var_dump($var);
-		return htmlspecialchars(ob_get_clean());
+		return htmlentities(ob_get_clean());
 	}
 }

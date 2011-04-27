@@ -12,10 +12,11 @@
 /**
  * Request
  * 
- * Represents the actual request to the server. Accepts and stores $_SERVER,
- * $_GET, $_POST, $_FILES, $_COOKIE, $_REQUEST, $_ENV. Supports HTTP/HTTPS
- * protocol only. This class assumes that the main request handler is always
- * named 'index.php'.
+ * Carrot's default Request class, represents an actual request to the server.
+ * Accepts and stores $_SERVER, $_GET, $_POST, $_FILES, $_COOKIE, $_REQUEST,
+ * and $_ENV as immutable arrays, also generates the application request uri
+ * segments. This class assumes that the main request handler
+ * is always named 'index.php'.
  *
  * @author		Ricky Christie <seven.rchristie@gmail.com>
  * @license		http://www.opensource.org/licenses/mit-license.php MIT License
@@ -73,6 +74,14 @@ class Request
 	
 	/**
 	 * Constructs the Request object.
+	 *
+	 * Although this class can guess the base path of this application, it is
+	 * recommended that you hardcode the base path in request object instantiation
+	 * to mitigate security risks.
+	 *
+	 * Base path is the relative path from the server root to the folder where the
+	 * main request handler (assumed to be /index.php) file resides, with starting
+	 * and trailing slash.
 	 *
 	 * @param array $server $_SERVER variable.
 	 * @param array $get $_GET variable.
@@ -274,11 +283,13 @@ class Request
 	 * file, we will use SCRIPT_NAME to get the path from root to the
 	 * request handler. This method will be called if base path is not
 	 * given in the constructor.
-	 * 
-	 * << WARNING >> - When you can, specify the base path manually -
-	 * guessing the base path using SCRIPT_NAME is a security risk.
 	 *
 	 * Base path always have starting and trailing slash.
+	 * 
+	 * >> WARNING <<
+	 * 
+	 * When you can, specify the base path manually - guessing the base
+	 * path using SCRIPT_NAME is a security risk.
 	 *
 	 * @return string Path from root to the request handler.
 	 *

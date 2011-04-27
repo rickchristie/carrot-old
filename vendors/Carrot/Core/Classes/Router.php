@@ -12,8 +12,8 @@
 /**
  * Router
  * 
- * Carrot's default Router. Uses chain of responsibility to store functions that
- * try to determine the destination. You can think of each anonymous function as
+ * Carrot's default Router. Uses chain of responsibility to store anonymous functions
+ * that try to determine the destination. You can think of each anonymous function as
  * a Closure object representing a route.
  *
  * @author		Ricky Christie <seven.rchristie@gmail.com>
@@ -31,7 +31,7 @@ class Router implements \Carrot\Core\Interfaces\RouterInterface
 	protected $chains = array();
 	
 	/**
-	 * @var int The function index currently active.
+	 * @var int The function index currently active, set initially as -1, means no index is active.
 	 */
 	protected $active_index = -1;
 	
@@ -46,18 +46,19 @@ class Router implements \Carrot\Core\Interfaces\RouterInterface
 	protected $session;
 	
 	/**
-	 * @var Destination Default destination if no matching route. 
+	 * @var Destination Default Destination object to return if there's no matching route. 
 	 */
 	protected $no_matching_route_destination;
 	
 	/**
 	 * Constructs a Router object.
 	 *
-	 * @param mixed $request Preferably a Request object.
-	 * @param mixed $session Preferably a Session object.
+	 * @param mixed $request Preferably a Request object, used as an argument when calling anonymous functions.
+	 * @param mixed $session Preferably a Session object, used as an argument when calling anonymous functions.
+	 * @param Destination $no_matching_route_destination Default destination to return when there is no matching route.
 	 *
 	 */
-	public function __construct($request, $session)
+	public function __construct($request, $session, \Carrot\Core\Classes\Destination $no_matching_route_destination)
 	{
 		$this->request = $request;
 		$this->session = $session;
@@ -67,10 +68,9 @@ class Router implements \Carrot\Core\Interfaces\RouterInterface
 	/**
 	 * Add a new function to the chain of responsibility.
 	 *
-	 * Your anonymous function should accept three parameters, $request,
-	 * $session and the $router instance and return a Destination instance.
-	 * If your anonymous function can't determine the route, pass the
-	 * request and session to the next function in the chain of responsibility.
+	 * Your anonymous function should accept three arguments, $request, $session and $router.
+	 * It must either return a Destination instance or pass the arguments to the next function
+	 * in the chain of responsibility.
 	 *
 	 * <code>
 	 * $router->add(function($request, $session, $router)
@@ -80,7 +80,7 @@ class Router implements \Carrot\Core\Interfaces\RouterInterface
 	 *     {
 	 *         return new Destination
 	 *         (
-	 *             '\Vendor\Namespace\HomeController:main',
+	 *             '\Vendor\Namespace\HomeController@main',
 	 *             'index',
 	 *             array('Key Lime Pie', 'Cupcake', 'Orange Juice')
 	 *         );
@@ -95,8 +95,10 @@ class Router implements \Carrot\Core\Interfaces\RouterInterface
 	 * two functions handling the same route, the earliest function
 	 * always wins.
 	 *
-	 * <<< WARNING >>> Don't call router methods other than next(), rewind()
-	 * and getDestinationForNoMatchingRoute() inside the anonymous function,
+	 * >> WARNING <<
+	 *
+	 * Don't call router methods other than Router::next(), Router::rewind()
+	 * and Router::getDestinationForNoMatchingRoute() inside the anonymous function
 	 * unless you wanted an unpredicted behavior (and possibly infinite loop).
 	 *
 	 * @param Closure $chain
@@ -110,8 +112,9 @@ class Router implements \Carrot\Core\Interfaces\RouterInterface
 	/**
 	 * Starts the chain of responsibility to get the Destination object.
 	 *
-	 * If the returned value is not an instance of Destination, this method
-	 * will return the no matching route destination instead.
+	 * If the returned value is not an instance of Destination this method
+	 * will throw a RuntimeException. If you have no route defined, it will
+	 * also throw a RuntimeException.
 	 *
 	 * @return Destination
 	 *
@@ -137,8 +140,8 @@ class Router implements \Carrot\Core\Interfaces\RouterInterface
 	/**
 	 * Calls the next function in the chain of responsibility.
 	 * 
-	 * Passes $request and $session to the next function. If no function is
-	 * present, it will return the no matching route destination object.
+	 * Passes $request and $session to the next function. If the chain is exhausted
+	 * it will return the default Router::no_matching_route_destination instead.
 	 *
 	 * @param mixed $request Preferably the Request object.
 	 * @param mixed $session Preferably the Session object.
@@ -160,7 +163,9 @@ class Router implements \Carrot\Core\Interfaces\RouterInterface
 	 * Restarts the chain of responsibility with new parameters.
 	 *
 	 * It's usually a bad practice to redefine the user's request/session
-	 * object and restart the chain of responsibility
+	 * object and restart the chain of responsibility, it is better to use
+	 * response redirection. If you need it so badly, here it is. It resets
+	 * Router::active_index to -1 and in doing so restarts the chain.
 	 *
 	 * @param mixed $request Preferably a Request object.
 	 * @param mixed $session Preferably a Session object.
