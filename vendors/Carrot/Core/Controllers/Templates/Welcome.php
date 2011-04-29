@@ -288,7 +288,7 @@
 	<h2>Welcome to Carrot, an experimental PHP framework!</h2>
 	
 	<p>
-		This is a response returned from <code>Carrot\Core\Classes\SampleController::welcome()</code>,
+		This is a response returned from <code>Carrot\Core\Controllers\WelcomeController::index()</code>,
 		it should mean that Carrot is working okay at your server. You can learn how Carrot works at
 		a glance simply by reading the introduction below, or you can read a detailed introduction
 		at <a href="http://carrot.rickchristie.com">Carrot's main site</a>.

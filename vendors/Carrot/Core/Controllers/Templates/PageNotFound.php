@@ -104,8 +104,10 @@
 <div id="wrapper">
 	<h2>The page you requested doesn't exist in our server.</h2>
 	<p>
-		Your requested URL doesn't exist in our server. Additionaly, there is no <code>Destination</code> to go to
-		when there is no matching route, leading Carrot to use this default 404 page.
+		Your requested URL doesn't exist in our server. Additionaly, you are using the default 404
+		<code>Destination</code>, we urge you to replace this with your own. You can read more on how to replace
+		<code>Router</code>'s default no-matching-route <code>Destination</code> with your own
+		at the <a href="http://carrot.rickchristie.com">documentation</a>.
 	</p>
 </div>
 </body>

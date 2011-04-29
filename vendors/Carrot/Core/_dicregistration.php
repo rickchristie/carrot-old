@@ -37,7 +37,7 @@ $dic->register('\Carrot\Core\Classes\Router@main', function($dic)
     (
         $dic->getInstance('\Carrot\Core\Classes\Request@shared'),
         $dic->getInstance('\Carrot\Core\Classes\Session@shared'),
-        new \Carrot\Core\Classes\Destination('\Carrot\Core\Classes\SampleController@main', 'pageNotFound')
+        new \Carrot\Core\Classes\Destination('\Carrot\Core\Controllers\NoMatchingRouteController@main', 'index')
     );
 });
 
@@ -156,22 +156,40 @@ $dic->register('\Carrot\Core\Classes\Response@main', function($dic)
 });
 
 /**
- * \Carrot\Core\Classes\SampleController@main
- * 
- * Carrot's sample controller. It has no dependency other than Carrot's default
- * Request instance. It is used to provide the initial welcome page and the
- * default no-matching-route destination.
+ * \Carrot\Core\Controllers\NoMatchingRouteController@main
  *
- * @param Request $request Instance of \Carrot\Core\Classes\Request.
- * @param string $root_directory Path to the DIC root directory (/vendors), without trailing slash.
+ * Carrot's 404 page controller. Injected by default to the Router as the default 404
+ * destination to go to.
  * 
+ * @param Response $response Instance of \Carrot\Core\Classes\Response
+ *
  */
 
-$dic->register('\Carrot\Core\Classes\SampleController@main', function($dic)
-{   
-    return new \Carrot\Core\Classes\SampleController
+$dic->register('\Carrot\Core\Controllers\NoMatchingRouteController@main', function($dic)
+{
+    return new \Carrot\Core\Controllers\NoMatchingRouteController
+    (
+        $dic->getInstance('\Carrot\Core\Classes\Response@main')
+    );
+});
+
+/**
+ * \Carrot\Core\Controllers\WelcomeController@main
+ *
+ * Carrot's controller that displays the welcome page.
+ * 
+ * @param Request $request Instance of \Carrot\Core\Classes\Request.
+ * @param Response $response Instance of \Carrot\Core\Classes\Response.
+ * @param string $root_directory Path to the DIC root directory (default is /vendors), without trailing slash.
+ *
+ */
+
+$dic->register('\Carrot\Core\Controllers\WelcomeController@main', function($dic)
+{
+    return new \Carrot\Core\Controllers\WelcomeController
     (
         $dic->getInstance('\Carrot\Core\Classes\Request@shared'),
+        $dic->getInstance('\Carrot\Core\Classes\Response@main'),
         $dic->getRootDirectory()
     );
 });

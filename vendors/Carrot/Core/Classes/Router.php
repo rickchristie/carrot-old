@@ -62,7 +62,7 @@ class Router implements \Carrot\Core\Interfaces\RouterInterface
     {
         $this->request = $request;
         $this->session = $session;
-        $this->no_matching_route_destination = new Destination('\Carrot\Core\Classes\SampleController@main', 'pageNotFound');
+        $this->no_matching_route_destination = $no_matching_route_destination;
     }
     
     /**

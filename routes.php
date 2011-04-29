@@ -29,7 +29,7 @@
  * Create a new chain by using Router::add(), like this:
  *
  * <code>
- * // Translates {/} to SampleController::welcome()
+ * // Translates {/} to WelcomeController::welcome()
  * $router->add(function($request, $session, $router)
  * {
  *     // Get app request uri in segments
@@ -40,8 +40,8 @@
  *     {
  *         return new Destination
  *         (
- *             '\Carrot\Core\Classes\SampleController@main',
- *             'welcome',
+ *             '\Carrot\Core\Classes\WelcomeController@main',
+ *             'index',
  *             array('Arguments')
  *         );
  *     }
@@ -59,7 +59,7 @@
 
 use \Carrot\Core\Classes\Destination;
 
-// Translates {/} to SampleController::welcome()
+// Translates {/} to WelcomeController::index()
 $router->add(function($request, $session, $router)
 {
     // Get app request uri in segments
@@ -70,8 +70,8 @@ $router->add(function($request, $session, $router)
     {
         return new Destination
         (
-            '\Carrot\Core\Classes\SampleController@main',
-            'welcome'
+            '\Carrot\Core\Controllers\WelcomeController@main',
+            'index'
         );
     }
     
