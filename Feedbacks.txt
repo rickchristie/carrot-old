@@ -42,3 +42,15 @@ I might have been very spoiled, but unless framework will save me some brain-cyc
 Markus:
 
 @rickchristie does it have two-way routing?
+
+-----
+
+Add Carrot\Core\Library\Replaceable
+
+Add Carrot\Util\Rules
+Add Carrot\Util\Template
+Add Carrot\Util\
+
+Add Carrot\Database\MySQLDatabase
+
+Add Carrot\Core\Trunk

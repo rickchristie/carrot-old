@@ -259,7 +259,7 @@
 		
 		ul
 		{
-			margin: 0 0 0 25px;
+			margin: 20px 0 20px 25px;
 			padding: 0 0 0 0;
 			list-style-type: none;
 			font-size: 13px;
