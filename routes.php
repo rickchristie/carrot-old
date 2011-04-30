@@ -68,7 +68,7 @@
  *
  */
 
-use \Carrot\Core\Classes\Destination;
+use \Carrot\Core\Destination;
 
 // Translates {/} to WelcomeController::index()
 $router->add(function($params, $router)

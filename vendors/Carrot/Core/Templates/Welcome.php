@@ -362,7 +362,7 @@ class HomeController
 {
     protected $request;
     
-    public function __construct(\Carrot\Core\Classes\Request $request)
+    public function __construct(\Carrot\Core\Request $request)
     {
         $this->request = $request;
     }
@@ -376,7 +376,7 @@ class HomeController
 	<pre>public function sample()
 {
     // Create new response
-    $response = new \Carrot\Core\Classes\Response($this->request->getServer('SERVER_PROTOCOL'));
+    $response = new \Carrot\Core\Response($this->request->getServer('SERVER_PROTOCOL'));
     $string = "&lt;p&gt;Hello World! I'm using carrot! Here's a dump of request object:&lt;/p&gt;";
     
     // Get some data using output buffering
@@ -434,7 +434,7 @@ class HomeController
 \ACME\Lib\Database@logging_db</pre>
 	
 	<p>
-		In our anonymous function, we tell <code>DependencyInjectionContainer</code> to get an instance of the <code>Carrot\Core\Classes\Request</code>
+		In our anonymous function, we tell <code>DependencyInjectionContainer</code> to get an instance of the <code>Carrot\Core\Request</code>
 		using the DIC registration ID of the core request object. You can find out the core classes' DIC identification simply by opening its
 		<code>_dicregistration.php</code> file. Here is our registration code:
 	</p>
@@ -445,7 +445,7 @@ $dic->register('\ACME\Site\Controllers\HomeController@main', function($dic)
 {
     return new \ACME\Site\Controllers\HomeController
     (
-        $dic->getInstance('\Carrot\Core\Classes\Request@shared')
+        $dic->getInstance('\Carrot\Core\Request@shared')
     );
 });</pre>
 
@@ -465,8 +465,8 @@ $dic->register('\ACME\Site\Controllers\HomeController@main', function($dic)
 	</p>
 	
 	<p>
-	   The routing parameters are set during <code>Carrot\Core\Classes\Router</code> object construction. Default dependency registration
-	   file will pass in an instance of <code>Carrot\Core\Classes\Request</code> and <code>Carrot\Core\Classes\Session</code> as your
+	   The routing parameters are set during <code>Carrot\Core\Router</code> object construction. Default dependency registration
+	   file will pass in an instance of <code>Carrot\Core\Request</code> and <code>Carrot\Core\Session</code> as your
 	   routing parameters, accessible inside your anonymous function using <code>$params->request</code> and <code>$params->session</code>
 	   respectively. If you need to add another parameter (be it an object or a simple string), edit the dependency registration file
 	   for <code>Carrot\Core</code>.

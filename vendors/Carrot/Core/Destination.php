@@ -21,7 +21,7 @@
  *
  */
 
-namespace Carrot\Core\Classes;
+namespace Carrot\Core;
 
 class Destination
 {

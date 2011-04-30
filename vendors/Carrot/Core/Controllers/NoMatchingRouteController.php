@@ -31,10 +31,10 @@ class NoMatchingRouteController
     /**
      * Constructs the No Matching Route Controller.
      *
-     * @param Response $response Instance of \Carrot\Core\Classes\Response
+     * @param Response $response Instance of \Carrot\Core\Response
      *
      */
-	public function __construct(\Carrot\Core\Classes\Response $response)
+	public function __construct(\Carrot\Core\Response $response)
 	{
 		$this->response = $response;
 	}
@@ -49,7 +49,7 @@ class NoMatchingRouteController
 	{
 		// Get the template, but get it as string with output buffering
         ob_start();
-        require(__DIR__ . DIRECTORY_SEPARATOR . 'Templates' . DIRECTORY_SEPARATOR . 'PageNotFound.php');
+        require(dirname(__DIR__) . DIRECTORY_SEPARATOR . 'Templates' . DIRECTORY_SEPARATOR . 'PageNotFound.php');
         $string = ob_get_clean();
         
         // Create the response and return it to the front controller

@@ -30,7 +30,7 @@ interface RouterInterface
     /**
      * Returns the destination object.
      * 
-     * @return \Carrot\Core\Classes\Destination
+     * @return \Carrot\Core\Destination
      * 
      */
     public function getDestination();
@@ -50,7 +50,7 @@ interface RouterInterface
     /**
      * Gets the default destination to go if there's no matching route.
      *
-     * @return \Carrot\Core\Classes\Destination
+     * @return \Carrot\Core\Destination
      *
      */
     public function getDestinationForNoMatchingRoute();
@@ -61,5 +61,5 @@ interface RouterInterface
      * @param Destination $destination
      *
      */
-    public function setDestinationForNoMatchingRoute(\Carrot\Core\Classes\Destination $destination);
+    public function setDestinationForNoMatchingRoute(\Carrot\Core\Destination $destination);
 }

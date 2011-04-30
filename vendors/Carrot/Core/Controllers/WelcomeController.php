@@ -41,12 +41,12 @@ class WelcomeController
     /**
      * Constructs the welcome controller.
      *
-     * @param Request $request Instance of \Carrot\Core\Classes\Request.
-     * @param Response $response Instance of \Carrot\Core\Classes\Response.
+     * @param Request $request Instance of \Carrot\Core\Request.
+     * @param Response $response Instance of \Carrot\Core\Response.
      * @param string $root_directory Path to the DIC root directory (default is /vendors), without trailing slash.
      *
      */
-	public function __construct(\Carrot\Core\Classes\Request $request, \Carrot\Core\Classes\Response $response, $root_directory)
+	public function __construct(\Carrot\Core\Request $request, \Carrot\Core\Response $response, $root_directory)
 	{
 		$this->request = $request;
 		$this->response = $response;
@@ -68,7 +68,7 @@ class WelcomeController
         
         // Get the template, but get it as string with output buffering
         ob_start();
-        require(__DIR__ . DIRECTORY_SEPARATOR . 'Templates' . DIRECTORY_SEPARATOR . 'Welcome.php');
+        require(dirname(__DIR__) . DIRECTORY_SEPARATOR . 'Templates' . DIRECTORY_SEPARATOR . 'Welcome.php');
         $string = ob_get_clean();
         
         // Return the response to the controller

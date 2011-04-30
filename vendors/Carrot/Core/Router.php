@@ -21,7 +21,7 @@
  *
  */
 
-namespace Carrot\Core\Classes;
+namespace Carrot\Core;
 
 class Router implements \Carrot\Core\Interfaces\RouterInterface
 {
@@ -52,7 +52,7 @@ class Router implements \Carrot\Core\Interfaces\RouterInterface
      * @param Destination $no_matching_route_destination Default destination to return when there is no matching route.
      *
      */
-    public function __construct(array $params, \Carrot\Core\Classes\Destination $no_matching_route_destination)
+    public function __construct(array $params, \Carrot\Core\Destination $no_matching_route_destination)
     {
         $this->params = (object)$params;
         $this->no_matching_route_destination = $no_matching_route_destination;
@@ -125,9 +125,9 @@ class Router implements \Carrot\Core\Interfaces\RouterInterface
         $this->active_index = -1;
         $destination = $this->next($this->params, $this);
         
-        if (!is_a($destination, '\Carrot\Core\Classes\Destination'))
+        if (!is_a($destination, '\Carrot\Core\Destination'))
         {
-            throw new \RuntimeException("Router error in getting Destination, route #{$this->active_index} does not return an instance of \Carrot\Core\Classes\Destination.");
+            throw new \RuntimeException("Router error in getting Destination, route #{$this->active_index} does not return an instance of \Carrot\Core\Destination.");
         }
         
         return $destination;
@@ -179,7 +179,7 @@ class Router implements \Carrot\Core\Interfaces\RouterInterface
      * @param Destination
      *
      */
-    public function setDestinationForNoMatchingRoute(\Carrot\Core\Classes\Destination $destination)
+    public function setDestinationForNoMatchingRoute(\Carrot\Core\Destination $destination)
     {
         $this->no_matching_route_destination = $destination;
     }

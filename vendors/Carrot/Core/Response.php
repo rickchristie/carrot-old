@@ -20,7 +20,7 @@
  *
  */
 
-namespace Carrot\Core\Classes;
+namespace Carrot\Core;
 
 class Response implements \Carrot\Core\Interfaces\ResponseInterface
 {

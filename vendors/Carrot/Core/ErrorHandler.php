@@ -17,14 +17,14 @@
  * with your own. Sets development_mode at constructor initialization.
  *
  * You can replace this class with your own error/exception handler by editing
- * config.php. Your class must implement \Carrot\Core\Classes\ErrorHandlerInterface.
+ * config.php. Your class must implement \Carrot\Core\ErrorHandlerInterface.
  *
  * @author      Ricky Christie <seven.rchristie@gmail.com>
  * @license     http://www.opensource.org/licenses/mit-license.php MIT License
  *
  */
 
-namespace Carrot\Core\Classes;
+namespace Carrot\Core;
 
 class ErrorHandler implements \Carrot\Core\Interfaces\ErrorHandlerInterface
 {

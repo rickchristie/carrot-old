@@ -20,16 +20,16 @@
  * function that returns the class instance to an identification:
  *
  * <code>
- * $dic->register('\Carrot\Core\Classes\DependencyInjectionContainer@main', function($dic)
+ * $dic->register('\Carrot\Core\DependencyInjectionContainer@main', function($dic)
  * {
- *    return new \Carrot\Core\Classes\DependencyInjectionContainer();
+ *    return new \Carrot\Core\DependencyInjectionContainer();
  * });
  * </code>
  *
  * You can then call it using its identification:
  *
  * <code>
- * $object = $dic->getInstance('\Carrot\Core\Classes\DependencyInjectionContainer@main');
+ * $object = $dic->getInstance('\Carrot\Core\DependencyInjectionContainer@main');
  * </code>
  *
  * You have to use a fully qualified class name plus a configuration name separated
@@ -87,7 +87,7 @@
  *
  */
 
-namespace Carrot\Core\Classes;
+namespace Carrot\Core;
 
 class DependencyInjectionContainer
 {
@@ -139,7 +139,7 @@ class DependencyInjectionContainer
      * $dic->register('\Carrot\Library\Config@main', function($dic)
      * {
      *    // Get the request instance to fill in details
-     *    $request = $dic->getInstance('\Carrot\Core\Classes\Request@shared');
+     *    $request = $dic->getInstance('\Carrot\Core\Request@shared');
      *
      *    // Returns the instance
      *    return new \Carrot\Library\Config

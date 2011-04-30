@@ -75,12 +75,12 @@ if (!isset($registrations) or !$registrations)
 
 if (!isset($router) or !$router)
 {
-    $router = '\Carrot\Core\Classes\Router@main';
+    $router = '\Carrot\Core\Router@main';
 }
 
 if (!isset($error_handler) or !$error_handler)
 {
-    $error_handler = '\Carrot\Core\Classes\ErrorHandler@shared';
+    $error_handler = '\Carrot\Core\ErrorHandler@shared';
 }
 
 /**
@@ -89,7 +89,7 @@ if (!isset($error_handler) or !$error_handler)
  *
  */
 
-$dic = new Carrot\Core\Classes\DependencyInjectionContainer(__DIR__ . DIRECTORY_SEPARATOR . 'vendors', $registrations);
+$dic = new Carrot\Core\DependencyInjectionContainer(__DIR__ . DIRECTORY_SEPARATOR . 'vendors', $registrations);
 $error_handler = $dic->getInstance($error_handler);
 $error_handler->set();
 
@@ -99,14 +99,14 @@ $error_handler->set();
  * anonymous functions instead.
  *
  * This anonymous function checks if $destination is really an
- * instance of \Carrot\Core\Classes\Destination. If it's not,
+ * instance of \Carrot\Core\Destination. If it's not,
  * it throws a RuntimeException.
  *
  */
 
 $checkDestination = function($destination, $error_message)
 {
-    if (!is_a($destination, '\Carrot\Core\Classes\Destination'))
+    if (!is_a($destination, '\Carrot\Core\Destination'))
     {
         if (is_object($destination))
         {
@@ -132,7 +132,7 @@ $checkDestination = function($destination, $error_message)
 $router = $dic->getInstance($router);
 $router->loadRoutesFile(__DIR__ . DIRECTORY_SEPARATOR . 'routes.php');
 $destination = $router->getDestination();
-$checkDestination($destination, "Front controller error when getting destination from Router. Expected an instance of \Carrot\Core\Classes\Destination from Router, got '%s' instead.");
+$checkDestination($destination, "Front controller error when getting destination from Router. Expected an instance of \Carrot\Core\Destination from Router, got '%s' instead.");
 
 /**
  * Loop through the response from the user controller. If the
@@ -160,7 +160,7 @@ $internal_redirection_count = 0;
 $having_no_matching_route_as_destination = FALSE;
 $destination_history = '';
 
-while (is_a($temp, '\Carrot\Core\Classes\Destination'))
+while (is_a($temp, '\Carrot\Core\Destination'))
 {
     ++$internal_redirection_count;
     $destination_history .= " ({$internal_redirection_count}. {$temp->getControllerDICItemID()}:{$temp->getMethodName()})";
@@ -181,7 +181,7 @@ while (is_a($temp, '\Carrot\Core\Classes\Destination'))
         
         $having_no_matching_route_as_destination = TRUE;
         $temp = $router->getDestinationForNoMatchingRoute();
-        $checkDestination($temp, "Front controller error when getting 'destination for no matching route' from Router. Expected an instance of \Carrot\Core\Classes\Destination from Router, got '%s' instead. Destination history:{$destination_history}.");
+        $checkDestination($temp, "Front controller error when getting 'destination for no matching route' from Router. Expected an instance of \Carrot\Core\Destination from Router, got '%s' instead. Destination history:{$destination_history}.");
         continue;
     }
     
@@ -199,7 +199,7 @@ while (is_a($temp, '\Carrot\Core\Classes\Destination'))
         
         $having_no_matching_route_as_destination = TRUE;
         $temp = $router->getDestinationForNoMatchingRoute();
-        $checkDestination($temp, "Front controller error when getting 'destination for no matching route' from Router. Expected an instance of \Carrot\Core\Classes\Destination from Router, got '%s' instead. Destination history:{$destination_history}.");
+        $checkDestination($temp, "Front controller error when getting 'destination for no matching route' from Router. Expected an instance of \Carrot\Core\Destination from Router, got '%s' instead. Destination history:{$destination_history}.");
         continue;
     }
     

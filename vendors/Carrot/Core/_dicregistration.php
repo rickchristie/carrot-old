@@ -18,7 +18,7 @@
  */
 
 /**
- * \Carrot\Core\Classes\Router@main
+ * \Carrot\Core\Router@main
  * 
  * Carrot's default Router class. It doesn't use the Request and
  * Session class per se, it just passes them to the anonymous
@@ -30,23 +30,23 @@
  * 
  */
 
-$dic->register('\Carrot\Core\Classes\Router@main', function($dic)
+$dic->register('\Carrot\Core\Router@main', function($dic)
 {   
     // Destination to go to when there is no matching route
-    $no_matching_route_destination = new \Carrot\Core\Classes\Destination('\Carrot\Core\Controllers\NoMatchingRouteController@main', 'index');
+    $no_matching_route_destination = new \Carrot\Core\Destination('\Carrot\Core\Controllers\NoMatchingRouteController@main', 'index');
     
     // Parameters to pass to the anonymous functions, get any object you want with DIC
     $params = array
     (
-        'request' => $dic->getInstance('\Carrot\Core\Classes\Request@shared'),
-        'session' => $dic->getInstance('\Carrot\Core\Classes\Session@shared')
+        'request' => $dic->getInstance('\Carrot\Core\Request@shared'),
+        'session' => $dic->getInstance('\Carrot\Core\Session@shared')
     );
     
-    return new \Carrot\Core\Classes\Router($params, $no_matching_route_destination);
+    return new \Carrot\Core\Router($params, $no_matching_route_destination);
 });
 
 /**
- * \Carrot\Core\Classes\ErrorHandler@shared
+ * \Carrot\Core\ErrorHandler@shared
  * 
  * Carrot's default ErrorHandler class. You can change the templates
  * used by it by filling the appropriate parameter with an absolute
@@ -64,20 +64,20 @@ $dic->register('\Carrot\Core\Classes\Router@main', function($dic)
  *
  */
 
-$dic->register('\Carrot\Core\Classes\ErrorHandler@shared', function($dic)
+$dic->register('\Carrot\Core\ErrorHandler@shared', function($dic)
 {   
-    $error_handler = new \Carrot\Core\Classes\ErrorHandler
+    $error_handler = new \Carrot\Core\ErrorHandler
     (
-        $dic->getInstance('\Carrot\Core\Classes\Request@shared')->getServer('SERVER_PROTOCOL'),
+        $dic->getInstance('\Carrot\Core\Request@shared')->getServer('SERVER_PROTOCOL'),
         TRUE
     );
     
-    $dic->saveShared('\Carrot\Core\Classes\ErrorHandler@shared', $error_handler);
+    $dic->saveShared('\Carrot\Core\ErrorHandler@shared', $error_handler);
     return $error_handler;
 });
 
 /**
- * \Carrot\Core\Classes\Request@shared
+ * \Carrot\Core\Request@shared
  *
  * Carrot's default Request class, to be shared across the framework. Default
  * configuration doesn't include $base_path parameter, it is guessed automatically
@@ -102,9 +102,9 @@ $dic->register('\Carrot\Core\Classes\ErrorHandler@shared', function($dic)
  *
  */
  
-$dic->register('\Carrot\Core\Classes\Request@shared', function($dic)
+$dic->register('\Carrot\Core\Request@shared', function($dic)
 {
-    $object = new \Carrot\Core\Classes\Request
+    $object = new \Carrot\Core\Request
     (
         $_SERVER,
         $_GET,
@@ -115,13 +115,13 @@ $dic->register('\Carrot\Core\Classes\Request@shared', function($dic)
         $_ENV
     );
     
-    $dic->saveShared('\Carrot\Core\Classes\Request@shared', $object);
+    $dic->saveShared('\Carrot\Core\Request@shared', $object);
     
     return $object;
 });
 
 /**
- * \Carrot\Core\Classes\Session@shared
+ * \Carrot\Core\Session@shared
  * 
  * Carrot's default Session wrapper. By using this class instead of
  * accessing $_SESSION directly, your classes will be easier to
@@ -132,15 +132,15 @@ $dic->register('\Carrot\Core\Classes\Request@shared', function($dic)
  *
  */
 
-$dic->register('\Carrot\Core\Classes\Session@shared', function($dic)
+$dic->register('\Carrot\Core\Session@shared', function($dic)
 {
-    $session = new \Carrot\Core\Classes\Session();
-    $dic->saveShared('\Carrot\Core\Classes\Session@shared', $session);
+    $session = new \Carrot\Core\Session();
+    $dic->saveShared('\Carrot\Core\Session@shared', $session);
     return $session;
 });
 
 /**
- * \Carrot\Core\Classes\Response@main
+ * \Carrot\Core\Response@main
  * 
  * Carrot's default Response class. It implements ResponseInterface so
  * you can use it as a return value to the front controller. The controller
@@ -151,11 +151,11 @@ $dic->register('\Carrot\Core\Classes\Session@shared', function($dic)
  *
  */
 
-$dic->register('\Carrot\Core\Classes\Response@main', function($dic)
+$dic->register('\Carrot\Core\Response@main', function($dic)
 {
-    return new \Carrot\Core\Classes\Response
+    return new \Carrot\Core\Response
     (
-        $dic->getInstance('\Carrot\Core\Classes\Request@shared')->getServer('SERVER_PROTOCOL')
+        $dic->getInstance('\Carrot\Core\Request@shared')->getServer('SERVER_PROTOCOL')
     );
 });
 
@@ -165,7 +165,7 @@ $dic->register('\Carrot\Core\Classes\Response@main', function($dic)
  * Carrot's 404 page controller. Injected by default to the Router as the default 404
  * destination to go to.
  * 
- * @param Response $response Instance of \Carrot\Core\Classes\Response
+ * @param Response $response Instance of \Carrot\Core\Response
  *
  */
 
@@ -173,7 +173,7 @@ $dic->register('\Carrot\Core\Controllers\NoMatchingRouteController@main', functi
 {
     return new \Carrot\Core\Controllers\NoMatchingRouteController
     (
-        $dic->getInstance('\Carrot\Core\Classes\Response@main')
+        $dic->getInstance('\Carrot\Core\Response@main')
     );
 });
 
@@ -182,8 +182,8 @@ $dic->register('\Carrot\Core\Controllers\NoMatchingRouteController@main', functi
  *
  * Carrot's controller that displays the welcome page.
  * 
- * @param Request $request Instance of \Carrot\Core\Classes\Request.
- * @param Response $response Instance of \Carrot\Core\Classes\Response.
+ * @param Request $request Instance of \Carrot\Core\Request.
+ * @param Response $response Instance of \Carrot\Core\Response.
  * @param string $root_directory Path to the DIC root directory (default is /vendors), without trailing slash.
  *
  */
@@ -192,8 +192,8 @@ $dic->register('\Carrot\Core\Controllers\WelcomeController@main', function($dic)
 {
     return new \Carrot\Core\Controllers\WelcomeController
     (
-        $dic->getInstance('\Carrot\Core\Classes\Request@shared'),
-        $dic->getInstance('\Carrot\Core\Classes\Response@main'),
+        $dic->getInstance('\Carrot\Core\Request@shared'),
+        $dic->getInstance('\Carrot\Core\Response@main'),
         $dic->getRootDirectory()
     );
 });
