@@ -36,47 +36,44 @@ class Router implements \Carrot\Core\Interfaces\RouterInterface
     protected $active_index = -1;
     
     /**
-     * @var mixed Preferably a Request object.
-     */
-    protected $request;
-    
-    /**
-     * @var mixed Preferably a Session object.
-     */
-    protected $session;
-    
-    /**
      * @var Destination Default Destination object to return if there's no matching route. 
      */
     protected $no_matching_route_destination;
     
     /**
+     * @var StdClass PHP standard class containing 
+     */
+    protected $params;
+    
+    /**
      * Constructs a Router object.
      *
-     * @param mixed $request Preferably a Request object, used as an argument when calling anonymous functions.
-     * @param mixed $session Preferably a Session object, used as an argument when calling anonymous functions.
+     * @param array $params Routing parameters to be passed to the anonymous functions.
      * @param Destination $no_matching_route_destination Default destination to return when there is no matching route.
      *
      */
-    public function __construct($request, $session, \Carrot\Core\Classes\Destination $no_matching_route_destination)
+    public function __construct(array $params, \Carrot\Core\Classes\Destination $no_matching_route_destination)
     {
-        $this->request = $request;
-        $this->session = $session;
+        $this->params = (object)$params;
         $this->no_matching_route_destination = $no_matching_route_destination;
     }
     
     /**
      * Add a new function to the chain of responsibility.
      *
-     * Your anonymous function should accept three arguments, $request, $session and $router.
-     * It must either return a Destination instance or pass the arguments to the next function
-     * in the chain of responsibility.
+     * Your anonymous function should accept two parameters: $params and $router.
+     * Routing parameters are set during object construction. If you need to add
+     * another parameter (be it an object or a simple string), you should do so
+     * at the dependency registration file.
+     *
+     * Your anonymous function must either return a Destination instance or pass
+     * the parameters to the next function in the chain of responsibility.
      *
      * <code>
-     * $router->add(function($request, $session, $router)
+     * $router->add(function($params, $router)
      * {
      *     // Returns a destination for '/'
-     *     if (empty($request->getAppRequestURISegments()))
+     *     if (empty($params->request->getAppRequestURISegments()))
      *     {
      *         return new Destination
      *         (
@@ -91,9 +88,8 @@ class Router implements \Carrot\Core\Interfaces\RouterInterface
      * });
      * </code>
      *
-     * Once you returned a destination, the chain stops, so if there are
-     * two functions handling the same route, the earliest function
-     * always wins.
+     * Once you returned a destination, the chain stops, so if there are two functions
+     * handling the same route, the earliest function always wins.
      *
      * >> WARNING <<
      *
@@ -127,7 +123,7 @@ class Router implements \Carrot\Core\Interfaces\RouterInterface
         }
         
         $this->active_index = -1;
-        $destination = $this->next($this->request, $this->session);
+        $destination = $this->next($this->params, $this);
         
         if (!is_a($destination, '\Carrot\Core\Classes\Destination'))
         {
@@ -143,11 +139,11 @@ class Router implements \Carrot\Core\Interfaces\RouterInterface
      * Passes $request and $session to the next function. If the chain is exhausted
      * it will return the default Router::no_matching_route_destination instead.
      *
-     * @param mixed $request Preferably the Request object.
-     * @param mixed $session Preferably the Session object.
+     * @param StdClass $params Standard PHP class containing the routing parameters, set at constructor.
+     * @param Router $router An instance of this Router class.
      *
      */
-    public function next($request, $session)
+    public function next($params, $router)
     {
         ++$this->active_index;
         
@@ -156,7 +152,7 @@ class Router implements \Carrot\Core\Interfaces\RouterInterface
             return $this->no_matching_route_destination;
         }
         
-        return $this->chains[$this->active_index]($request, $session, $this);
+        return $this->chains[$this->active_index]($params, $router);
     }
     
     /**
@@ -167,14 +163,14 @@ class Router implements \Carrot\Core\Interfaces\RouterInterface
      * response redirection. If you need it so badly, here it is. It resets
      * Router::active_index to -1 and in doing so restarts the chain.
      *
-     * @param mixed $request Preferably a Request object.
-     * @param mixed $session Preferably a Session object.
+     * @param StdClass $params Standard PHP class containing the routing parameters, set at constructor.
+     * @param Router $router An instance of this Router class.
      *
      */
-    public function rewind($request, $session)
+    public function rewind($params, $router)
     {
         $this->active_index = -1;
-        return $this->next($request, $session);
+        return $this->next($params, $router);
     }
     
     /**

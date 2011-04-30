@@ -25,20 +25,24 @@
  * function. You can replace the Request and Session object with
  * your own custom Request and Session class.
  *
- * @param mixed $request Preferably a Request object, used as an argument when calling anonymous functions.
- * @param mixed $session Preferably a Session object, used as an argument when calling anonymous functions.
+ * @param array $params Routing parameters to be passed to the anonymous functions.
  * @param Destination $no_matching_route_destination Default destination to return when there is no matching route.
  * 
  */
 
 $dic->register('\Carrot\Core\Classes\Router@main', function($dic)
 {   
-    return new \Carrot\Core\Classes\Router
+    // Destination to go to when there is no matching route
+    $no_matching_route_destination = new \Carrot\Core\Classes\Destination('\Carrot\Core\Controllers\NoMatchingRouteController@main', 'index');
+    
+    // Parameters to pass to the anonymous functions, get any object you want with DIC
+    $params = array
     (
-        $dic->getInstance('\Carrot\Core\Classes\Request@shared'),
-        $dic->getInstance('\Carrot\Core\Classes\Session@shared'),
-        new \Carrot\Core\Classes\Destination('\Carrot\Core\Controllers\NoMatchingRouteController@main', 'index')
+        'request' => $dic->getInstance('\Carrot\Core\Classes\Request@shared'),
+        'session' => $dic->getInstance('\Carrot\Core\Classes\Session@shared')
     );
+    
+    return new \Carrot\Core\Classes\Router($params, $no_matching_route_destination);
 });
 
 /**

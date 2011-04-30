@@ -1,9 +1,18 @@
 <?php
 
 /**
- * The front controller will use RouterInterface::loadRoutesFile() with
- * an absolute path to this file. What the Router class does with this
- * file is entirely up to the author of the class.
+ * This file is part of the Carrot framework.
+ *
+ * Copyright (c) 2011 Ricky Christie <seven.rchristie@gmail.com>
+ *
+ * Licensed under the MIT License.
+ *
+ */
+
+/**
+ * The front controller will call RouterInterface::loadRoutesFile() with
+ * the absolute path to this file as the sole argument. What the Router class
+ * does with this file is entirely up to the author of the class.
  *
  * -- Information below only applies if you're using the default router --
  *
@@ -24,30 +33,32 @@
  * responsibility pattern. For each route, we create an anonymous function
  * that either returns an instance of Destination or pass that responsibility
  * and arguments to the next function in the chain. Your anonymous function
- * must accept three arguments, $request, $session, and $router itself. 
+ * must accept two arguments: $params and $router itself. Routing parameters
+ * are set at object construction, so if you need to add a new routing parameter
+ * (be it an object or simple string) edit the dependency registration file
+ * for Carrot\Core.
  * 
  * Create a new chain by using Router::add(), like this:
  *
  * <code>
- * // Translates {/} to WelcomeController::welcome()
- * $router->add(function($request, $session, $router)
+ * // Translates {/} to WelcomeController::index()
+ * $router->add(function($params, $router)
  * {
- *     // Get app request uri in segments
- *     $app_request_uri = $request->getAppRequestURISegments();
+ *      // Get app request uri in segments
+ *      $app_request_uri = $params->request->getAppRequestURISegments();
+ *      
+ *      // Return destination if uri segment array is empty
+ *      if (empty($app_request_uri))
+ *      {
+ *          return new Destination
+ *          (
+ *              '\Carrot\Core\Controllers\WelcomeController@main',
+ *              'index'
+ *          );
+ *      }
  *
- *     // Return destination if uri segment array is empty
- *     if (empty($app_request_uri))
- *     {
- *         return new Destination
- *         (
- *             '\Carrot\Core\Classes\WelcomeController@main',
- *             'index',
- *             array('Arguments')
- *         );
- *     }
- *  
- *     // Otherwise, not my responsibility, pass arguments to the next chain
- *     return $router->next($request, $session, $router);
+ *      // Otherwise, not my responsibility, pass arguments to the next chain
+ *      return $router->next($params, $router);
  * });
  * </code>
  *
@@ -60,10 +71,10 @@
 use \Carrot\Core\Classes\Destination;
 
 // Translates {/} to WelcomeController::index()
-$router->add(function($request, $session, $router)
+$router->add(function($params, $router)
 {
     // Get app request uri in segments
-    $app_request_uri = $request->getAppRequestURISegments();
+    $app_request_uri = $params->request->getAppRequestURISegments();
     
     // Return destination if uri segment array is empty
     if (empty($app_request_uri))
@@ -76,5 +87,5 @@ $router->add(function($request, $session, $router)
     }
     
     // Otherwise, not my responsibility, pass arguments to the next chain
-    return $router->next($request, $session, $router);
+    return $router->next($params, $router);
 });

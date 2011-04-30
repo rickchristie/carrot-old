@@ -294,6 +294,12 @@
 		at <a href="http://carrot.rickchristie.com">Carrot's main site</a>.
 	</p>
 	
+	<p>
+	   Please be aware that this framework is experimental at this point and purely academical. Right now it
+	   doesn't have much to offer other than a basic skeleton which provides you with a front controller, dependency
+	   injection container, error handler and router.
+	</p>
+	
 	<h3>Framework design goals</h3>
 	
 	<ul>
@@ -453,9 +459,17 @@ $dic->register('\ACME\Site\Controllers\HomeController@main', function($dic)
 	
 	<p>
 		Carrot's default <code>Router</code> uses a simplified version of the chain of responsibility pattern. For each route,
-		we create an anonymous function that either returns an instance of <code>Destination</code> or pass that responsibility
-		and arguments to the next function in the chain. Your anonymous function must accept three arguments, <code>$request</code>,
-		<code>$session</code>, and <code>$router</code> itself.
+		we create an anonymous function that either returns an instance of <code>Destination</code> (a value object) or pass that
+		responsibility and arguments to the next function in the chain. Your anonymous function must accept two arguments:
+		<code>$params</code> (routing parameters) and <code>$router</code> (the <code>Router</code> instance itself).
+	</p>
+	
+	<p>
+	   The routing parameters are set during <code>Carrot\Core\Classes\Router</code> object construction. Default dependency registration
+	   file will pass in an instance of <code>Carrot\Core\Classes\Request</code> and <code>Carrot\Core\Classes\Session</code> as your
+	   routing parameters, accessible inside your anonymous function using <code>$params->request</code> and <code>$params->session</code>
+	   respectively. If you need to add another parameter (be it an object or a simple string), edit the dependency registration file
+	   for <code>Carrot\Core</code>.
 	</p>
 	
 	<p>
@@ -463,10 +477,10 @@ $dic->register('\ACME\Site\Controllers\HomeController@main', function($dic)
 		and add the code below:
 	</p>
 	
-	<pre>// Translates {/site} to HomeController::sample()
-$router->add(function($request, $session, $router)
+	<pre>// Translates {/sample} to HomeController::sample()
+$router->add(function($params, $router)
 {
-    $app_request_uri = $request->getAppRequestURISegments();
+    $app_request_uri = $params->request->getAppRequestURISegments();
 
     if (isset($app_request_uri[0]) && strtolower($app_request_uri[0]) == 'sample')
     {
@@ -477,7 +491,7 @@ $router->add(function($request, $session, $router)
         );
     }
 
-    return $router->next($request, $session, $router);
+    return $router->next($params, $router);
 });</pre>
 
 	<p>

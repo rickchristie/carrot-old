@@ -38,9 +38,8 @@
  *
  * Vendor.Namespace.php
  *
- * You will find a file inside this folder (Carrot.Core.php) waiting to
- * be edited and activated.
+ * So if you are editing the dependency registration file for Carrot's core
+ * classes, we recommend you place it as '/registrations/Carrot.Core.php'.
  *
  */
 
-//$registrations['\Carrot\Core'] = __DIR__ . DIRECTORY_SEPARATOR . 'registrations' . DIRECTORY_SEPARATOR . 'Carrot.Core.php';
