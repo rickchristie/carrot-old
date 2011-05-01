@@ -1,3 +1,48 @@
+TODO: Add two way routing to Default Router, take some hints from Symfony's implementation!
+TODO: Make DI_Container less restrictive in namespaces, decouple absolute class file paths and the framework itself
+TODO: Refactor index.php to Carrot\Core\FrontController?
+
+
+Where to put default dependency registration files?
+Use lazy loading of dependency registration files. Check user dependency registration files first, if
+configuration item exists load it one by one, from the top?
+
+LOAD:
+
+\Carrot
+\Carrot\Core
+\Carrot\Core\Router
+
+OR:
+
+\Carrot\Core\Router
+\Carrot\Core
+\Carrot
+
+Otherwise check the default DIC dependency registration file locations:
+
+/vendors/Carrot/_dicregistration.php
+/vendors/Carrot/Core/_dicregistration.php
+
+Carrot.Core.Router.php
+Carrot.Core.php
+Carrot.php
+
+IS IT SIMPLE ENOUGH? Actually no, having two places to look for dependency registration files are flexible, but I
+don't think it's really that important. Just force people to define their own dependency registration files and
+don't bother on default dependency registration files. Libraries are supposed to be decoupled from the core anyway.
+
+registrations/Carrot.Core.php - then!
+
+and then put:
+
+registrations['\Carrot\Core'] to the 
+
+
+Make each URL coupled to a specific Route Name, not a class name/method name. This means you have to name your routes.
+
+
+
 
 
 ---------

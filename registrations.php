@@ -43,3 +43,4 @@
  *
  */
 
+$registrations['\Carrot\Core'] = __DIR__ . DIRECTORY_SEPARATOR . 'registrations' . DIRECTORY_SEPARATOR . 'Carrot.Core.php';

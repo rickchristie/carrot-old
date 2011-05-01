@@ -89,7 +89,7 @@ if (!isset($error_handler) or !$error_handler)
  *
  */
 
-$dic = new Carrot\Core\DependencyInjectionContainer(__DIR__ . DIRECTORY_SEPARATOR . 'vendors', $registrations);
+$dic = new Carrot\Core\DependencyInjectionContainer($registrations);
 $error_handler = $dic->getInstance($error_handler);
 $error_handler->set();
 

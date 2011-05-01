@@ -19,7 +19,7 @@
  *
  */
 
-namespace Carrot\Database;
+namespace Carrot\Drivers;
 
 class MySQLDatabase
 {
