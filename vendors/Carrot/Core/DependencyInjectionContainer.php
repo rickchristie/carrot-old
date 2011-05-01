@@ -173,11 +173,6 @@ class DependencyInjectionContainer
             throw new \InvalidArgumentException("Error in registering DIC item, ID '{$id}' already exists.");
         }
         
-        if (!is_callable($function))
-        {
-            throw new \InvalidArgumentException("Error in registering DIC item ({$id}), function is not callable.");
-        }
-        
         if (!$this->validateID($id))
         {
             throw new \InvalidArgumentException("Error in registering DIC item, '{$id}' is not a valid DIC registration ID.");
@@ -305,20 +300,6 @@ class DependencyInjectionContainer
         }
         
         return $object;
-    }
-    
-    /**
-     * Returns the root directory (without trailing slash).
-     *
-     * Root directory is the directory where the packages are contained.
-     * It's the path where we look for default _dicregistration.php files.
-     *
-     * @return string
-     *
-     */
-    public function getRootDirectory()
-    {
-        return $this->root_directory;
     }
     
     // ---------------------------------------------------------------

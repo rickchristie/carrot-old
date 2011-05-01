@@ -1,3 +1,7 @@
+
+
+---------
+
 @rickchristie I really like the wtfpl, bsd without attribution but not just public domain (as that concept does not exist in many countries) 
 
 Without looking at the code at all some impressions: 
@@ -45,6 +49,8 @@ Markus:
 
 -----
 
+
+
 Add Carrot\Core\Library\Replaceable
 
 Add Carrot\Util\Rules
@@ -53,4 +59,5 @@ Add Carrot\Util\
 
 Add Carrot\Database\MySQLDatabase
 
-Add Carrot\Core\Trunk
+
+

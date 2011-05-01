@@ -13,8 +13,7 @@
  * Template
  * 
  * This class contains the method to load a PHP template file, along with additional
- * utility functions that are frequently used in PHP template files. Variables passed
- * through the template are automatically passed through htmlentities(). Your template
+ * utility functions that are frequently used in PHP template files. Your template
  * file name must not contain the '/' character since it is used to denote directory
  * separator.
  * 
@@ -112,24 +111,5 @@ class Template
     protected function determineAbsolutePathToTemplateFile($template_name)
     {
         
-    }
-    
-    /**
-     * Defies imagination, extends boundaries and saves the world ...all before breakfast!
-     *
-     */
-    protected function deepClean($variables)
-    {
-        if (is_array($variables))
-        {
-            foreach ($variables as $index => $content)
-            {
-                $variables[$index] = $this->deepClean($variables[$index]);
-            }
-            
-            return $variables;
-        }
-        
-        return htmlentities((string)$content, ENT_QUOTES);
     }
 }

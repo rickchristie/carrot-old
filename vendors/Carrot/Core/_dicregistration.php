@@ -194,6 +194,6 @@ $dic->register('\Carrot\Core\Controllers\WelcomeController@main', function($dic)
     (
         $dic->getInstance('\Carrot\Core\Request@shared'),
         $dic->getInstance('\Carrot\Core\Response@main'),
-        $dic->getRootDirectory()
+        dirname(dirname(__DIR__))
     );
 });
