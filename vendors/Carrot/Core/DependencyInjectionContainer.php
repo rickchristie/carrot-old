@@ -370,8 +370,12 @@ class DependencyInjectionContainer
     {   
         if (file_exists($file_path))
         {
-            $dic = $this;
-            require_once($file_path);
+            $require = function($dic, $file_path)
+            {
+                require_once($file_path);
+            };
+            
+            $require($this, $file_path);
         }
     }
     
