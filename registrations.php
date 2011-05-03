@@ -42,4 +42,4 @@
  */
 
 $sep = DIRECTORY_SEPARATOR;
-$registrations['\Carrot\Core'] = __DIR__ . "{$sep}registrations{$sep}defaults{$sep}Carrot.Core.php";
+$registrations['\Carrot\Core'] = __DIR__ . "{$sep}registrations{$sep}Default.Carrot.Core.php";

@@ -50,7 +50,6 @@
  * you can assign registration files to: '\Namespace' or '\Namespace\Subnamespace\ClassName':
  *
  * <code>
- * // After defining this array, inject via constructor
  * $registrations['\Namespace'] = 'abs/path/to/conf-b.php';
  * $registrations['\Namespace\Subnamespace'] = 'abs/path/to/conf-a.php';
  * </code>
