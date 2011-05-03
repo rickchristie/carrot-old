@@ -18,8 +18,15 @@
 
 /**
  * \Carrot\Core\FrontController@main
+ *
+ * As a rule of a thumb, this class is the ONLY class where it is okay to have
+ * the DIC injecting itself via constructor. This is because the FrontController
+ * actually needs the to instantiate user's controller dynamically.
  * 
- * 
+ * @param RouterInterface $router Instance of an implementation of RouterInterface.
+ * @param ErrorHandlerInterface $error_handler Instance of an implementation of ErrorHandlerInterface.
+ * @param DependencyInjectionContainer $dic Carrot's default dependency injection container.
+ * @param string $routes_file_absolute_path Absolute path to the file that contain the routes.
  * 
  */
 
@@ -37,10 +44,7 @@ $dic->register('\Carrot\Core\FrontController@main', function($dic)
 /**
  * \Carrot\Core\Router@main
  * 
- * Carrot's default Router class. It doesn't use the Request and
- * Session class per se, it just passes them to the anonymous
- * function. You can replace the Request and Session object with
- * your own custom Request and Session class.
+ * You can modify 
  *
  * @param array $params Routing parameters to be passed to the anonymous functions.
  * @param Destination $no_matching_route_destination Default destination to return when there is no matching route.

@@ -26,6 +26,15 @@
  * $registrations['\Namespace\Subnamespace\Class'] = '/absolute/path/to/registration/file.php';
  * </code>
  *
+ * When the DIC is used to get an instance of '\Namespace\Subnamespace\Class',
+ * it will search for dependency registration files assigned to (in order):
+ *
+ * <code>
+ * \Namespace
+ * \Namespace\Subnamespace
+ * \Namespace\Subnamespace\Class
+ * </code>
+ * 
  * You can place the registration file anywhere you want and name it anything
  * you want. We recommend you put it at /registrations directory with this
  * format: Namespace.Class.php.

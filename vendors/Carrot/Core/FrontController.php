@@ -12,9 +12,21 @@
 /**
  * Front Controller
  * 
- * The front controller's responsibility is to use the instance of RouterInterface
- * 
+ * The front controller's responsibility is as follows:
  *
+ *   1. Run ErrorHandlerInterface::set(), setting the error/exception handler.
+ *   2. Run RouterInterface::loadRoutesFile(), loading the routes.
+ *   3. Dispatches the request according to Destination got from RouterInterface,
+ *      instantiating the user's controller and calling the appropriate method.
+ *
+ * Since the FrontController recognizes the error handler and router class only
+ * by interfaces, you can subtitute them with your own custom class by implementing
+ * the corresponding interfaces.
+ *
+ * As a rule of a thumb, this class is the ONLY class where it is okay to have
+ * the DIC injecting itself via constructor. This is because the FrontController
+ * actually needs the to instantiate user's controller dynamically.
+ * 
  * @author      Ricky Christie <seven.rchristie@gmail.com>
  * @license     http://www.opensource.org/licenses/mit-license.php MIT License
  *
@@ -52,8 +64,6 @@ class FrontController
     /**
      * Constructs the FrontController.
      * 
-     * 
-     * 
      * @param RouterInterface $router Instance of an implementation of RouterInterface.
      * @param ErrorHandlerInterface $error_handler Instance of an implementation of ErrorHandlerInterface.
      * @param DependencyInjectionContainer $dic Carrot's default dependency injection container.
@@ -73,7 +83,8 @@ class FrontController
      * Dispatches the request to the controller to get a response in return.
      *
      * Throws RuntimeException when there is a problem with the Router or the return
-     * value of the user's controller.
+     * value of the user's controller. See FrontController::getResponse() for actual
+     * algorithm in instantiating the controller and getting the response.
      * 
      * @return ReponseInterface
      *
@@ -107,10 +118,16 @@ class FrontController
     /**
      * Gets the response from a destination.
      *
-     * Switches to get the no-matching-route destination instead if controller class
-     * does not exist or the the method is not callable. 
+     * Switches to get the no-matching-route destination if controller class
+     * does not exist or the the method is not callable. It will call itself
+     * recursively if the return value from the user's controller method is
+     * an instance of \Carrot\Core\Destination. This is called internal
+     * redirection, and it's a feature that allows user's controller to do
+     * a soft redirection.
      *
      * @throws RuntimeException
+     * @param Destination $destination The destination to get the response from.
+     * @return mixed Returns whatever value is returned by the user's controller method.
      *
      */
     protected function getResponse(Destination $destination)
@@ -155,10 +172,11 @@ class FrontController
      *
      * Gets the destination via RouterInterface::getDestinationForNoMatchingRoute().
      * Throws RuntimeException if the controller class does not exist or the method
-     * is not callable.
+     * is not callable. Called by FrontController::getResponse() if the initial
+     * destination returned by RouterInterface is unreachable.
      * 
-     * @return mixed Returns whatever the no-matching-route controller method returns.
      * @throws RuntimeException
+     * @return mixed Returns whatever the no-matching-route controller method returns.
      *
      */
     protected function getNoMatchingRouteResponse()
@@ -192,7 +210,9 @@ class FrontController
      * Checks if the provided variable is an instance of Destination.
      *
      * Throws a RuntimeException when the given variable is not a valid
-     * instance of \Carrot\Core\Destination.
+     * instance of \Carrot\Core\Destination. This method is used after
+     * getting the Destination from RouterInterface, making sure that
+     * it returns a valid Destination object.
      * 
      * @param mixed $destination
      * @throws RuntimeException
