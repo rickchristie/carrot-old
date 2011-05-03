@@ -50,12 +50,14 @@ class Router implements \Carrot\Core\Interfaces\RouterInterface
      *
      * @param array $params Routing parameters to be passed to the anonymous functions.
      * @param Destination $no_matching_route_destination Default destination to return when there is no matching route.
+     * @param string $routes_file_path Absolute path to the file that contains the routes.
      *
      */
-    public function __construct(array $params, \Carrot\Core\Destination $no_matching_route_destination)
+    public function __construct(array $params, \Carrot\Core\Destination $no_matching_route_destination, $routes_file_path)
     {
         $this->params = (object)$params;
         $this->no_matching_route_destination = $no_matching_route_destination;
+        $this->loadRoutesFile($routes_file_path);
     }
     
     /**

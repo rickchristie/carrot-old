@@ -67,13 +67,11 @@ class FrontController
      * @param RouterInterface $router Instance of an implementation of RouterInterface.
      * @param ErrorHandlerInterface $error_handler Instance of an implementation of ErrorHandlerInterface.
      * @param DependencyInjectionContainer $dic Carrot's default dependency injection container.
-     * @param string $routes_file_absolute_path Absolute path to the file that contain the routes.
      *
      */
-    public function __construct(Interfaces\RouterInterface $router, Interfaces\ErrorHandlerInterface $error_handler, DependencyInjectionContainer $dic, $routes_file_absolute_path)
+    public function __construct(Interfaces\RouterInterface $router, Interfaces\ErrorHandlerInterface $error_handler, DependencyInjectionContainer $dic)
     {
         $error_handler->set();
-        $router->loadRoutesFile($routes_file_absolute_path);
         $this->router = $router;
         $this->error_handler = $error_handler;
         $this->dic = $dic;

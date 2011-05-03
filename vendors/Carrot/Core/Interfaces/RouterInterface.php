@@ -36,30 +36,10 @@ interface RouterInterface
     public function getDestination();
     
     /**
-     * Loads a file that defines routes.
-     *
-     * Front controller will call this method with a file path to \routes.php
-     * as the argument. When you write your own custom Router class, it's up to
-     * you whether to use the file or not.
-     *
-     * @param string $path Absolute path to /routes.php.
-     *
-     */
-    public function loadRoutesFile($path);
-    
-    /**
      * Gets the default destination to go if there's no matching route.
      *
      * @return \Carrot\Core\Destination
      *
      */
     public function getDestinationForNoMatchingRoute();
-    
-    /**
-     * Sets the default desintaion to go if there's no matching route.
-     *
-     * @param Destination $destination
-     *
-     */
-    public function setDestinationForNoMatchingRoute(\Carrot\Core\Destination $destination);
 }

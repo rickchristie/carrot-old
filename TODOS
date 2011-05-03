@@ -1,6 +1,5 @@
 TODO: Add two way routing to Default Router, take some hints from Symfony's implementation!
 TODO: Removed the need for the FrontController to load the routes file, it should be done in the Router's constructor.
-
 TODO: Update the Welcome page
 TODO: Update comments on Carrot\Core dependency registration page
 TODO: Revalidate comments on all major files (DIC, index.php, autoload.php, config.php, registrations.php, routes.php, FrontController.php)

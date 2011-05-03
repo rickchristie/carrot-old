@@ -26,7 +26,6 @@
  * @param RouterInterface $router Instance of an implementation of RouterInterface.
  * @param ErrorHandlerInterface $error_handler Instance of an implementation of ErrorHandlerInterface.
  * @param DependencyInjectionContainer $dic Carrot's default dependency injection container.
- * @param string $routes_file_absolute_path Absolute path to the file that contain the routes.
  * 
  */
 
@@ -36,8 +35,7 @@ $dic->register('\Carrot\Core\FrontController@main', function($dic)
     (
         $dic->getInstance('\Carrot\Core\Router@shared'),
         $dic->getInstance('\Carrot\Core\ErrorHandler@shared'),
-        $dic,
-        dirname(__DIR__) . DIRECTORY_SEPARATOR . 'routes.php'
+        $dic
     ); 
 });
 
@@ -45,9 +43,10 @@ $dic->register('\Carrot\Core\FrontController@main', function($dic)
  * \Carrot\Core\Router@main
  * 
  * You can modify 
- *
+ * 
  * @param array $params Routing parameters to be passed to the anonymous functions.
  * @param Destination $no_matching_route_destination Default destination to return when there is no matching route.
+ * @param string $routes_file_path Absolute path to the file that contains the routes.
  * 
  */
 
@@ -63,7 +62,10 @@ $dic->register('\Carrot\Core\Router@shared', function($dic)
         'session' => $dic->getInstance('\Carrot\Core\Session@shared')
     );
     
-    return new \Carrot\Core\Router($params, $no_matching_route_destination);
+    $routes_file_path = dirname(__DIR__) . DIRECTORY_SEPARATOR . 'routes.php';
+    $router =  new \Carrot\Core\Router($params, $no_matching_route_destination, $routes_file_path);
+    $dic->saveShared('\Carrot\Core\Router@shared', $router);
+    return $router;
 });
 
 /**
