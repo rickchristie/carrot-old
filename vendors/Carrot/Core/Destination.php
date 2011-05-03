@@ -12,9 +12,9 @@
 /**
  * Destination
  * 
- * Represents a Destination, namely, the controller's DIC item ID (for instantiation),
- * the method to call and the arguments to pass to the method. Returned by Router
- * class, used by the front controller.
+ * Value object, represents a Destination, namely, the controller's DIC item ID
+ * (for instantiation), the method to call and the arguments to pass to the method.
+ * Returned by Router class, used by the front controller.
  *
  * @author      Ricky Christie <seven.rchristie@gmail.com>
  * @license     http://www.opensource.org/licenses/mit-license.php MIT License
@@ -39,11 +39,6 @@ class Destination
      * @var array Array of paramters to be passed.
      */
     protected $params;
-    
-    /**
-     * @var string Package name means the two top level namespace (\Vendor\Namespace).
-     */
-    protected $package_name;
     
     /**
      * @var string The name of the controller class derived from the DIC ID.
@@ -81,7 +76,6 @@ class Destination
         $this->method = $method;
         $this->params = $params;
         $this->class_name = $this->getClassNameFromID($controller_dic_id);
-        $this->package_name = $this->getPackageNameFromID($controller_dic_id);
     }
     
     /**
@@ -118,17 +112,6 @@ class Destination
     }
     
     /**
-     * Returns the package name (\Vendor\Namespace).
-     *
-     * @return string Package name (\Vendor\Namespace).
-     *
-     */
-    public function getPackageName()
-    {
-        return $this->package_name;
-    }
-    
-    /**
      * Returns class name.
      *
      * @return string The controller's class name, generated from the DIC item ID.
@@ -145,26 +128,24 @@ class Destination
      * Validates DIC registration ID.
      *
      * The following rules must be satisfied:
-     * 
-     *  1. Must have at least two namespaces to form a package name (\Vendor\Namespace).
-     *  2. Must be a fully qualified name (with starting backslash).
-     *  3. Must have a configuration name after the FQN, separated by '@'.
      *
-     * @param string $id DIC item ID.
+     *  1. Must use fully qualifed name (with starting backslash).
+     *  2. Must have a configuration name after FQN, separated by '@'.
+     *
+     * @param string $dic_id DIC item ID.
      * @return bool TRUE if valid, FALSE otherwise.
      *
      */
-    protected function validateID($id)
+    protected function validateID($dic_id)
     {
-        $id_exploded = explode('@', $id);
+        $dic_id_exploded = explode('@', $dic_id);
         
         return
         (
-            count($id_exploded) == 2 &&
-            !empty($id_exploded[0]) &&
-            !empty($id_exploded[1]) &&
-            $id_exploded[0]{0} == '\\' &&
-            substr_count($id_exploded[0], '\\') >= 2
+            count($dic_id_exploded) == 2 &&
+            !empty($dic_id_exploded[0]) &&
+            !empty($dic_id_exploded[1]) &&
+            $dic_id_exploded[0]{0} == '\\'
         );
     }
     
@@ -179,45 +160,5 @@ class Destination
     {
         $id_exploded = explode('@', $id);
         return $id_exploded[0];
-    }
-    
-    /**
-     * Gets the package name (\Vendor\Namespace) from DIC item ID.
-     *
-     * Package name means the top level namespace (vendor) and the namespace
-     * of the class, according to PSR-0 Final Proposal.
-     *
-     * @param string $id DIC item ID.
-     * @return string Package name (\Vendor\Namespace).
-     *
-     */
-    protected function getPackageNameFromID($id)
-    {
-        $id_exploded = explode('@', $id);
-        $namespaces = explode('\\', $id_exploded[0]);
-        $fragment_saved = 0;
-        $package_name = '';
-        
-        // Get the first two fragment
-        foreach ($namespaces as $fragment)
-        {
-            if ($fragment_saved == 2)
-            {
-                break;
-            }
-            
-            if (!empty($fragment))
-            {
-                $package_name .= '\\' . $fragment;
-                $fragment_saved++;
-            }
-        }
-        
-        if ($fragment_saved != 2)
-        {
-            throw new \InvalidArgumentException("Error in getting package name from DIC configuration item, '{$id}' does not have a proper namespace.");
-        }
-        
-        return $package_name;
     }
 }

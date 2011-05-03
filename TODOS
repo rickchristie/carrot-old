@@ -1,0 +1,12 @@
+TODO: Add two way routing to Default Router, take some hints from Symfony's implementation!
+
+
+TODO: Update the Welcome page
+TODO: Update comments on Carrot\Core\FrontController
+TODO: Update comments on Carrot\Core dependency registration page
+TODO: Revalidate comments on all major files (DIC, index.php, autoload.php, config.php, registrations.php, routes.php,)
+
+-- DONE -- 
+
+Refactor index.php to Carrot\Core\FrontController
+Update index.php, remove config.php

@@ -36,33 +36,33 @@ class WelcomeController
     /**
      * @var string Path to the DIC root directory (default is /vendors), without trailing slash.
      */
-    protected $root_directory;
+    protected $vendors_directory;
     
     /**
      * Constructs the welcome controller.
      *
      * @param Request $request Instance of \Carrot\Core\Request.
      * @param Response $response Instance of \Carrot\Core\Response.
-     * @param string $root_directory Path to the DIC root directory (default is /vendors), without trailing slash.
+     * @param string $vendors_directory Path to the DIC root directory (default is /vendors), without trailing slash.
      *
      */
-	public function __construct(\Carrot\Core\Request $request, \Carrot\Core\Response $response, $root_directory)
-	{
-		$this->request = $request;
-		$this->response = $response;
-        $this->root_directory = $root_directory;
-	}
-	
-	/**
+    public function __construct(\Carrot\Core\Request $request, \Carrot\Core\Response $response, $vendors_directory)
+    {
+        $this->request = $request;
+        $this->response = $response;
+        $this->vendors_directory = $vendors_directory;
+    }
+    
+    /**
      * Loads the default welcome page.
-     *
+     * 
      * @return Response
-     *
+     * 
      */
-	public function index()
-	{
-		// Initialize variables to be used in the template
-        $root_directory = $this->root_directory;
+    public function index()
+    {   
+        // Initialize variables to be used in the template
+        $vendors_directory = $this->vendors_directory;
         $http_host = $this->request->getServer('HTTP_HOST');
         $base_path = $this->request->getBasePath();
         
@@ -74,5 +74,5 @@ class WelcomeController
         // Return the response to the controller
         $this->response->setBody($string);
         return $this->response;
-	}
+    }
 }

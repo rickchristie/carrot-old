@@ -342,7 +342,7 @@
 		which means your controller have at least two namespace (<code>Vendor\Namespace</code>) and properly placed. For starters,
 		let's create the controller class <code>ACME\Site\Controllers\HomeController</code>. Create this file:
 	</p>
-	<pre><?php echo htmlspecialchars($root_directory), DIRECTORY_SEPARATOR, 'ACME', DIRECTORY_SEPARATOR, 'Site', DIRECTORY_SEPARATOR, 'Controllers', DIRECTORY_SEPARATOR, 'HomeController.php' ?></pre>
+	<pre><?php echo htmlspecialchars($vendors_directory), DIRECTORY_SEPARATOR, 'ACME', DIRECTORY_SEPARATOR, 'Site', DIRECTORY_SEPARATOR, 'Controllers', DIRECTORY_SEPARATOR, 'HomeController.php' ?></pre>
 	
 	<p>
 		When you create your controller in Carrot, remember that each of its method that got called by the front controller
@@ -407,7 +407,7 @@ class HomeController
 		of our controller:
 	</p>
 	
-	<pre><?php echo htmlspecialchars($root_directory), DIRECTORY_SEPARATOR, 'ACME', DIRECTORY_SEPARATOR, 'Site', DIRECTORY_SEPARATOR, '_dicregistration.php' ?></pre>
+	<pre><?php echo htmlspecialchars($vendors_directory), DIRECTORY_SEPARATOR, 'ACME', DIRECTORY_SEPARATOR, 'Site', DIRECTORY_SEPARATOR, '_dicregistration.php' ?></pre>
 	
 	<p>
 		Note that you don't need to create this file if you don't want your class to be managed by the DIC. You only need to
