@@ -1,5 +1,11 @@
+Carrot: Simple, Experimental PHP Framework (Unstable)
+-----------------------------------------------------
+
+Carrot is an experimental framework that is created as a learning project. It quickly grows from a CodeIgniter-like framework into another beast of its own. It uses dependency injection container to instantiate all of the core classes and it uses anonymous functions heavily.
+
+
 Framework design goals
-======================
+----------------------
 
 - Create a framework without using the keyword global or static. Fully recognize the dangerous nature of global state and avoid it at all costs.
 - Relying on dependency injection container to manage the dependencies of user classes, thus eliminating the need for a global registry of object.
@@ -8,3 +14,13 @@ Framework design goals
 - Make the core as small and focused as possible. Carrot's only job is to be the front controller, setting up the dependency injection container, instantiating the user's controller and getting a response from it. It does not know, much less dictate how the controller is getting the response.
 - Allow the user to replace core classes of Carrot using their own class only by implementing an interface as a contract to the front controller, thereby creating an environment that does not disturb the user's programming routine.
 - Continue the development by adding libraries, which are essentially just decoupled classes that are properly namespaced. Each library must not know that it is being used inside a framework.
+
+Credits
+-------
+
+This framework uses a modifed version of [Fabien Potencier's sample dependency injection container](http://www.slideshare.net/fabpot/dependency-injection-with-php-53).
+
+Special Thanks
+--------------
+
+[The people at Stack Overflow PHP chat](http://chat.stackoverflow.com/rooms/11/php), especially @Gordon, @edorian, @ircmaxell, @markus, @zerkms - for their help and guidance.
