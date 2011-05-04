@@ -26,6 +26,11 @@ namespace Carrot\Core;
 class Router implements \Carrot\Core\Interfaces\RouterInterface
 {
     /**
+     * @var array List of named routes.
+     */
+    protected $routes = array();
+    
+    /**
      * @var array List of anonymous functions as chain of responsibility.
      */
     protected $chains = array();
