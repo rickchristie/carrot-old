@@ -62,6 +62,7 @@ $dic->register('\Carrot\Core\Router@shared', function($dic)
         'session' => $dic->getInstance('\Carrot\Core\Session@shared')
     );
     
+    // Absolute path to the file that contains the routes
     $routes_file_path = dirname(__DIR__) . DIRECTORY_SEPARATOR . 'routes.php';
     $router =  new \Carrot\Core\Router($params, $no_matching_route_destination, $routes_file_path);
     $dic->saveShared('\Carrot\Core\Router@shared', $router);

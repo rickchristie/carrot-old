@@ -68,7 +68,9 @@ class WelcomeController
         
         // Get the template, but get it as string with output buffering
         ob_start();
+        echo '<pre>', var_dump($_SERVER), '</pre>';
         require(dirname(__DIR__) . DIRECTORY_SEPARATOR . 'Templates' . DIRECTORY_SEPARATOR . 'Welcome.php');
+        
         $string = ob_get_clean();
         
         // Return the response to the controller

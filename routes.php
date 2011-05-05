@@ -89,3 +89,30 @@ $router->add(function($params, $router)
     // Otherwise, not my responsibility, pass arguments to the next chain
     return $router->next($params, $router);
 });
+
+/*
+
+$router->add('welcome', function($params)
+{
+    
+}, function($params)
+{
+    
+})
+
+// Translates {/} to WelcomeController::index()
+$router->addRoute
+(
+    'welcome',
+    function($params)
+    {
+        if (empty($params->request->getAppRequestURISegments()))
+        {
+            return new Destination('\Carrot\Core\Controllers\WelcomeController@main', 'index');
+        }
+    },
+    function($params)
+    {
+        return $params->request->getBaseURL();
+    }
+); */
