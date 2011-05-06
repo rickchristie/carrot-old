@@ -70,49 +70,25 @@
 
 use \Carrot\Core\Destination;
 
-// Translates {/} to WelcomeController::index()
-$router->add(function($params, $router)
-{
-    // Get app request uri in segments
-    $app_request_uri = $params->request->getAppRequestURISegments();
-    
-    // Return destination if uri segment array is empty
-    if (empty($app_request_uri))
-    {
-        return new Destination
-        (
-            '\Carrot\Core\Controllers\WelcomeController@main',
-            'index'
-        );
-    }
-    
-    // Otherwise, not my responsibility, pass arguments to the next chain
-    return $router->next($params, $router);
-});
-
-/*
-
-$router->add('welcome', function($params)
-{
-    
-}, function($params)
-{
-    
-})
-
+// Route:welcome
 // Translates {/} to WelcomeController::index()
 $router->addRoute
-(
+(   
     'welcome',
     function($params)
     {
-        if (empty($params->request->getAppRequestURISegments()))
+        // Assuming that Request object is injected as a parameter at Router construction
+        $uri_segments = $params->request->getAppRequestURISegments();
+        
+        // We don't need to return any value at all if it's not our route.
+        if (empty($uri_segments))
         {
             return new Destination('\Carrot\Core\Controllers\WelcomeController@main', 'index');
         }
     },
-    function($params)
+    function($params, $vars)
     {
-        return $params->request->getBaseURL();
+        // Since it's a route to the home page, we simply return a relative path.
+        return $params->request->getBasePath();
     }
-); */
+);

@@ -73,6 +73,11 @@ class Request
     protected $app_request_uri_segments;
     
     /**
+     * @var string File name 
+     */
+    protected $main_request_handler;
+    
+    /**
      * Constructs the Request object.
      *
      * Although this class can guess the base path of this application, it is
@@ -328,17 +333,18 @@ class Request
      *
      */
     protected function generateAppRequestURISegments()
-    {
-        if (strpos($this->server['REQUEST_URI'], $this->base_path) !== 0)
+    {   
+        $app_uri_string = $this->server['REQUEST_URI'];
+        
+        // Remove base path if it exists
+        if (strpos($this->server['REQUEST_URI'], $this->base_path) === 0)
         {
-            throw new \RuntimeException("Request object error! Base path is {$this->base_path}, but it doesn't exist in the REQUEST_URI ({$this->server['REQUEST_URI']}).");
+            $app_uri_string = substr($app_uri_string, strlen($this->base_path));
         }
         
-        // Remove base path
-        $app_uri_string = substr($this->server['REQUEST_URI'], strlen($this->base_path));
+        // Remove query string, if it exists
         $pos = strpos($app_uri_string, '?');
         
-        // If query string exists, remove it
         if ($pos !== FALSE)
         {
             $app_uri_string = substr($app_uri_string, 0, $pos);

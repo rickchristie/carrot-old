@@ -26,19 +26,19 @@ namespace Carrot\Core;
 class Router implements \Carrot\Core\Interfaces\RouterInterface
 {
     /**
-     * @var array List of named routes.
+     * @var array List of anonymous functions returning an instance of Destination.
      */
-    protected $routes = array();
+    protected $route_functions = array();
     
     /**
-     * @var array List of anonymous functions as chain of responsibility.
+     * @var array List of anonymous functions returning a formatted URL.
      */
-    protected $chains = array();
+    protected $reverse_route_functions = array();
     
     /**
-     * @var int The function index currently active, set initially as -1, means no index is active.
+     * @var array List of route names that has been successfully defined.
      */
-    protected $active_index = -1;
+    protected $route_names = array();
     
     /**
      * @var Destination Default Destination object to return if there's no matching route. 
@@ -46,12 +46,14 @@ class Router implements \Carrot\Core\Interfaces\RouterInterface
     protected $no_matching_route_destination;
     
     /**
-     * @var StdClass PHP standard class containing 
+     * @var StdClass PHP standard class containing the routing parameters, to be passed to the routing/reverse-routing functions.
      */
     protected $params;
     
     /**
      * Constructs a Router object.
+     *
+     * afds
      *
      * @param array $params Routing parameters to be passed to the anonymous functions.
      * @param Destination $no_matching_route_destination Default destination to return when there is no matching route.
@@ -66,122 +68,134 @@ class Router implements \Carrot\Core\Interfaces\RouterInterface
     }
     
     /**
-     * Add a new function to the chain of responsibility.
+     * Adds a new named route.
+     * 
+     * Your route must be defined in anonymous function that takes one argument: $params, which
+     * contains the routing parameters. Routing parameters are set during object construction.
+     * In addition to defining a routing function, you must also define a reverse-routing function,
+     * this allows you to use two way routing.
      *
-     * Your anonymous function should accept two parameters: $params and $router.
-     * Routing parameters are set during object construction. If you need to add
-     * another parameter (be it an object or a simple string), you should do so
-     * at the dependency registration file.
+     * Routing function should use the routing parameters to determine if the current request
+     * is its responsibility to route. On routing, this class will accept the first Destination
+     * return as a valid route, so early defined routes always wins. Reverse routing function should
+     * accept two parameters, $params (routing parameters), and additional $vars that contains arguments
+     * that are sent via generateURL() method (see documentation for that method for more info).
      *
-     * Your anonymous function must either return a Destination instance or pass
-     * the parameters to the next function in the chain of responsibility.
-     *
+     * Here is an example of adding a route for home page (/), assuming that Request object
+     * is injected as a parameter:
+     * 
      * <code>
-     * $router->add(function($params, $router)
-     * {
-     *     // Returns a destination for '/'
-     *     if (empty($params->request->getAppRequestURISegments()))
+     * // Route:welcome
+     * // Translates {/} to WelcomeController::index()
+     * $router->addRoute
+     * (   
+     *     'welcome',
+     *     function($params)
      *     {
-     *         return new Destination
-     *         (
-     *             '\Vendor\Namespace\HomeController@main',
-     *             'index',
-     *             array('Key Lime Pie', 'Cupcake', 'Orange Juice')
-     *         );
+     *         // Assuming that Request object is injected as a parameter at Router construction
+     *         $uri_segments = $params->request->getAppRequestURISegments();
+     *         
+     *         // We don't need to return any value at all if it's not our route.
+     *         if (empty($uri_segments))
+     *         {
+     *             return new Destination('\Carrot\Core\Controllers\WelcomeController@main', 'index');
+     *         }
+     *     },
+     *     function($params, $vars)
+     *     {
+     *         // Since it's a route to the home page, we simply return a relative path.
+     *         return $params->request->getBasePath();
      *     }
+     * );
+     * <code>
      *
-     *     // Otherwise, not my responsibility
-     *     return $router->next($request, $session);
-     * });
-     * </code>
-     *
-     * Once you returned a destination, the chain stops, so if there are two functions
-     * handling the same route, the earliest function always wins.
-     *
-     * >> WARNING <<
-     *
-     * Don't call router methods other than Router::next(), Router::rewind()
-     * and Router::getDestinationForNoMatchingRoute() inside the anonymous function
-     * unless you wanted an unpredicted behavior (and possibly infinite loop).
-     *
-     * @param Closure $chain
+     * Your reverse-routing function should return string, it will be casted to string anyway
+     * by the generateURL() method.
+     * 
+     * @param string $route_name Name of the route, must be unique for each route.
+     * @param Closure $route_function Anonymous function that returns an instance of Destination.
+     * @param Closure $reverse_route_function Anonymous function that returns a URL string.
      *
      */
-    public function add(\Closure $chain)
+    public function addRoute($route_name, \Closure $route_function, \Closure $reverse_route_function)
     {
-        $this->chains[] = $chain;
+        if (in_array($route_name, $this->route_names))
+        {
+            throw new \RuntimeException("Router error in adding route, route name '{$route_name}' already defined.");
+        }
+        
+        $this->route_names[] = $route_name;
+        $this->route_functions[$route_name] = $route_function;
+        $this->reverse_route_functions[$route_name] = $reverse_route_function;
     }
     
     /**
-     * Starts the chain of responsibility to get the Destination object.
+     * Walks through the defined route functions until one of them returns an instance of Destination.
      *
-     * If the returned value is not an instance of Destination this method
-     * will throw a RuntimeException. If you have no route defined, it will
-     * also throw a RuntimeException.
-     *
+     * If none of the route returns an instance of Destination, it will return no-matching-route
+     * Destination instead. No matching route destination is set during object construction.
+     * 
      * @return Destination
      *
      */
     public function getDestination()
     {
-        if (empty($this->chains))
-        {
-            throw new \RuntimeException('Router error in getting Destination, it doesn\'t have any route defined.');
-        }
+        $destination = $this->no_matching_route_destination;
         
-        $this->active_index = -1;
-        $destination = $this->next($this->params, $this);
-        
-        if (!is_a($destination, '\Carrot\Core\Destination'))
+        foreach ($this->route_functions as $route)
         {
-            throw new \RuntimeException("Router error in getting Destination, route #{$this->active_index} does not return an instance of \Carrot\Core\Destination.");
+            $return = $route($this->params);
+            
+            if (is_object($return) && is_a($return, '\Carrot\Core\Destination'))
+            {
+                $destination = $return;
+                break;
+            }
         }
         
         return $destination;
     }
     
     /**
-     * Calls the next function in the chain of responsibility.
+     * Uses the user defined reverse-routing function to return a URL.
      * 
-     * Passes $request and $session to the next function. If the chain is exhausted
-     * it will return the default Router::no_matching_route_destination instead.
+     * You can invoke the reverse-routing function you previously defined in your route using
+     * this wrapper function. State the unique route name and variables to be passed to the
+     * said function. The ideal way to use this method will be to inject the Router instance
+     * to your template so you can call it from your template files.
      *
-     * @param StdClass $params Standard PHP class containing the routing parameters, set at constructor.
-     * @param Router $router An instance of this Router class.
+     * If the provided route name does not exist, this method will throw a RuntimeException.
+     * 
+     * <code>
+     * <a href="<?php $router->generateURL('blog_post', array('page' => 4), true) ?>"></a>
+     * </code>
+     * 
+     * @param string $route_name Name of the route to invoke.
+     * @param array $array_parameters Array parameters to send to reverse routing function.
+     * @param bool $escape_url If true, the method escapes the returned string with htmlspecialchars(ENT_QUOTES).
+     * @return string
      *
      */
-    public function next($params, $router)
+    public function generateURL($route_name, array $array_parameters = array(), $escape_url = false)
     {
-        ++$this->active_index;
-        
-        if (!isset($this->chains[$this->active_index]) or !is_callable($this->chains[$this->active_index]))
+        if (!in_array($route_name, $this->route_names))
         {
-            return $this->no_matching_route_destination;
+            throw new \RuntimeException("Router error in generating URL, route name '{$route_name}' does not exist.");
         }
         
-        return $this->chains[$this->active_index]($params, $router);
+        $return = (string) $this->reverse_route_functions[$route_name]($this->params, $array_parameters);
+        
+        if ($escape_url)
+        {
+            #TODO: Find out if we have to define UTF-8 here
+            $return = htmlspecialchars($return, ENT_QUOTES);
+        }
+        
+        return $return;
     }
     
     /**
-     * Restarts the chain of responsibility with new parameters.
-     *
-     * It's usually a bad practice to redefine the user's request/session
-     * object and restart the chain of responsibility, it is better to use
-     * response redirection. If you need it so badly, here it is. It resets
-     * Router::active_index to -1 and in doing so restarts the chain.
-     *
-     * @param StdClass $params Standard PHP class containing the routing parameters, set at constructor.
-     * @param Router $router An instance of this Router class.
-     *
-     */
-    public function rewind($params, $router)
-    {
-        $this->active_index = -1;
-        return $this->next($params, $router);
-    }
-    
-    /**
-     * Sets a default destination to return to if there is no matching route.
+     * Sets a default destination to return if there is no matching route.
      *
      * @param Destination
      *
@@ -192,7 +206,7 @@ class Router implements \Carrot\Core\Interfaces\RouterInterface
     }
     
     /**
-     * Gets the default destination to go if there's no matching route.
+     * Gets the default destination to go to if there's no matching route.
      *
      * @return Destination
      *
@@ -212,8 +226,12 @@ class Router implements \Carrot\Core\Interfaces\RouterInterface
     {
         if (file_exists($path))
         {
-            $router = $this;
-            require($path);
+            $require = function($router, $path)
+            {
+                require_once($path);
+            };
+            
+            $require($this, $path);
         }
     }
 }
