@@ -8,15 +8,3 @@ TODO: Finish Validation, take hints from Zend's validation process
 
 -- DONE -- 
 
-Fixed comments on Router.php
-Fixed comments on autoload.php
-Fixed comments on index.php
-Fixed comments on registrations.php
-Fixed comments on routes.php
-Revalidate comments on all major files (DIC, index.php, autoload.php, config.php, registrations.php, routes.php, FrontController.php, Request.php, Router.php)
-Update comments on Carrot\Core dependency registration page
-Refactor index.php to Carrot\Core\FrontController
-Update index.php, remove config.php
-Update comments on Carrot\Core\FrontController
-Removed the need for the FrontController to load the routes file, it should be done in the Router's constructor.
-Add two way routing to Default Router, take some hints from Symfony's implementation!
