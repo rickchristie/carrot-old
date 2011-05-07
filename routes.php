@@ -10,61 +10,72 @@
  */
 
 /**
- * The front controller will call RouterInterface::loadRoutesFile() with
- * the absolute path to this file as the sole argument. What the Router class
- * does with this file is entirely up to the author of the class.
+ * Carrot's default Router's routes file.
  *
- * -- Information below only applies if you're using the default router --
+ * Carrot's default Router is configured to load this routes file in the default
+ * dependency registration file for \Carrot\Core. You can use this file to define
+ * routes for your application.
  *
- * If you are using the default Router, you can use this file to define
- * routes and set no-matching-route destination. To set a default non-
- * matching-route destination, use:
+ * You can set no-matching-route destination by editing the dependency registration
+ * file for \Carrot\Core. You can also set it dynamically by adding this snippet
+ * (adjust as necessary):
  *
  * <code>
  * $router->setDestinationForNoMatchingRoute(new Destination
  * (
- *    '\Vendor\Namespace\Subnamespace\Controller@dicname',
- *    'method_name',
- *    array('Arguments')
+ *     '\Namespace\Subnamespace\Controller@config_name',
+ *     'method_name',
+ *     array('args1', 'args2', ...);
  * );
  * </code>
- *
- * Carrot's default Router uses a simplified version of the chain of
- * responsibility pattern. For each route, we create an anonymous function
- * that either returns an instance of Destination or pass that responsibility
- * and arguments to the next function in the chain. Your anonymous function
- * must accept two arguments: $params and $router itself. Routing parameters
- * are set at object construction, so if you need to add a new routing parameter
- * (be it an object or simple string) edit the dependency registration file
- * for Carrot\Core.
  * 
- * Create a new chain by using Router::add(), like this:
+ * Carrot's default Router handles two way routing by defining two anonymous functions,
+ * one for routing and one to do reverse-routing. Routing function should accept
+ * '$params' as a single parameter, an object that contains the routing parameters.
+ * Routing function should return an instance of Destination if it thinks it can
+ * route the current request. The earliest defined route always wins.
+ *
+ * Reverse-routing function, on the other hand, accepts $param (routing parameters)
+ * and $vars - which is an array of additional arguments sent when Router::generateURL()
+ * is invoked.
  *
  * <code>
- * // Translates {/} to WelcomeController::index()
- * $router->add(function($params, $router)
- * {
- *      // Get app request uri in segments
- *      $app_request_uri = $params->request->getAppRequestURISegments();
- *      
- *      // Return destination if uri segment array is empty
- *      if (empty($app_request_uri))
- *      {
- *          return new Destination
- *          (
- *              '\Carrot\Core\Controllers\WelcomeController@main',
- *              'index'
- *          );
- *      }
- *
- *      // Otherwise, not my responsibility, pass arguments to the next chain
- *      return $router->next($params, $router);
- * });
+ * // Route:blog_post
+ * // Translates {/blog/$id} to \MyApp\BlogController::viewPost($id)
+ * $router->addRoute
+ * (
+ *     'blog_post',
+ *     function($params)
+ *     {
+ *         if (isset($params->uri_segments[0]) && $params->uri_segments[0] == 'blog')
+ *         {
+ *             // Specify a default value for $id
+ *             $id = 0;
+ *              
+ *             // Use given value if they exists
+ *             if (isset($params->uri_segments[1]))
+ *             {
+ *                 $id = (int) $params->uri_segments[1];
+ *             }
+ *             
+ *             // Return the Destination
+ *             return new Destination('\MyApp\BlogController@main', 'viewPost', array($id));
+ *         }
+ *     },
+ *     function($params, $vars)
+ *     {
+ *         // Return relative path
+ *         if (isset($vars['id']))
+ *         {
+ *             return $params->getBasePath() . $id;
+ *         }
+ *     }
+ * );
  * </code>
- *
- * If the chain has been exhausted and we still don't have a Destination,
- * the Router will return no-matching-route destination to the front
- * controller.
+ * 
+ * Routing parameters are set during Router object construction. You can change
+ * which object gets passed as routing parameters by editing the appropriate
+ * dependency registration file.
  *
  */
 
@@ -76,12 +87,9 @@ $router->addRoute
 (   
     'welcome',
     function($params)
-    {
-        // Assuming that Request object is injected as a parameter at Router construction
-        $uri_segments = $params->request->getAppRequestURISegments();
-        
+    {   
         // We don't need to return any value at all if it's not our route.
-        if (empty($uri_segments))
+        if (empty($params->uri_segments))
         {
             return new Destination('\Carrot\Core\Controllers\WelcomeController@main', 'index');
         }

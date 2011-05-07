@@ -12,9 +12,10 @@
 /**
  * Router
  * 
- * Carrot's default Router. Uses chain of responsibility to store anonymous functions
- * that try to determine the destination. You can think of each anonymous function as
- * a Closure object representing a route.
+ * Carrot's default Router. Uses two anonymous functions to store a two way route.
+ * One anonymous function is responsible for routing, the other one is responsible
+ * for reverse-routing. This class will call the routing functions one by one until
+ * one of them returns an instance of Destination.
  *
  * @author      Ricky Christie <seven.rchristie@gmail.com>
  * @license     http://www.opensource.org/licenses/mit-license.php MIT License
@@ -53,7 +54,21 @@ class Router implements \Carrot\Core\Interfaces\RouterInterface
     /**
      * Constructs a Router object.
      *
-     * afds
+     * Routing parameters set here in construction will be passed to the routing and reverse
+     * routing function. They can be objects, strings, or plain arrays. Routin parameters is 
+     * injected as arrays, but it will be casted into an object for easier access by the
+     * anonymous functions, so make sure the index is simple strings. This array:
+     *
+     * <code>
+     * $params = array('base_url' => 'http://localhost/carrot-dev', 'request' => $request);
+     * </code>
+     *
+     * will be accessed as object at routing/reverse-routing functions:
+     *
+     * <code>
+     * $params->base_url
+     * $params->request
+     * </code>
      *
      * @param array $params Routing parameters to be passed to the anonymous functions.
      * @param Destination $no_matching_route_destination Default destination to return when there is no matching route.
@@ -132,7 +147,7 @@ class Router implements \Carrot\Core\Interfaces\RouterInterface
     /**
      * Walks through the defined route functions until one of them returns an instance of Destination.
      *
-     * If none of the route returns an instance of Destination, it will return no-matching-route
+     * If none of the route returns an instance of Destination, this method will return no-matching-route
      * Destination instead. No matching route destination is set during object construction.
      * 
      * @return Destination
@@ -162,7 +177,7 @@ class Router implements \Carrot\Core\Interfaces\RouterInterface
      * You can invoke the reverse-routing function you previously defined in your route using
      * this wrapper function. State the unique route name and variables to be passed to the
      * said function. The ideal way to use this method will be to inject the Router instance
-     * to your template so you can call it from your template files.
+     * to your template class so you can call it from your template files.
      *
      * If the provided route name does not exist, this method will throw a RuntimeException.
      * 

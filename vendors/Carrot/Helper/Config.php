@@ -10,18 +10,12 @@
  */
 
 /**
- * MySQL Database
+ * Config
  * 
+ * A helper class used to store immutable configurations.
  * 
- *
  * @author      Ricky Christie <seven.rchristie@gmail.com>
  * @license     http://www.opensource.org/licenses/mit-license.php MIT License
  *
  */
 
-namespace Carrot\Drivers;
-
-class MySQLDatabase
-{
-    
-}

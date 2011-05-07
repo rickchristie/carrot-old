@@ -133,7 +133,7 @@ class Destination
      *  2. Must have a configuration name after FQN, separated by '@'.
      *
      * @param string $dic_id DIC item ID.
-     * @return bool TRUE if valid, FALSE otherwise.
+     * @return bool True if valid, false otherwise.
      *
      */
     protected function validateID($dic_id)

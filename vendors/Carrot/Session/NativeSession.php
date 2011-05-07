@@ -10,7 +10,7 @@
  */
 
 /**
- * Session
+ * NativeSession
  * 
  * Carrot's default Session wrapper class. It wraps interaction between your classes
  * with PHP's default session handlers. For it to function correctly:
@@ -25,22 +25,22 @@
  *
  */
 
-namespace Carrot\Core;
+namespace Carrot\Session;
 
-class Session
+class NativeSession
 {
     /**
-     * @var bool TRUE if session_start() has been called at least once, FALSE otherwise.
+     * @var bool True if session_start() has been called at least once, false otherwise.
      */
     protected $has_been_started_before;
 
     /**
-     * @var bool TRUE if session is currently started, FALSE otherwise.
+     * @var bool True if session is currently started, false otherwise.
      */
     protected $started;
     
     /**
-     * @var bool TRUE if session is currently closed using session_write_close(), FALSE otherwise.
+     * @var bool True if session is currently closed using session_write_close(), false otherwise.
      */
     protected $closed;
     
@@ -50,19 +50,19 @@ class Session
      * Assumes that it is instantiated at early bootstraping, where session is not started yet.
      * This is the best possible scenario to use this class.
      * 
-     * @param bool $session_is_started Optional. TRUE if the session is currently started, defaults to FALSE.
-     * @param bool $session_write_closed Optional. TRUE if the session is currently write closed, defaults to FALSE.
-     * @param bool $session_has_been_started_before Optional. TRUE if session has been started at least once, defaults to FALSE.
+     * @param bool $session_is_started Optional. True if the session is currently started, defaults to false.
+     * @param bool $session_write_closed Optional. True if the session is currently write closed, defaults to false.
+     * @param bool $session_has_been_started_before Optional. True if session has been started at least once, defaults to false.
      *
      */
-    public function __construct($session_is_started = FALSE, $session_write_closed = TRUE, $session_has_been_started_before = FALSE)
+    public function __construct($session_is_started = false, $session_write_closed = true, $session_has_been_started_before = false)
     {
         $this->started = $session_is_started;
         $this->closed = $session_write_closed;
         
         if ($this->started)
         {
-            $this->has_been_started_before = TRUE;
+            $this->has_been_started_before = true;
         }
         else
         {
@@ -84,9 +84,9 @@ class Session
         if (!$this->started)
         {
             session_start();
-            $this->started = TRUE;
-            $this->closed = FALSE;
-            $this->has_been_started_before = TRUE;
+            $this->started = true;
+            $this->closed = false;
+            $this->has_been_started_before = true;
         }
     }
     
@@ -94,10 +94,10 @@ class Session
      * Destroys the session, acts as a wrapper for session_destroy().
      * 
      * Destroys both the data and the cookie for the session ID at the
-     * client side. Will not run if Session::started is FALSE or if
-     * Session::closed is TRUE.
+     * client side. Will not run if Session::started is false or if
+     * Session::closed is true.
      *
-     * @return bool TRUE if destroyed, FALSE if session is not started or is currently write closed.
+     * @return bool True if destroyed, false if session is not started or is currently write closed.
      * 
      */
     public function destroy()
@@ -111,13 +111,13 @@ class Session
             session_destroy();
             
             // Set the session state
-            $this->started = FALSE;
-            $this->closed = TRUE;
+            $this->started = false;
+            $this->closed = true;
             
-            return TRUE;
+            return true;
         }
         
-        return FALSE;
+        return false;
     }
     
     /**
@@ -166,13 +166,13 @@ class Session
     /**
      * Writes/overwrites a session variable.
      * 
-     * This method will return FALSE if the session is not started or if the session
+     * This method will return false if the session is not started or if the session
      * is currently write closed. Use Session::start() to make sure that the variable
      * is writable before using this method.
      * 
      * @param string $index Session array index to be written on.
      * @param string $content Value used to write.
-     * @return bool TRUE if the write is sucessful, FALSE otherwise.
+     * @return bool True if the write is sucessful, false otherwise.
      *
      */
     public function write($index, $content)
@@ -180,16 +180,16 @@ class Session
         if ($this->started && !$this->closed)
         {
             $_SESSION[$index] = $content;
-            return TRUE;
+            return true;
         }
         
-        return FALSE;
+        return false;
     }
     
     /**
      * Clears all session variable or remove a particular variable.
      *
-     * Will return FALSE if session is not started or if the session is currently write
+     * Will return false if session is not started or if the session is currently write
      * closed. Use Session::start() to make sure that variable is writable.
      * 
      * @param string $index Session array index to remove, if empty it will remove all session variables.
@@ -202,14 +202,14 @@ class Session
             if (empty($index))
             {
                 $_SESSION = array();
-                return TRUE;
+                return true;
             }
             
             unset($_SESSION[$index]);
-            return TRUE;
+            return true;
         }
         
-        return FALSE;
+        return false;
     }
     
     /**
@@ -225,8 +225,8 @@ class Session
         if ($this->started && !$this->closed)
         {
             session_write_close();
-            $this->started = FALSE;
-            $this->closed = TRUE;
+            $this->started = false;
+            $this->closed = true;
         }
     }
         
@@ -271,16 +271,16 @@ class Session
      * Wrapper for session_regenerate_id().
      *
      * @param bool $delete_old_session Whether to delete the old associated session file or not.
-     * @return bool TRUE on success, FALSE on failure.
+     * @return bool True on success, false on failure.
      *
      */
-    public function regenerateID($delete_old_session = FALSE)
+    public function regenerateID($delete_old_session = false)
     {
         return session_regenerate_id($delete_old_session);
     }
     
     /**
-     * Returns TRUE if session is currently started, FALSE otherwise.
+     * Returns true if session is currently started, false otherwise.
      *
      * @return bool 
      *
@@ -291,7 +291,7 @@ class Session
     }
     
     /**
-     * Returns TRUE if session is currently write closed, FALSE otherwise.
+     * Returns true if session is currently write closed, false otherwise.
      *
      * @return bool
      *
@@ -302,7 +302,7 @@ class Session
     }
     
     /**
-     * Returns TRUE if session has already been started at least once, FALSE otherwise.
+     * Returns true if session has already been started at least once, false otherwise.
      *
      * @return bool
      *
@@ -327,7 +327,7 @@ class Session
      * Wrapper for session_decode().
      *
      * @param string Encoded session data.
-     * @return bool TRUE on success, FALSE on failure.
+     * @return bool True on success, false on failure.
      *
      */
     public function decode($string)
@@ -413,9 +413,9 @@ class Session
      * @param int $lifetime Lifetime of the session cookie, defined in seconds.
      * @param string $path Path on the domain where the cookie will work. Use a single slash ('/') for all paths on the domain.
      * @param string $domain Cookie domain, for example 'www.php.net'. To make cookies visible on all subdomains then the domain must be prefixed with a dot like '.php.net'.
-     * @param bool $secure If TRUE cookie will only be sent over secure connections.
-     * @param bool $httponly If set to TRUE then PHP will attempt to send the httponly flag when setting the session cookie.
-     * @return bool TRUE if it changes the cookie parameters, FALSE if it doesn't.
+     * @param bool $secure If true cookie will only be sent over secure connections.
+     * @param bool $httponly If set to true then PHP will attempt to send the httponly flag when setting the session cookie.
+     * @return bool True if it changes the cookie parameters, false if it doesn't.
      *
      */
     public function setCookieParams($lifetime, $path, $domain, $secure, $httponly)
@@ -423,10 +423,10 @@ class Session
         if (!$this->has_been_started_before)
         {
             session_set_cookie_params($lifetimae, $path, $domain, $secure, $httponly);
-            return TRUE;
+            return true;
         }
         
-        return FALSE;
+        return false;
     }
     
     /**
@@ -488,6 +488,6 @@ class Session
             return session_set_save_handler($open, $close, $read, $write, $destroy, $gc);
         }
         
-        return FALSE;
+        return false;
     }
 }

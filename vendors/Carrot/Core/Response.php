@@ -12,8 +12,8 @@
 /**
  * Default Response
  * 
- * Carrot's default ResponseInterface implementation. Should be used by controllers
- * to built their responses. Supports only HTTP/1.0 and HTTP/1.1.
+ * Carrot's default ResponseInterface implementation. Can be used by controllers
+ * to built their response. Supports only HTTP/1.0 and HTTP/1.1.
  *
  * @author      Ricky Christie <seven.rchristie@gmail.com>
  * @license     http://www.opensource.org/licenses/mit-license.php MIT License
@@ -138,7 +138,7 @@ class Response implements \Carrot\Core\Interfaces\ResponseInterface
      *
      * @param string $header_name
      * @param string $contents
-     * @return bool TRUE if successful, FALSE if otherwise.
+     * @return bool True if successful, false if otherwise.
      *
      */
     public function setHeader($header_name, $contents)
@@ -147,10 +147,10 @@ class Response implements \Carrot\Core\Interfaces\ResponseInterface
         {
             $this->headers[$header_name] = $contents;
             header("{$header_name}: {$contents}");
-            return TRUE;
+            return true;
         }
         
-        return FALSE;
+        return false;
     }
     
     /**
@@ -160,7 +160,7 @@ class Response implements \Carrot\Core\Interfaces\ResponseInterface
      * the actual header, it also removes the record in $this->headers.
      *
      * @param string $header_name If not specified, all previously set headers will be removed.
-     * @return bool TRUE if headers are not sent yet, FALSE if otherwise.
+     * @return bool True if headers are not sent yet, false if otherwise.
      *
      */
     public function removeHeader($header_name = '')
@@ -172,28 +172,28 @@ class Response implements \Carrot\Core\Interfaces\ResponseInterface
             {
                 header_remove();
                 $this->headers = array();
-                return TRUE;
+                return true;
             }
             
             // Remove one particular header
             header_remove($header_name);
             unset($this->headers[$header_name]);
-            return TRUE;
+            return true;
         }
         
-        return FALSE;
+        return false;
     }
     
     /**
      * Sets the status code.
      *
      * If custom message is not set, default message will be used instead.
-     * If the status code is invalid it will simply return FALSE. This method
+     * If the status code is invalid it will simply return false. This method
      * also records the status code set in $this->status_code.
      *
      * @param int $code HTTP status code.
      * @param string $message Message to accompany the status code.
-     * @return bool TRUE if successful, FALSE if not.
+     * @return bool True if successful, false if not.
      *
      */
     public function setStatus($code, $message = '')
@@ -202,7 +202,7 @@ class Response implements \Carrot\Core\Interfaces\ResponseInterface
         {
             if (!array_key_exists($code, $this->status_code_messages))
             {
-                return FALSE;
+                return false;
             }
             
             if (empty($message) && isset($this->status_code_messages[$code]))
@@ -214,22 +214,22 @@ class Response implements \Carrot\Core\Interfaces\ResponseInterface
             $this->status_code = $code;
             header("{$this->server_protocol} {$code} {$message}");
             
-            return TRUE;
+            return true;
         }
         
-        return FALSE;
+        return false;
     }
     
     /**
      * Changes the response into a quick redirection response.
      * 
      * This method automatically clears all the headers. If headers are sent
-     * already, it simply returns FALSE (and does not attempt to redirect). It
+     * already, it simply returns false (and does not attempt to redirect). It
      * doesn't exit the PHP processing for you, so you can still do some processing
      * after we sent the redirection header.
      *
      * @param string $location The URL.
-     * @return bool TRUE on success, FALSE of failure.
+     * @return bool True on success, false of failure.
      *
      */
     public function redirect($location)
@@ -238,10 +238,10 @@ class Response implements \Carrot\Core\Interfaces\ResponseInterface
         {
             $this->removeHeader();
             $this->setHeader('Location', $location);
-            return TRUE;
+            return true;
         }
         
-        return FALSE;
+        return false;
     }
     
     /**

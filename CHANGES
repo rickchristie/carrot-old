@@ -1,0 +1,27 @@
+TRUNK
+-----
+
+- Refactored spaghetti index.php to \Carrot\Core\FrontController.
+- Removed config.php, all configurations now done in dependency registration files
+- DependencyInjectionContainer
+    - Removed mandatory usage of PSR-0
+    - Removed the concept of 'default dependency registration files', _dicregistrations.php now gone
+    - Explicit assignment of dependency registration files to a particular namespace/classname
+    - Lazy loads dependency registration files, starting with top level namespaces until it finds the
+      configuration it wants.
+- Router
+    - Routes file path now accepted as constructor parameter, loaded in initialization
+    - Supports two way routing, no longer uses chain of responsibility pattern
+- Session
+    - Renamed to Carrot\Session\NativeSession
+
+
+VERSION 0.1
+-----------
+
+- DependencyInjectionContainer
+    - Loads default dependency registration files '_dicregistrations.php'
+    - Enforces the usage of PSR-0, throws exception when class does not use it
+    - Does not support class placement other than /vendors
+- Router
+    - Uses simplified version of chain of responsibility pattern

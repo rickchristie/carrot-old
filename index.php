@@ -13,7 +13,9 @@
  * Check requirements
  *
  * Carrot works assuming certain conditions are met. It will
- * quit immediately if they are not.
+ * quit immediately if they are not. Although this seems like
+ * a childish behavior, it's actually quite an effective way
+ * to ensure that the framework works as expected.
  *
  */
 
@@ -32,10 +34,10 @@ if (version_compare(PHP_VERSION, '5.3.0') < 0)
     exit('This framework requires PHP 5.3, please upgrade.');
 }
 
-// Load user's autoloader
+// Register autoloaders
 require __DIR__ . DIRECTORY_SEPARATOR . 'autoload.php';
 
-// Load dependency registration file paths
+// Load dependency registration file paths as $registrations array
 require __DIR__ . DIRECTORY_SEPARATOR . 'registrations.php';
 
 if (!isset($registrations) or !$registrations)

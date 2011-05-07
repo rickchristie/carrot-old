@@ -1,9 +1,20 @@
 TODO: Update the Welcome page
-TODO: Update comments on Carrot\Core dependency registration page
-TODO: Revalidate comments on all major files (DIC, index.php, autoload.php, config.php, registrations.php, routes.php, FrontController.php, Request.php, Router.php)
+TODO: Finish Carrot\Helper\Template, make the dependency as loose as possible
+TODO: Finish Carrot\Driver\MySQLDatabase, make the dependency as loose as possible (consider adding Carrot\Drivers\Interfaces\DatabaseInterface)
+TODO: Refactor Carrot\Session package, add flash variable support, different storage mechanisms, consider using SessionStorageInterface, take hints from Symfony!
+TODO: Finish Carrot\Helper\Config
+TODO: Finish Carrot\Helper\URL
+TODO: Finish Validation, take hints from Zend's validation process
 
 -- DONE -- 
 
+Fixed comments on Router.php
+Fixed comments on autoload.php
+Fixed comments on index.php
+Fixed comments on registrations.php
+Fixed comments on routes.php
+Revalidate comments on all major files (DIC, index.php, autoload.php, config.php, registrations.php, routes.php, FrontController.php, Request.php, Router.php)
+Update comments on Carrot\Core dependency registration page
 Refactor index.php to Carrot\Core\FrontController
 Update index.php, remove config.php
 Update comments on Carrot\Core\FrontController

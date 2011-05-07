@@ -12,7 +12,7 @@
 /**
  * Welcome Controller
  * 
- * The controller used to display the welcome page. 
+ * The controller used to display the welcome page.
  * 
  * @author      Ricky Christie <seven.rchristie@gmail.com>
  * @license     http://www.opensource.org/licenses/mit-license.php MIT License
@@ -36,21 +36,21 @@ class WelcomeController
     /**
      * @var string Path to the DIC root directory (default is /vendors), without trailing slash.
      */
-    protected $vendors_directory;
+    protected $root_directory;
     
     /**
      * Constructs the welcome controller.
      *
      * @param Request $request Instance of \Carrot\Core\Request.
      * @param Response $response Instance of \Carrot\Core\Response.
-     * @param string $vendors_directory Path to the DIC root directory (default is /vendors), without trailing slash.
+     * @param string $root_directory Path to the framework's root directory, without trailing slash.
      *
      */
-    public function __construct(\Carrot\Core\Request $request, \Carrot\Core\Response $response, $vendors_directory)
+    public function __construct(\Carrot\Core\Request $request, \Carrot\Core\Response $response, $root_directory)
     {
         $this->request = $request;
         $this->response = $response;
-        $this->vendors_directory = $vendors_directory;
+        $this->root_directory = $root_directory;
     }
     
     /**
@@ -62,14 +62,13 @@ class WelcomeController
     public function index()
     {   
         // Initialize variables to be used in the template
-        $vendors_directory = $this->vendors_directory;
+        $root_directory = $this->root_directory;
         $http_host = $this->request->getServer('HTTP_HOST');
         $base_path = $this->request->getBasePath();
         
         // Get the template, but get it as string with output buffering
         ob_start();
         require(dirname(__DIR__) . DIRECTORY_SEPARATOR . 'Templates' . DIRECTORY_SEPARATOR . 'Welcome.php');
-        
         $string = ob_get_clean();
         
         // Return the response to the controller

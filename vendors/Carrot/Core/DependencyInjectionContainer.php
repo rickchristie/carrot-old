@@ -14,11 +14,11 @@
  * 
  * This class was modified from the 40 LOC DIC example by Fabien Potencier
  * {@link http://www.slideshare.net/fabpot/dependency-injection-with-php-53}.
- *
+ * 
  * This DIC implementation uses anonymous functions to describe how to create
  * an instance without actually creating it. You use it by registering an anonymous
  * function that returns the class instance to an identification:
- *
+ * 
  * <code>
  * $dic->register('\Carrot\Core\DependencyInjectionContainer@main', function($dic)
  * {
@@ -388,7 +388,7 @@ class DependencyInjectionContainer
      *  2. Must have a configuration name after FQN, separated by '@'.
      *
      * @param string $dic_id DIC item ID.
-     * @return bool TRUE if valid, FALSE otherwise.
+     * @return bool True if valid, false otherwise.
      *
      */
     protected function validateID($dic_id)

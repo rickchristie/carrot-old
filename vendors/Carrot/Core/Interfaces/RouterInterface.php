@@ -12,11 +12,10 @@
 /**
  * Router Interface
  *
- * This interface represents the contract between the Router and the front
- * controller (index.php). The responsibility of the Router class is to return
- * a Destination object to the front controller. Front controller will instantiate
- * a Router, tell it to load /routes.php file and expects it to return an instance
- * of Destination when it calls RouterInterface::getDestination().
+ * This interface represents the contract between the Router and the framework.
+ * The responsibility of the Router class is to return a Destination object to the
+ * front controller. Front controller will instantiate a Router and expects it to
+ * return an instance of Destination when it calls RouterInterface::getDestination().
  * 
  * @author      Ricky Christie <seven.rchristie@gmail.com>
  * @license     http://www.opensource.org/licenses/mit-license.php MIT License

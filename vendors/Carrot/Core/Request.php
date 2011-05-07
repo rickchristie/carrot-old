@@ -345,7 +345,7 @@ class Request
         // Remove query string, if it exists
         $pos = strpos($app_uri_string, '?');
         
-        if ($pos !== FALSE)
+        if ($pos !== false)
         {
             $app_uri_string = substr($app_uri_string, 0, $pos);
         }
@@ -371,7 +371,7 @@ class Request
      * Wrapper for PHP isset on $_SERVER index.
      *
      * @param string $index The index to check.
-     * @return bool TRUE if the index exists, FALSE otherwise.
+     * @return bool True if the index exists, false otherwise.
      *
      */
     public function issetServer($index)
@@ -383,7 +383,7 @@ class Request
      * Wrapper for PHP isset on $_GET index.
      *
      * @param string $index The index to check.
-     * @return bool TRUE if the index exists, FALSE otherwise.
+     * @return bool True if the index exists, false otherwise.
      *
      */
     public function issetGet($index)
@@ -395,7 +395,7 @@ class Request
      * Wrapper for PHP isset on $_POST index.
      *
      * @param string $index The index to check.
-     * @return bool TRUE if the index exists, FALSE otherwise.
+     * @return bool True if the index exists, false otherwise.
      *
      */
     public function issetPost($index)
@@ -407,7 +407,7 @@ class Request
      * Wrapper for PHP isset on $_FILES index.
      *
      * @param string $index The index to check.
-     * @return bool TRUE if the index exists, FALSE otherwise.
+     * @return bool True if the index exists, false otherwise.
      *
      */
     public function issetFiles($index)
@@ -419,7 +419,7 @@ class Request
      * Wrapper for PHP isset on $_COOKIE index.
      *
      * @param string $index The index to check.
-     * @return bool TRUE if the index exists, FALSE otherwise.
+     * @return bool True if the index exists, false otherwise.
      *
      */
     public function issetCookie($index = '')
@@ -431,7 +431,7 @@ class Request
      * Wrapper for PHP isset on $_REQUEST index.
      *
      * @param string $index The index to check.
-     * @return bool TRUE if the index exists, FALSE otherwise.
+     * @return bool True if the index exists, false otherwise.
      *
      */
     public function issetRequest($index = '')
@@ -443,7 +443,7 @@ class Request
      * Wrapper for PHP isset on $_ENV index.
      *
      * @param string $index The index to check.
-     * @return bool TRUE if the index exists, FALSE otherwise.
+     * @return bool True if the index exists, false otherwise.
      *
      */
     public function issetEnv($index = '')

@@ -15,8 +15,7 @@
  * The front controller's responsibility is as follows:
  *
  *   1. Run ErrorHandlerInterface::set(), setting the error/exception handler.
- *   2. Run RouterInterface::loadRoutesFile(), loading the routes.
- *   3. Dispatches the request according to Destination got from RouterInterface,
+ *   2. Dispatches the request according to Destination got from RouterInterface,
  *      instantiating the user's controller and calling the appropriate method.
  *
  * Since the FrontController recognizes the error handler and router class only
@@ -25,7 +24,9 @@
  *
  * As a rule of a thumb, this class is the ONLY class where it is okay to have
  * the DIC injecting itself via constructor. This is because the FrontController
- * actually needs the to instantiate user's controller dynamically.
+ * actually needs the to instantiate user's controller - it does not know which
+ * controller to instantiate. If you find that you need to inject DIC, consider
+ * creating a Factory class instead.
  * 
  * @author      Ricky Christie <seven.rchristie@gmail.com>
  * @license     http://www.opensource.org/licenses/mit-license.php MIT License

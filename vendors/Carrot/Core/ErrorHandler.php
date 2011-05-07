@@ -29,32 +29,32 @@ namespace Carrot\Core;
 class ErrorHandler implements \Carrot\Core\Interfaces\ErrorHandlerInterface
 {
     /**
-     * @var bool TRUE if ErrorHandler::set() is called, FALSE otherwise.
+     * @var bool True if ErrorHandler::set() is called, false otherwise.
      */
-    protected $set = FALSE;
+    protected $set = false;
     
     /**
-     * @var bool When set to TRUE, development error/exception page will be used instead, also affects error_reporting and display_errors.
+     * @var bool When set to true, development error/exception page will be used instead, also affects error_reporting and display_errors.
      */
     protected $development_mode;
     
     /**
-     * @var string Absolute path to the production error template. Used when ErrorHandler::development_mode is FALSE.
+     * @var string Absolute path to the production error template. Used when ErrorHandler::development_mode is false.
      */
     protected $error_template;
     
     /**
-     * @var string Absolute path to the production uncaught exception template. Used when ErrorHandler::development_mode is FALSE. 
+     * @var string Absolute path to the production uncaught exception template. Used when ErrorHandler::development_mode is false. 
      */
     protected $exception_template;
     
     /**
-     * @var string Absolute path to the development error template. Used when ErrorHandler::development_mode is TRUE.
+     * @var string Absolute path to the development error template. Used when ErrorHandler::development_mode is true.
      */
     protected $error_template_dev;
     
     /**
-     * @var string Absolute path to the development uncaught exception template. Used when ErrorHandler::development_mode is TRUE.
+     * @var string Absolute path to the development uncaught exception template. Used when ErrorHandler::development_mode is true.
      */
     protected $exception_template_dev;
     
@@ -62,14 +62,14 @@ class ErrorHandler implements \Carrot\Core\Interfaces\ErrorHandlerInterface
      * Constructs the error handler.
      * 
      * @param string $server_protocol Either 'HTTPS 1.0' or 'HTTP 1.1', used to set the status code to 500.
-     * @param bool $development_mode Optional. When set to TRUE, will use development error/exception templates, otherwise will use production error/exception templates.
-     * @param string $error_template Optional. Absolute path to the production error template. Used when ErrorHandler::development_mode is FALSE.
-     * @param string $exception_template Optional. Absolute path to the production uncaught exception template. Used when ErrorHandler::development_mode is FALSE. 
-     * @param string $error_template_div Optional. Absolute path to the development error template. Used when ErrorHandler::development_mode is TRUE.
-     * @param string $exception_template_div Optional. Absolute path to the development uncaught exception template. Used when ErrorHandler::development_mode is TRUE.
+     * @param bool $development_mode Optional. When set to false, will use production error/exception templates, otherwise will use development error/exception templates.
+     * @param string $error_template Optional. Absolute path to the production error template. Used when ErrorHandler::development_mode is false.
+     * @param string $exception_template Optional. Absolute path to the production uncaught exception template. Used when ErrorHandler::development_mode is false. 
+     * @param string $error_template_div Optional. Absolute path to the development error template. Used when ErrorHandler::development_mode is true.
+     * @param string $exception_template_div Optional. Absolute path to the development uncaught exception template. Used when ErrorHandler::development_mode is true.
      *
      */
-    public function __construct ($server_protocol, $development_mode = FALSE, $error_template = '', $exception_template = '', $error_template_dev = '', $exception_template_dev = '')
+    public function __construct ($server_protocol, $development_mode = true, $error_template = '', $exception_template = '', $error_template_dev = '', $exception_template_dev = '')
     {
         $development_mode = (bool) $development_mode;
         
@@ -98,20 +98,20 @@ class ErrorHandler implements \Carrot\Core\Interfaces\ErrorHandlerInterface
     /**
      * Set the error and exception handler to a method in this class.
      *
-     * Additionally, it also marks the property ErrorHandler::set as TRUE.
+     * Additionally, it also marks the property ErrorHandler::set as true.
      *
      */
     public function set()
     {
         set_error_handler(array($this, 'error_handler'));
         set_exception_handler(array($this, 'exception_handler'));
-        $this->set = TRUE;
+        $this->set = true;
     }
     
     /**
      * Restore error and exception handler.
      *
-     * Will only work if ErrorHandler::set property is TRUE.
+     * Will only work if ErrorHandler::set property is true.
      *
      */
     public function restore()
@@ -121,7 +121,7 @@ class ErrorHandler implements \Carrot\Core\Interfaces\ErrorHandlerInterface
             restore_error_handler();
             restore_exception_handler();
             
-            $this->set = FALSE;
+            $this->set = false;
         }
     }
     
@@ -130,7 +130,7 @@ class ErrorHandler implements \Carrot\Core\Interfaces\ErrorHandlerInterface
      *
      * Carrot's default error handler. Will call error_log() and use PHP's default
      * error logger. Displays development error template when ErrorHandler::development_mode
-     * is set to TRUE, otherwise will display production error template.
+     * is set to true, otherwise will display production error template.
      * 
      * @param $err_number
      * @param $err_string
@@ -229,7 +229,7 @@ class ErrorHandler implements \Carrot\Core\Interfaces\ErrorHandlerInterface
      *
      * Carrot's default exception handler. Will call error_log() and use PHP's
      * default error logger. Displays development exception template when ErrorHandler::development_mode
-     * is set to TRUE, otherwise will display production exception template.
+     * is set to true, otherwise will display production exception template.
      * 
      * @param Exception $exception
      * 
@@ -272,7 +272,7 @@ class ErrorHandler implements \Carrot\Core\Interfaces\ErrorHandlerInterface
     /**
      * Destroys the ErrorHandler object.
      *
-     * If ErrorHandler::set is TRUE, we have to restore error and
+     * If ErrorHandler::set is true, we have to restore error and
      * exception handler before destroying this object for good.
      *
      */
@@ -283,7 +283,7 @@ class ErrorHandler implements \Carrot\Core\Interfaces\ErrorHandlerInterface
             restore_error_handler();
             restore_exception_handler();
             
-            $this->set = FALSE;
+            $this->set = false;
         }
     }
     

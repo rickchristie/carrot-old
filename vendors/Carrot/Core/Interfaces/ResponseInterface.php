@@ -13,7 +13,7 @@
  * Response Interface
  * 
  * This interface represents the contract between the Response class with
- * the front controller. This class is important because it is the what the
+ * the framework. This interface is important because it is the what the
  * front controller expects as a return value from each controller method it
  * calls. The response object represents the application's response to a
  * specific request.

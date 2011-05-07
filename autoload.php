@@ -14,10 +14,11 @@
  *
  * Implementation adheres to the PSR-0 universal autoloader final proposal. Modified
  * from a sample found in: {@link http://groups.google.com/group/php-standards/web/psr-0-final-proposal?pli=1}
- *
- * If you have a class that does not adhere to the PSR-0 universal autoloader final
- * proposal, simply add another function to the spl_autoload_register list. You can
- * add them in /autoload.php.
+ * 
+ * Carrot supports PSR-0 by default but does not force you too adhere to it. If you
+ * have a class that does not adhere to PSR-0 proposal, simply add another function to
+ * the spl_autoload_register list. You can add them in this file after the first
+ * registration.
  *
  */
 
@@ -42,13 +43,3 @@ spl_autoload_register(function($class)
         require $path;
     }
 });
-
-/**
- * Add your autoloader functions here
- *
- * Carrot uses PSR-0 universal autoloader implementation by default, however it does
- * not restrict you to it. If you have a class that does not use PSR-0 naming conventions
- * or you would rather not code in PSR-0, feel free to define your custom autoloader
- * functions here. This file will be loaded by /index.php at bootstrap.
- *
- */
