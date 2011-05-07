@@ -6,8 +6,6 @@ from a CodeIgniter-like framework into another beast of its own. It uses depende
 container to instantiate all of the core classes and it uses anonymous functions heavily. Note
 that it's still very unstable, with many changes to the core coming (and features planned).
 
-This document provides a quick introduction to Carrot. Complete documentation is in the works.
-
 Requirements
 ------------
 
@@ -67,8 +65,8 @@ as default autoloader, however it does not mandate you to adhere to it. If you h
 doesn't follow PSR-0, simply add register another autoloading function at `/autoload.php`.
 Carrot does not have a notion of 'packages' or 'bundles', everything is a namespaced class.
 
-Dependency Injection
---------------------
+Dependency Injection Container
+------------------------------
 
 Carrot uses a modifed version of [Fabien Potencier's sample dependency injection container code](http://www.slideshare.net/fabpot/dependency-injection-with-php-53),
 it uses anonymous functions to describe the creation of objects without actually creating it.
@@ -120,6 +118,91 @@ the DIC class will load these registration files (in order):
 It will stop loading registration files if the item is found. More detailed information
 about how `Carrot\Core\DependencyInjectionContainer` works can be read at the
 [source code documentation](https://github.com/rickchristie/Carrot/blob/master/vendors/Carrot/Core/DependencyInjectionContainer.php).
+
+Routing
+-------
+
+*in progress*
+
+
+Quick Introduction
+------------------
+
+### Creating your controller
+
+Let's assume you wanted to create a controller class `ACME\App\Controllers\HomeController`
+and you don't mind placing your class inside `/vendors`. According to PSR-0 rules, create
+this file:
+
+    /vendors/ACME/App/Controllers/HomeController.php
+
+Since the controller method has to return an implementation of `ResponseInterface`, we inject
+it via the constructor. Notice that your controller doesn't have to extend or implement any
+interface, the only requirement is to return `ResponseInterface` whenever its methods are
+dispatched by the `FrontController`:
+
+```php
+<?php
+
+namespace ACME\App\Controllers;
+
+class HomeController
+{
+    protected $response;
+    
+    public function __construct(\Carrot\Core\Interfaces\ResponseInterface $response)
+    {
+        $this->response = $response;
+    }
+    
+    public function index()
+    {
+        // Build the response body
+        ob_start();
+        echo 'This is a sample page';
+        $response_body = ob_get_clean();
+        
+        $this->response->setBody($response_body);
+        return $this->response;
+    }
+}
+```
+
+Voila, our controller is done.
+
+### Registering controller's dependencies
+
+Now that our controller is done, we need to register its dependencies in a registration
+file. Say we want to keep dependency registrations of all controllers in one file, first
+we create the file:
+
+    /registrations/ACME.App.Controllers.php
+
+and write the registration snippet in it:
+
+```php
+// Register HomeController's dependencies
+$dic->register('\ACME\App\Controllers\HomeController@main', function($dic)
+{
+    return new \ACME\App\Controllers\HomeController
+    (
+        // Use DIC to get object dependencies
+        // Here we use Carrot's default Response class
+        $dic->getInstance('\Carrot\Core\Response@main');
+    );
+});
+```
+
+finally, we assign the registration file to `\ACME\App\Controllers`. Open
+`/registrations.php` and add this line:
+
+    $registrations['\ACME\App\Controllers'] = __DIR__ . DIRECTORY_SEPARATOR . 'registrations' . DIRECTORY_SEPARATOR . 'ACME.App.Controllers.php';
+
+Our controller class is now managed by the dependency injection container.
+
+### Adding a route that points to our controller
+
+*working on this section*
 
 Feedback
 --------
