@@ -6,6 +6,10 @@ from a CodeIgniter-like framework into another beast of its own. It uses depende
 container to instantiate all of the core classes and it uses anonymous functions heavily. Note
 that it's still very unstable, with many changes to the core coming (and features planned).
 
+This document should provide you with some information on how Carrot works. Since Carrot is
+still 0.1, this document may change in time. Detailed documentation is in progress, meanwhile,
+please download the source and play with it if you wanted to know more about Carrot.
+
 Requirements
 ------------
 
@@ -86,8 +90,7 @@ of the same class:
 
 This identifier is used to refer to a specific instantiation configuration when we are
 getting the instance. We register the identifier along with anonymous functions that
-returns the instance, the function takes one parameter, which is the `$dic` instance
-itself: 
+returns the instance, which takes one parameter, the `$dic` instance itself:
 
     $dic->register('\Some\Lib\Database@main', function($dic)
     {
@@ -108,16 +111,16 @@ we assign the registration file to `\Some` namespace at `/registrations.php`:
 
 Carrot's DIC will load configuration files only if they are needed, starting from
 registration files assigned to the top level namespace down to the class name. For
-example, if `$dic->getInstance('\Namespace\Subnamespace\ClassName@main')` is called,
+example, when `$dic->getInstance('\Some\Lib\Database@main')` is called,
 the DIC class will load these registration files (in order):
 
-    $registrations['\Namespace']
-    $registrations['\Namespace\Subnamespace']
-    $registrations['\Namespace\Subnamespace\ClassName']
+    $registrations['\Some']
+    $registrations['\Some\Lib']
+    $registrations['\Some\Lib\ClassName']
 
-It will stop loading registration files if the item is found. If `\Namespace\Subnamespace\ClassName@domain`
-is registered by the time `Namespace\Subnamespace` registration file is loaded, the DIC
-will stop loading dependency registration files.
+It will stop loading registration files when the item is found. If `\Some\Lib\ClassName@main`
+is registered by the time `\Some\Lib` registration file is loaded, the DIC will stop loading
+dependency registration files.
 
 Since almost all Carrot's core classes are instantiated via the DIC, Carrot - as a framework -
 does not have central configuration file at all. If you need to change the behavior of Carrot's
@@ -132,11 +135,9 @@ you can do:
 - Change the error/exception templates loaded by Carrot's default `ErrorHandler` class.
 - Change the location of `/routes.php` file loaded by Carrot's default `Router`.
 
-Thus, in Carrot, you modify the behavior of each core classes directly by injecting different
-arguments at their construction.
-
-More detailed information about how `Carrot\Core\DependencyInjectionContainer` works can be read at the
-[source code documentation](https://github.com/rickchristie/Carrot/blob/master/vendors/Carrot/Core/DependencyInjectionContainer.php).
+Thus, in Carrot, you can modify the behavior of each core classes directly by injecting different
+arguments at their construction. More detailed information about how Carrot's DIC works can be read
+at [`DependencyInjectionContainer`'s source](https://github.com/rickchristie/Carrot/blob/master/vendors/Carrot/Core/DependencyInjectionContainer.php).
 
 Routing
 -------
@@ -184,7 +185,9 @@ To reverse route use `Router::generateURL`:
 `Router::getDestination()` is called by the `FrontController` to get the destination for each
 request. If it has exhausted its list of routes and there is still no match, it will return
 a default no-matching-route destination. This default destination is set during router object
-construction.
+construction, but you can also set it at `/routes.php`:
+
+    $router->setDestinationForNoMatchingRoute(new Destination('\Your\Custom\PageNotFoundController', 'method_name', array($args1, $args2)));
 
 To modify the behavior of Carrot's default router class, look for its dependency registration
 snippet. Read the [source code documentation](https://github.com/rickchristie/Carrot/blob/master/vendors/Carrot/Core/Router.php)
@@ -196,8 +199,8 @@ Quick Introduction
 ### Creating your controller
 
 Let's assume you wanted to create a controller class `ACME\App\Controllers\FooController`
-and you don't mind placing your class inside `/vendors`. According to PSR-0 rules, create
-this file:
+and you don't mind placing your class inside `/vendors`. Adhering to PSR-0 rules so our controller
+can be loaded without specifying another autoloader function, create this file:
 
     /vendors/ACME/App/Controllers/FooController.php
 
