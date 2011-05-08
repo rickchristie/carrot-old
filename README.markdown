@@ -89,20 +89,16 @@ getting the instance. We register the identifier along with anonymous functions 
 returns the instance, the function takes one parameter, which is the `$dic` instance
 itself: 
 
-```php
-<?php
-
-$dic->register('\Some\Lib\Database@main', function($dic)
-{
-    return new \Some\Lib\Database
-    (
-        'localhost',
-        'username',
-        'password',
-        'db_name'
-    );
-});
-```
+    $dic->register('\Some\Lib\Database@main', function($dic)
+    {
+        return new \Some\Lib\Database
+        (
+            'localhost',
+            'username',
+            'password',
+            'db_name'
+        );
+    });
 
 We place the above registration snippet into registration files, which are assigned
 to specific namespace/class names, since the above registration is for `\Some\Lib\Database@main`,
@@ -119,15 +115,80 @@ the DIC class will load these registration files (in order):
     $registrations['\Namespace\Subnamespace']
     $registrations['\Namespace\Subnamespace\ClassName']
 
-It will stop loading registration files if the item is found. More detailed information
-about how `Carrot\Core\DependencyInjectionContainer` works can be read at the
+It will stop loading registration files if the item is found. If `\Namespace\Subnamespace\ClassName@domain`
+is registered by the time `Namespace\Subnamespace` registration file is loaded, the DIC
+will stop loading dependency registration files.
+
+Since almost all Carrot's core classes are instantiated via the DIC, Carrot - as a framework -
+does not have central configuration file at all. If you need to change the behavior of Carrot's
+core classes, simply edit the dependency registration file for `\Carrot\Core`. A couple of things
+you can do:
+
+- Replace the `ErrorHandler` class injected to the `FrontController` with your own
+  implementation of `ErrorHandlerInterface`.
+- Replace the `Router` class injected to the `FrontController` with your own implementation
+  of `RouterInterface`.
+- Change the routing parameters of Carrot's default `Router` class.
+- Change the error/exception templates loaded by Carrot's default `ErrorHandler` class.
+- Change the location of `/routes.php` file loaded by Carrot's default `Router`.
+
+Thus, in Carrot, you modify the behavior of each core classes directly by injecting different
+arguments at their construction.
+
+More detailed information about how `Carrot\Core\DependencyInjectionContainer` works can be read at the
 [source code documentation](https://github.com/rickchristie/Carrot/blob/master/vendors/Carrot/Core/DependencyInjectionContainer.php).
 
 Routing
 -------
 
-*in progress*
+Carrot supports two way routing by accepting two anonymous functions, one for *routing*,
+the other for *reverse-routing*. Each route is named by a unique name. This name is then
+referred to when you want to reverse-route inside a template.
 
+*Routing* anonymous function takes a single parameter, which is an object that contains
+routing parameters (`$params`). They are set at `Router`'s constructor. If the routing function
+can decipher the current request (based on information got from routing parameters), it
+must return an instance of `Destination`. If it can't decipher the current request, it returns
+nothing. `Router` will call routing functions sequentially, so the earlier route always wins.
+
+*Reverse routing* anonymous function takes two parameters. The first one is routing parameters,
+the second one is array of additional arguments sent when you call `Router::generateURL()`.
+Your reverse routing function *must* return a URL string.
+
+Here is how a typical route defined in `/routes.php`:
+
+    // Route:welcome
+    // Translates {/} to WelcomeController::index()
+    $router->addRoute
+    (   
+        'welcome',
+        function($params)
+        {   
+            // We don't need to return any value at all if it's not our route.
+            if (empty($params->uri_segments))
+            {
+                return new Destination('\Carrot\Core\Controllers\WelcomeController@main', 'index');
+            }
+        },
+        function($params, $vars)
+        {
+            // Since it's a route to the home page, we simply return a relative path.
+            return $params->request->getBasePath();
+        }
+    ); 
+
+To reverse route use `Router::generateURL`:
+
+    $router->generateURL('welcome', array('foo' => 'bar', 'baz' => 'quz'));
+
+`Router::getDestination()` is called by the `FrontController` to get the destination for each
+request. If it has exhausted its list of routes and there is still no match, it will return
+a default no-matching-route destination. This default destination is set during router object
+construction.
+
+To modify the behavior of Carrot's default router class, look for its dependency registration
+snippet. Read the [source code documentation](https://github.com/rickchristie/Carrot/blob/master/vendors/Carrot/Core/Router.php)
+to find out what constructor parameters it has and what happens when you change them.
 
 Quick Introduction
 ------------------
@@ -145,32 +206,31 @@ it via the constructor. Notice that your controller doesn't have to extend or im
 interface, the only requirement is to return `ResponseInterface` whenever its methods are
 dispatched by the `FrontController`:
 
-```php
-<?php
-
-namespace ACME\App\Controllers;
-
-class FooController
-{
-    protected $response;
+    <?php
     
-    public function __construct(\Carrot\Core\Interfaces\ResponseInterface $response)
-    {
-        $this->response = $response;
-    }
+    namespace ACME\App\Controllers;
     
-    public function index()
+    class FooController
     {
-        // Build the response body
-        ob_start();
-        echo 'This is a sample page';
-        $response_body = ob_get_clean();
+        protected $response;
         
-        $this->response->setBody($response_body);
-        return $this->response;
+        public function __construct(\Carrot\Core\Interfaces\ResponseInterface $response)
+        {
+            $this->response = $response;
+        }
+        
+        public function index()
+        {
+            // Build the response body
+            ob_start();
+            echo 'This is a sample page';
+            $response_body = ob_get_clean();
+            
+            // Return the response
+            $this->response->setBody($response_body);
+            return $this->response;
+        }
     }
-}
-```
 
 Voila, our controller is done.
 
@@ -184,20 +244,18 @@ we create the file:
 
 and write the registration snippet in it:
 
-```php
-<?php
-
-// Register FooController's dependencies
-$dic->register('\ACME\App\Controllers\FooController@main', function($dic)
-{
-    return new \ACME\App\Controllers\FooController
-    (
-        // Use DIC to get object dependencies
-        // Here we use Carrot's default Response class
-        $dic->getInstance('\Carrot\Core\Response@main');
-    );
-});
-```
+    <?php
+    
+    // Register FooController's dependencies
+    $dic->register('\ACME\App\Controllers\FooController@main', function($dic)
+    {
+        return new \ACME\App\Controllers\FooController
+        (
+            // Use DIC to get object dependencies
+            // Here we use Carrot's default Response class
+            $dic->getInstance('\Carrot\Core\Response@main');
+        );
+    });
 
 finally, we assign the registration file to `\ACME\App\Controllers`. Open
 `/registrations.php` and add this line:
@@ -212,31 +270,27 @@ Our controller can't be accessed by the user if there is no route pointing to it
 create a route using Carrot's default `Router`, edit `/routes.php` and create the route
 using `Router::addRoute()`:
 
-```php
-<?php
-
-// Route:foo
-// Translates {/foo} to FooController::index()
-$router->addRoute
-(
-    'foo',
-    function($params)
-    {
-        // Return an instance of Destination that points to
-        // FooController if the segment is /foo - use the DIC
-        // identifier we just created to refer to our controller.
-        
-        if (isset($params->uri_segments[0]) && $params->uri_segments[0] == 'foo')
+    // Route:foo
+    // Translates {/foo} to FooController::index()
+    $router->addRoute
+    (
+        'foo',
+        function($params)
         {
-            return new Destination('\ACME\App\Controllers\FooController@main', 'index');
+            // Return an instance of Destination that points to
+            // FooController if the segment is /foo - use the DIC
+            // identifier we just created to refer to our controller.
+            
+            if (isset($params->uri_segments[0]) && $params->uri_segments[0] == 'foo')
+            {
+                return new Destination('\ACME\App\Controllers\FooController@main', 'index');
+            }
+        },
+        function($params, $vars)
+        {
+            return $params->request->getBasePath() . 'foo/';
         }
-    },
-    function($params, $vars)
-    {
-        return $params->request->getBasePath() . 'foo/';
-    }
-);
-```
+    );
 
 That's it! Requests for `http://hostname/base/path/foo` should be dispatched to `FooController::index()`!
 
