@@ -5,6 +5,7 @@ TODO: Refactor Carrot\Session package, add flash variable support, different sto
 TODO: Finish Carrot\Helper\Config
 TODO: Finish Carrot\Helper\URL
 TODO: Finish Validation, take hints from Zend's validation process
+TODO: Start making tests
 
 -- DONE -- 
 

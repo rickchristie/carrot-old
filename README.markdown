@@ -67,7 +67,8 @@ Autoloading
 Carrot uses [PSR-0 universal autoloader](http://groups.google.com/group/php-standards/web/psr-0-final-proposal?pli=1)
 as default autoloader, however it does not mandate you to adhere to it. If you have classes that
 doesn't follow PSR-0, simply add register another autoloading function at `/autoload.php`.
-Carrot does not have a notion of 'packages' or 'bundles', everything is a namespaced class.
+Carrot does not have a notion of 'packages' or 'bundles', everything is just a regular namespaced
+class.
 
 Dependency Injection Container
 ------------------------------
@@ -307,11 +308,11 @@ Credits
 -------
 
 This framework uses a modifed version of [Fabien Potencier's sample dependency injection container code](http://www.slideshare.net/fabpot/dependency-injection-with-php-53).
-If you haven't already, make sure you read the slides, it's awesome! It also borrows many ideas
-from Symfony and Zend Framework.
+If you haven't already, make sure you read the slides, it's awesome! This framework also borrows many
+ideas from Symfony and Zend Framework.
 
 Special Thanks
 --------------
 
 [The people at Stack Overflow PHP chat](http://chat.stackoverflow.com/rooms/11/php), especially
-@Gordon, @edorian, @ircmaxell, @markus, @zerkms - for their help, criticisms, and guidance.
+@Gordon, @edorian, @ircmaxell, @markus, @zerkms - for their help and criticisms.
