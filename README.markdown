@@ -89,16 +89,20 @@ getting the instance. We register the identifier along with anonymous functions 
 returns the instance, the function takes one parameter, which is the `$dic` instance
 itself: 
 
-    $dic->register('\Some\Lib\Database@main', function($dic)
-    {
-        return new \Some\Lib\Database
-        (
-            'localhost',
-            'username',
-            'password',
-            'db_name'
-        );
-    });
+```php
+<?php
+
+$dic->register('\Some\Lib\Database@main', function($dic)
+{
+    return new \Some\Lib\Database
+    (
+        'localhost',
+        'username',
+        'password',
+        'db_name'
+    );
+});
+```
 
 We place the above registration snippet into registration files, which are assigned
 to specific namespace/class names, since the above registration is for `\Some\Lib\Database@main`,
@@ -130,11 +134,11 @@ Quick Introduction
 
 ### Creating your controller
 
-Let's assume you wanted to create a controller class `ACME\App\Controllers\HomeController`
+Let's assume you wanted to create a controller class `ACME\App\Controllers\FooController`
 and you don't mind placing your class inside `/vendors`. According to PSR-0 rules, create
 this file:
 
-    /vendors/ACME/App/Controllers/HomeController.php
+    /vendors/ACME/App/Controllers/FooController.php
 
 Since the controller method has to return an implementation of `ResponseInterface`, we inject
 it via the constructor. Notice that your controller doesn't have to extend or implement any
@@ -146,7 +150,7 @@ dispatched by the `FrontController`:
 
 namespace ACME\App\Controllers;
 
-class HomeController
+class FooController
 {
     protected $response;
     
@@ -181,10 +185,12 @@ we create the file:
 and write the registration snippet in it:
 
 ```php
-// Register HomeController's dependencies
-$dic->register('\ACME\App\Controllers\HomeController@main', function($dic)
+<?php
+
+// Register FooController's dependencies
+$dic->register('\ACME\App\Controllers\FooController@main', function($dic)
 {
-    return new \ACME\App\Controllers\HomeController
+    return new \ACME\App\Controllers\FooController
     (
         // Use DIC to get object dependencies
         // Here we use Carrot's default Response class
@@ -202,13 +208,43 @@ Our controller class is now managed by the dependency injection container.
 
 ### Adding a route that points to our controller
 
-*working on this section*
+Our controller can't be accessed by the user if there is no route pointing to it. To
+create a route using Carrot's default `Router`, edit `/routes.php` and create the route
+using `Router::addRoute()`:
+
+```php
+<?php
+
+// Route:foo
+// Translates {/foo} to FooController::index()
+$router->addRoute
+(
+    'foo',
+    function($params)
+    {
+        // Return an instance of Destination that points to
+        // FooController if the segment is /foo - use the DIC
+        // identifier we just created to refer to our controller.
+        
+        if (isset($params->uri_segments[0]) && $params->uri_segments[0] == 'foo')
+        {
+            return new Destination('\ACME\App\Controllers\FooController@main', 'index');
+        }
+    },
+    function($params, $vars)
+    {
+        return $params->request->getBasePath() . 'foo/';
+    }
+);
+```
+
+That's it! Requests for `http://hostname/base/path/foo` should be dispatched to `FooController::index()`!
 
 Feedback
 --------
 
 The author welcomes any healthy criticisms and/or feedback. Criticisms are the main catalyst
-of development. Send them all to [seven dot rchristie at gmail dot com](mailto:seven.rchristie@gmail.com).
+of development. Please send them all to [seven dot rchristie at gmail dot com](mailto:seven.rchristie@gmail.com).
 
 Credits
 -------
