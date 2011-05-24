@@ -22,7 +22,7 @@ Framework design goals
 - Create a framework without using the keyword global or static. Fully recognize the
   dangerous nature of global state and avoid it at all costs.
 - Relying on dependency injection container to manage the dependencies of user classes,
-  thus eliminating the need for a global registry of object.
+  thus eliminating the need for a global objects and registry.
 - Fully utilize PHP's new features by refusing to support outdated PHP installations.
   One of those features are anonymous functions, which are used extensively throughout
   the framework.
@@ -60,6 +60,11 @@ Carrot is essentially just a `FrontController`, `Router`, `ErrorHandler` and
       from the `Destination` object, getting an instance of `ResponseInterface` as the return
       value.
 - `ResponseInterface::send()` is called, sending the response to the browser.
+
+Directory Structure
+-------------------
+
+*Coming soon*
 
 Autoloading
 -----------

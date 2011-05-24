@@ -285,6 +285,7 @@
 	</h1>
 </div>
 <div id="wrapper">
+    
 	<h2>Welcome to Carrot, an experimental PHP framework!</h2>
 	
 	<p>
