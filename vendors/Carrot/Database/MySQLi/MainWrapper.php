@@ -12,8 +12,33 @@
 /**
  * Wrapper to MySQLi
  * 
- * 
+ * Wraps \MySQLi object and contains the factory method for 
+ * \Carrot\Database\MySQLi\StatementWrapper. To instantiate, you
+ * need an instance of \MySQLi that is connected.
  *
+ * <code>
+ * $mysqli = new \MySQLi('localhost', 'user', 'pwd', 'testdb');
+ * $db = new \Carrot\Database\MySQLi\MainWrapper($mysqli);
+ * </code>
+ *
+ * Query the usual way:
+ *
+ * <code>
+ * $result = $db->query('SELECT * FROM accounts');
+ *
+ * while ($row = $result->fetch_assoc())
+ * {
+ *     var_dump($row);
+ * }
+ * </code>
+ *
+ * Create and run prepared statements {@see \Carrot\Database\MySQLi\StatementWrapper}:
+ *
+ * <code>
+ * $stmt = $db->createStatement('SELECT * FROM accounts WHERE id = :id');
+ * $stmt->execute(array(':id' => 'AB2535'));
+ * </code>
+ * 
  * @author      Ricky Christie <seven.rchristie@gmail.com>
  * @license     http://www.opensource.org/licenses/mit-license.php MIT License
  *
@@ -65,9 +90,14 @@ class MainWrapper
     }
     
     /**
-     * Wrapper for MySQLi::query().
+     * Wrapper for \MySQLi::query().
+     * 
+     * Other than calling \MySQLi::query(), it also logs the query
+     * history, including query run time.
      *
-     * @param string $query
+     * @see logQueryHistory()
+     * @param string $query Query string to run.
+     * @return mixed Returns what \MySQLi::query() returns.
      *
      */
     public function query($query)
@@ -79,7 +109,7 @@ class MainWrapper
         
         if ($failed && $this->throw_exception_when_query_fails)
         {
-            throw new \RuntimeException("MySQLi MainWrapper query execution error. Error number: '{$this->mysqli->errno}', Error message: '{$this->mysqli->error}', Query: '{$query}'");
+            throw new \RuntimeException("MySQLi MainWrapper query execution error. Error number: '{$this->mysqli->errno}', Error message: '{$this->mysqli->error}', Query: '{$query}'.");
         }
         
         $this->logQueryHistory($query, !$failed, $query_end_time - $query_start_time);
@@ -87,13 +117,16 @@ class MainWrapper
     }
     
     /**
-     * Create statement
+     * Create an instance of \Carrot\Database\MySQLi\StatementWrapper.
+     *
+     * Acts as the factory method for \Carrot\Database\MySQLi\StatementWrapper.
      * 
-     * 
+     * @see \Carrot\Database\MySQLi\StatementWrapper
+     * @param string $statement_string_with_placeholders
      * 
      */
     public function createStatement($statement_string_with_placeholders)
-    {
+    {   
         return new StatementWrapper($this->mysqli, $statement_string_with_placeholders);
     }
     
@@ -104,21 +137,56 @@ class MainWrapper
      * note that this function will loop through the results and store
      * them to an array before returning. If you are executing a statement
      * that returns huge result set, consider creating a statement with
-     * MySQLiWrapper::createStatement() instead.
+     * createStatement() instead.
+     * 
+     * This method will return the result rows formatted as arrays as
+     * its default behavior. You can tell this method to return the rows
+     * formatted by passing the third optional parameter.
+     *
+     * <code>
+     * $count = $mysqli_wrapper->quickExecuteStatement
+     * (
+     *     'SELECT COUNT(*) AS `count` FROM accounts WHERE id = :blah',
+     *     array(':id' => 'AB12345'),
+     *     'object'
+     * );
+     *
+     * echo $count[0]->count;
+     * </code>
      *
      * @param string $statement_string_with_placeholders
-     * @param array $params Parameters to be bind
+     * @param array $params Statement parameters in associative array.
+     * @param string $row_type Optional. Determines how to format each result row, use either 'assoc', 'object', or 'array'. Defaults to array.
+     * @return array Array that contains the whole result set.
      *
      */
-    public function prepareAndExecuteStatement($statement_string_with_placeholders, array $params = array())
+    public function quickExecuteStatement($statement_string_with_placeholders, array $params = array(), $row_type = 'array')
     {
         $statement = new StatementWrapper($this->mysqli, $statement_string_with_placeholders);
         $statement->execute($params);
-        $statement->getAll();
+        
+        switch (strtolower($row_type))
+        {
+            case 'assoc':
+                $result_set = $statement->fetchAllAsAssociativeArray();
+            break;
+            case 'object':
+                $result_set = $statement->fetchAllAsObject();
+            break;
+            default:
+                $result_set = $statement->fetchAllAsArray();
+            break;
+        }
+        
+        return $result_set;
     }
     
     /**
-     * Sets 
+     * Tells the class to throw/not to throw exception when query fails.
+     *
+     * Default behavior is NOT to throw exceptions when query fails.
+     * Use this method to tell the class whether or not to throw
+     * exception if query fails.
      *
      */
     public function throwExceptionWhenQueryFails($bool)
@@ -127,7 +195,9 @@ class MainWrapper
     }
     
     /**
-     * Defies imagination, extends boundaries and saves the world ...all before breakfast!
+     * Get last query execution time.
+     * 
+     * @return float Last query execution time.
      *
      */
     public function getLastQueryExecutionTime()
@@ -135,10 +205,46 @@ class MainWrapper
         return $this->query_history[count($this->query_history)-1]['time'];
     }
     
+    /**
+     * Get the complete query history (ran on this object).
+     *
+     * This is useful if you wanted to log query information. The
+     * format of the query history array is as follows:
+     *
+     * <code>
+     * $query_history = array
+     * (
+     *     0 => array
+     *     (
+     *         'query' => 'SELECT * FROM accounts',
+     *         'success' => true
+     *         'time' => 0.0556
+     *     ),
+     *     1 => array
+     *     (
+     *         'query' => 'START TRANSACTION',
+     *         'success' => true,
+     *         'time' => 0.0236
+     *     )
+     * );
+     * </code>
+     * 
+     * @return array Query history array.
+     * 
+     */
+    public function getQueryHistory()
+    {
+        return $this->query_history;
+    }
+    
     // ---------------------------------------------------------------
     
     /**
-     * Defies imagination, extends boundaries and saves the world ...all before breakfast!
+     * Stores information about a query ran by this object.
+     *
+     * @param string $query
+     * @param bool $success True if query is successful, false otherwise.
+     * @param float $time Time elapsed to complete the query.
      *
      */
     protected function logQueryHistory($query, $success, $time)

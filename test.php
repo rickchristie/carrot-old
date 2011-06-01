@@ -17,9 +17,9 @@ require 'autoload.php';
 
 $mysqli = new MySQLi('localhost', 'root', 'root', 'test2');
 
-$statement = new Carrot\Database\MySQLi\StatementWrapper($mysqli, 'SELECT * FROM account WHERE id = #id');
+$statement = new Carrot\Database\MySQLi\StatementWrapper($mysqli, 'SELECT * FROM account WHERE id = :id');
 $statement->throwExceptionWhenExecutionFails(true);
-$result = $statement->execute(array('#id' => 1));
+$result = $statement->execute(array(':id' => 1));
 $statement->reset();
 $statement->execute();
 

@@ -10,32 +10,31 @@
  */
 
 /**
- * Wrapper for MySQLi_STMT
+ * Wrapper for \MySQLi_STMT
  * 
- * Creates a MySQLi_STMT object and acts as its wrapper, allowing you to use
+ * Creates a \MySQLi_STMT object and acts as its wrapper, allowing you to use
  * prepared statements without dealing with parameter and result row binding.
- * It also wraps around the confusing '?' with named placeholder, which makes
- * reading and editing prepared statements much easier when your query has
- * more than 15 parameters.
+ * It also allows you to use named placeholder, which makes reading and editing
+ * prepared statements much easier when your query has more than 10 parameters.
  *
- * Placeholders are marked with hash (#) character at the beginning and
+ * Placeholders are marked with colon (:) character at the beginning and
  * detected with this regular expression:
  *
  * <code>
- * #[a-zA-Z0-9_#]+
+ * :[a-zA-Z0-9_:]+
  * </code>
  *
  * Example of allowed placeholders:
  *
  * <code>
- * #placeholder
- * #place_holder
- * ##Placeholder
- * #123
+ * :placeholder
+ * :place_holder
+ * ::Placeholder
+ * :123
  * </code>
  *
  * At object construction, placeholders will be replaced with '?' and used
- * to construct an instance of MySQLi_STMT:
+ * to construct an instance of \MySQLi_STMT:
  *
  * <code>
  * $mysqli = new MySQLi('localhost', 'user', 'pwd', 'testdb');
@@ -45,8 +44,8 @@
  *      FROM
  *         accounts
  *      WHERE
- *         name LIKE #name_like,
- *         balance > #balance_lower_limit'
+ *         name LIKE :name_like,
+ *         balance > :balance_lower_limit'
  * );
  * </code>
  *
@@ -57,8 +56,8 @@
  * <code>
  * $params = array
  * (
- *     '#name_like' => 'John%',
- *     '#balance_lower_limit' => 25000
+ *     ':name_like' => 'John%',
+ *     ':balance_lower_limit' => 25000
  * );
  *
  * $statement->execute($params);
@@ -67,11 +66,11 @@
  * If you need to mark a parameter as blob, use this method before execution:
  *
  * <code>
- * $statement->markParamAsBlob('#blob_param');
+ * $statement->markParamAsBlob(':blob_param');
  * </code>
  *
- * Fetching results is done using a while loop, you can fetch as enumerated
- * array, associative array, or an object:
+ * Fetching results is done using a while loop, you can fetch as array, associative
+ * array, or an object:
  *
  * <code>
  * while ($row = $statement->fetchObject())
@@ -102,17 +101,17 @@ class StatementWrapper
     protected $statement_string_with_placeholders;
     
     /**
-     * @var string Processed statement string, used in constructing the MySQLi_STMT object, placeholders replaced with '?'.
+     * @var string Processed statement string, used in constructing the \MySQLi_STMT object, placeholders replaced with '?'.
      */
     protected $statement_string;
     
     /**
-     * @var MySQLi_STMT Instance of MySQLi_STMT, constructed using {@see $statement_string}.
+     * @var \MySQLi_STMT Instance of \MySQLi_STMT, constructed using {@see $statement_string}.
      */
     protected $statement_object;
     
     /**
-     * @var array List of placeholders with the hash (#) prefix, extracted from {@see $statement_string_with_placeholders}.
+     * @var array List of placeholders with the colon (:) prefix, extracted from {@see $statement_string_with_placeholders}.
      */
     protected $placeholders;
     
@@ -122,7 +121,7 @@ class StatementWrapper
     protected $blob_params = array();
     
     /**
-     * @var mixed Contains the result of MySQLi_STMT::result_metadata() call.
+     * @var mixed Contains the result of \MySQLi_STMT::result_metadata() call.
      */
     protected $result_metadata;
     
@@ -132,7 +131,7 @@ class StatementWrapper
     protected $params;
     
     /**
-     * @var string Parameter types in string, as per MySQLi_STMT::bind_param() specification.
+     * @var string Parameter types in string, as per \MySQLi_STMT::bind_param() specification.
      */
     protected $param_types;
     
@@ -157,7 +156,12 @@ class StatementWrapper
     protected $throw_exception_when_execution_fails = false;
     
     /**
-     * @var bool True if result set has been buffered using MySQLi_STMT::store_result(), false otherwise.
+     * @var bool True if the statement has a result set, false otherwise.
+     */
+    protected $has_result_set;
+    
+    /**
+     * @var bool True if result set has been buffered using \MySQLi_STMT::store_result(), false otherwise.
      */
     protected $result_is_buffered = false;
     
@@ -166,7 +170,7 @@ class StatementWrapper
      * 
      * Assumes that the MySQLi instance is already connected. Statement
      * string sent must use placeholders. Placeholders are marked by the
-     * hash character (#).
+     * colon character (:).
      *
      * <code>
      * $statement = new StatementWrapper($mysqli,
@@ -175,13 +179,14 @@ class StatementWrapper
      *     FROM
      *         accounts
      *     WHERE
-     *         id LIKE #id,
-     *         name LIKE #name,
-     *         balance > #balance'
+     *         id LIKE :id,
+     *         name LIKE :name,
+     *         balance > :balance'
      * );
      * </code>
      *
-     * The statement string from above code will be converted to:
+     * The statement string from above code will be converted to this
+     * query:
      *
      * <code>
      * SELECT
@@ -194,14 +199,16 @@ class StatementWrapper
      *     balance > ?
      * </code>
      *
-     * with these placeholders:
+     * with the following placeholders:
      *
      * <code>
-     * #id
-     * #name
-     * #balance
+     * :id
+     * :name
+     * :balance
      * </code>
      * 
+     * @see createParameterVariablesAndReferences()
+     * @see createResultVariablesAndReferences()
      * @param MySQLi $mysqli Instance of MySQLi (must be already connected).
      * @param string $statement_string String containing the statement (must use placeholders).
      *
@@ -213,12 +220,13 @@ class StatementWrapper
         $this->statement_string = $this->replacePlaceholdersWithQuestionMarks($statement_string_with_placeholders);
         $this->statement_object = $mysqli->prepare($this->statement_string);
         
-        if (empty($this->statement_object) or !is_a($this->statement_object, '\MySQLi_STMT'))
+        if ($this->statement_object === false)
         {
             throw new \RuntimeException("StatementWrapper error, fails to prepare the statement. Error number: '{$mysqli->errno}', Error message: '{$mysqli->error}', Processed statement: '{$this->statement_string}', Original statement: '{$this->statement_string_with_placeholders}'.");
         }
         
         $this->result_metadata = $this->statement_object->result_metadata();
+        $this->has_result_set = $this->hasResultSet();
         $this->createParameterVariablesAndReferences();
         $this->createResultVariablesAndReferences();
         $this->bindResult();
@@ -233,8 +241,8 @@ class StatementWrapper
      * need parameters. 
      *
      * <code>
-     * $statement = new StatementWrapper($mysqli, 'INSERT INTO accounts (id, first_name) VALUES (#id, #first_name));
-     * $statement->execute(array('#id' => 'AB12345', '#first_name' => 'John'));
+     * $statement = new StatementWrapper($mysqli, 'INSERT INTO accounts (id, first_name) VALUES (:id, :first_name));
+     * $statement->execute(array(':id' => 'AB12345', ':first_name' => 'John'));
      * </code>
      * 
      * Will throw RuntimeException if execution fails and
@@ -260,14 +268,14 @@ class StatementWrapper
             throw new \RuntimeException("StatementWrapper execution error! Error #{$this->statement_object->errno}: '{$this->statement_object->error}', statement is '{$this->statement_string}'.");
         }
         
-        // After each execution, you need to call MySQLi_STMT::store_result() again.
+        // After each execution, you need to call \MySQLi_STMT::store_result() again.
         $this->result_is_buffered = false;
         
         return $result;
     }
     
     /**
-     * Fetches the result as enumerated array using MySQLi_STMT::fetch().
+     * Fetches the result as array using \MySQLi_STMT::fetch().
      * 
      * Calls to this method is ignored if the statement doesn't have 
      * result. Use while() loop to iterate the result set:
@@ -279,33 +287,30 @@ class StatementWrapper
      * }
      * </code>
      *
-     * @return mixed Result row as enumerated array. False if no more rows or failure in fetching.
+     * @return mixed Result row as array. False if no more rows or failure in fetching.
      *
      */
     public function fetchArray()
-    {
-        if (is_object($this->result_metadata) && is_a($this->result_metadata, '\MySQLi_Result'))
+    {   
+        $result = $this->statement_object->fetch();
+        
+        if ($result === true)
         {
-            $result = $this->statement_object->fetch();
+            $row = array();
             
-            if ($result === true)
+            foreach ($this->result_row as $content)
             {
-                $row = array();
-                
-                foreach ($this->result_row as $content)
-                {
-                    $row[] = $content;
-                }
-                
-                return $row;
+                $row[] = $content;
             }
             
-            return false;
+            return $row;
         }
+        
+        return false;
     }
     
     /**
-     * Fetches the result as associative array using MySQLi_STMT::fetch().
+     * Fetches the result as associative array using \MySQLi_STMT::fetch().
      * 
      * Calls to this method is ignored if the statement doesn't have 
      * result. Use while() loop to iterate the result set:
@@ -322,28 +327,25 @@ class StatementWrapper
      */
     public function fetchAssociativeArray()
     {
-        if (is_object($this->result_metadata) && is_a($this->result_metadata, '\MySQLi_Result'))
+        $result = $this->statement_object->fetch();
+        
+        if ($result === true)
         {
-            $result = $this->statement_object->fetch();
+            $row = array();
             
-            if ($result === true)
+            foreach ($this->result_row as $field_name => $content)
             {
-                $row = array();
-                
-                foreach ($this->result_row as $field_name => $content)
-                {
-                    $row[$field_name] = $content;
-                }
-                
-                return $row;
+                $row[$field_name] = $content;
             }
             
-            return false;
+            return $row;
         }
+        
+        return false;
     }
     
     /**
-     * Fetches the result as PHP standard object using MySQLi_STMT::fetch().
+     * Fetches the result as PHP standard object using \MySQLi_STMT::fetch().
      * 
      * Calls to this method is ignored if the statement doesn't have 
      * result. Use while() loop to iterate the result set:
@@ -360,24 +362,75 @@ class StatementWrapper
      */
     public function fetchObject()
     {
-        if (is_object($this->result_metadata) && is_a($this->result_metadata, '\MySQLi_Result'))
+        $result = $this->statement_object->fetch();
+        
+        if ($result === true)
         {
-            $result = $this->statement_object->fetch();
+            $row = array();
             
-            if ($result === true)
+            foreach ($this->result_row as $field_name => $content)
             {
-                $row = array();
-                
-                foreach ($this->result_row as $field_name => $content)
-                {
-                    $row[$field_name] = $content;
-                }
-                
-                return (object) $row;
+                $row[$field_name] = $content;
             }
             
-            return false;
+            return (object) $row;
         }
+        
+        return false;
+    }
+    
+    /**
+     * Fetch the whole result set with each row as array.
+     *
+     * @return array Array containing all the result rows.
+     *
+     */
+    public function fetchAllAsArray()
+    {
+        $result_set = array();
+        
+        while ($row = $this->fetchArray())
+        {
+            $result_set[] = $row;
+        }
+        
+        return $result_set;
+    }
+    
+    /**
+     * Fetch the whole result set with each row as associative array.
+     *
+     * @return array Array containing all the result rows.
+     *
+     */
+    public function fetchAllAsAssociativeArray()
+    {
+        $result_set = array();
+        
+        while ($row = $this->fetchAssociativeArray())
+        {
+            $result_set[] = $row;
+        }
+        
+        return $result_set;
+    }
+    
+    /**
+     * Fetch the whole result set with each row as PHP standard object.
+     *
+     * @return array Array containing all the result rows.
+     *
+     */
+    public function fetchAllAsObject()
+    {
+        $result_set = array();
+        
+        while ($row = $this->fetchObject())
+        {
+            $result_set[] = $row;
+        }
+        
+        return $result_set;
     }
     
     /**
@@ -390,11 +443,11 @@ class StatementWrapper
      * use this method to mark the placeholder as such.
      *
      * <code>
-     * $statement->markParamAsBlob('#blob_param');
+     * $statement->markParamAsBlob(':blob_param');
      * </code>
      *
      * @see $blob_params
-     * @param string $placeholder The placeholder you want to mark as blob, with hash (#).
+     * @param string $placeholder The placeholder you want to mark as blob, with colon (:).
      *
      */
     public function markParamAsBlob($placeholder)
@@ -408,7 +461,7 @@ class StatementWrapper
     }
     
     /**
-     * Tells the class to throw/not to throw exceptions when statement execution fails.
+     * Tells the class to throw/not to throw exception when statement execution fails.
      *
      * Default behavior is to NOT throw exception when the query fails
      * and simply return false. This makes it easier for single statements,
@@ -430,15 +483,15 @@ class StatementWrapper
     /**
      * See if the result set is buffered or not.
      *
-     * The result set is buffered if MySQLi_STMT::store_result() is
+     * The result set is buffered if \MySQLi_STMT::store_result() is
      * called after each statement execution. The wrapper notes this
      * by setting $result_is_buffered property to true every time
-     * MySQLi_STMT::store_result() is called.
+     * \MySQLi_STMT::store_result() is called.
      *
      * The wrapper does not buffer the result by default, following
-     * MySQLi_STMT standard behavior.
+     * \MySQLi_STMT standard behavior.
      *
-     * If the result set is not buffered, MySQLi_STMT->num_rows() will
+     * If the result set is not buffered, \MySQLi_STMT->num_rows will
      * not return a valid response.
      *
      * @return bool True if buffered, false otherwise.
@@ -452,11 +505,11 @@ class StatementWrapper
     /**
      * Returns the result metadata.
      *
-     * This method does not wrap/call MySQLi_STMT::result_metadata(),
-     * it simply returns a saved value since MySQLi_STMT::result_metadata()
+     * This method does not call \MySQLi_STMT::result_metadata(),
+     * it simply returns a saved value since \MySQLi_STMT::result_metadata()
      * is already called in construction.
      *
-     * @return mixed Instance of MySQLi_Result or false if there isn't a result.
+     * @return mixed Instance of \MySQLi_Result or false if there isn't a result.
      *
      */
     public function getResultMetadata()
@@ -467,7 +520,7 @@ class StatementWrapper
     /**
      * Destroys this object.
      *
-     * Calls MySQLi_STMT::close() for safety.
+     * Calls \MySQLi_STMT::close() for safety.
      *
      */
     public function __destruct()
@@ -479,7 +532,7 @@ class StatementWrapper
     // ---------------------------------------------------------------
     
     /**
-     * Wrapper for MySQLi_STMT->affected_rows.
+     * Wrapper for \MySQLi_STMT->affected_rows.
      * 
      * @return mixed -1 indicates query error.
      *
@@ -490,7 +543,7 @@ class StatementWrapper
     }
     
     /**
-     * Wrapper for MySQLi_STMT::attr_get().
+     * Wrapper for \MySQLi_STMT::attr_get().
      * 
      * @param int $attr The attribute you want to get.
      * @return mixed False if the attribute is not found, otherwise return value of the attribute.
@@ -502,7 +555,7 @@ class StatementWrapper
     }
     
     /**
-     * Wrapper for MySQLi_STMT::attr_set().
+     * Wrapper for \MySQLi_STMT::attr_set().
      *
      * @param int $attr The attribute you want to set.
      * @param int $mode The value to assign to the attribute.
@@ -514,7 +567,7 @@ class StatementWrapper
     }
     
     /**
-     * Wrapper for MySQLi_STMT::data_seek().
+     * Wrapper for \MySQLi_STMT::data_seek().
      *
      * @param int $offset
      *
@@ -525,7 +578,7 @@ class StatementWrapper
     }
     
     /**
-     * Wrapper for MySQLi_STMT->errno.
+     * Wrapper for \MySQLi_STMT->errno.
      *
      * @return int Error number for the last execution.
      *
@@ -536,7 +589,7 @@ class StatementWrapper
     }
     
     /**
-     * Wrapper for MySQLi_STMT->error.
+     * Wrapper for \MySQLi_STMT->error.
      * 
      * @return string Error message for last execution.
      *
@@ -547,7 +600,7 @@ class StatementWrapper
     }
     
     /**
-     * Wrapper for MySQLi_STMT->field_count.
+     * Wrapper for \MySQLi_STMT->field_count.
      *
      * @return int Number of fields in the given statement.
      *
@@ -558,7 +611,7 @@ class StatementWrapper
     }
     
     /**
-     * Wrapper for MySQLi_STMT::free_result().
+     * Wrapper for \MySQLi_STMT::free_result().
      *
      * This method also notes that result buffer has been cleared by
      * setting $result_is_buffered property to false.
@@ -574,7 +627,7 @@ class StatementWrapper
     }
     
     /**
-     * Wrapper for MySQLi_STMT::get_warnings().
+     * Wrapper for \MySQLi_STMT::get_warnings().
      *
      * @return mixed
      *
@@ -585,7 +638,7 @@ class StatementWrapper
     }
     
     /**
-     * Wrapper for MySQLi_STMT->insert_id.
+     * Wrapper for \MySQLi_STMT->insert_id.
      *
      * @return int The ID generated from previous INSERT operation.
      *
@@ -596,7 +649,7 @@ class StatementWrapper
     }
     
     /**
-     * Wrapper for MySQLi_STMT->num_rows.
+     * Wrapper for \MySQLi_STMT->num_rows.
      *
      * This method does not return invalid row count, it returns false
      * if result set is not buffered.
@@ -615,7 +668,7 @@ class StatementWrapper
     }
     
     /**
-     * Wrapper for MySQLi_STMT->param_count.
+     * Wrapper for \MySQLi_STMT->param_count.
      *
      * @return int $param_count Number of parameters in the statement.
      *
@@ -626,10 +679,10 @@ class StatementWrapper
     }
     
     /**
-     * Wrapper for MySQLi_STMT::reset().
+     * Wrapper for \MySQLi_STMT::reset().
      *
-     * MySQLi_STMT::reset does not unbind parameter. After you reset, you
-     * can safely execute it again even if the query has parameters.
+     * \MySQLi_STMT::reset() does not unbind parameter. After you reset,
+     * you can safely execute it again even if the query has parameters.
      *
      * @return bool True on success, false on failure.
      *
@@ -640,7 +693,7 @@ class StatementWrapper
     }
     
     /**
-     * Wrapper for MySQLi_STMT->sqlstate.
+     * Wrapper for \MySQLi_STMT->sqlstate.
      *
      * @return string SQLSTATE error from previous statement operation.
      *
@@ -651,7 +704,7 @@ class StatementWrapper
     }
     
     /**
-     * Wrapper for MySQLi_STMT::store_result().
+     * Wrapper for \MySQLi_STMT::store_result().
      *
      * This method also sets $result_is_buffered property to true,
      * allowing you getNumRows() method to return valid value. This
@@ -674,20 +727,19 @@ class StatementWrapper
      * Placeholder is defined with this regular expression:
      *
      * <code>
-     * #[a-zA-Z0-9_#]+
+     * :[a-zA-Z0-9_:]+
      * </code>
      *
-     * Since the hash character (#) is used in MySQL to mark comments,
-     * chances are you won't be using it in your query other than for
-     * marking placeholders. List of example placeholder that will
-     * match:
+     * We use the colon character to follow PDO's placeholder behavior.
+     * This should make usage of this class familiar enough for most
+     * people.
      *
      * <code>
-     * #placeholder
-     * #123placeholder
-     * #_place_holder
-     * ##placeholder
-     * #place#holder
+     * :placeholder
+     * :123placeholder
+     * :_place_holder
+     * ::placeholder
+     * :place:holder
      * </code>
      *
      * @param string $statement_string_with_placeholders
@@ -696,7 +748,7 @@ class StatementWrapper
      */
     protected function extractPlaceholders($statement_string_with_placeholders)
     {
-        preg_match_all('/#[a-zA-Z0-9_#]+/', $statement_string_with_placeholders, $matches);
+        preg_match_all('/:[a-zA-Z0-9_:]+/', $statement_string_with_placeholders, $matches);
         
         if (isset($matches[0]) && is_array($matches[0]))
         {
@@ -707,35 +759,35 @@ class StatementWrapper
     }
     
     /**
-     * Replaces placeholders (#string) with '?'.
+     * Replaces placeholders (:string) with '?'.
      *
      * This in effect creates a statement string that we can use it
      * to instantiate a MySQLi statement object. It replaces this
      * pattern:
      *
      * <code>
-     * #[a-zA-Z0-9_#]+
+     * :[a-zA-Z0-9_:]+
      * </code>
      *
      * with question mark ('?'). Returns empty array if no placeholder
      * is found.
      *
      * @param string $statement_string_with_placeholders
-     * @return string Statement string safe to use as MySQLi_STMT instantiation argument.
+     * @return string Statement string safe to use as \MySQLi_STMT instantiation argument.
      *
      */
     protected function replacePlaceholdersWithQuestionMarks($statement_string_with_placeholders)
     {
-        return preg_replace('/#[a-zA-Z0-9_#]+/', '?', $statement_string_with_placeholders);
+        return preg_replace('/:[a-zA-Z0-9_:]+/', '?', $statement_string_with_placeholders);
     }
     
     /**
      * Creates parameter array to store parameters and a set of references that refers to it.
      * 
-     * We create parameter array to store parameters set by the user,
-     * and we create an array that references those parameters to be
-     * used as arguments when we use call_user_func() to call
-     * MySQLi_STMT::bind_param().
+     * \MySQLi_STMT::bind_param() requires the arguments to be
+     * references, so not only we have to create parameter array
+     * to store parameters set by the user, we also have to create
+     * references to them to be used when binding parameters.
      * 
      * @see $params
      * @see $references_params
@@ -763,10 +815,10 @@ class StatementWrapper
     /**
      * Creates array to store a fetched result row and a set of references that refers to it.
      *
-     * We create result row variables as an array to store each value
-     * every time we fetch using MySQLi_STMT::fetch(). We create
-     * references to these result row variables to be passed when we
-     * use call_user_func() to call MySQLi_STMT::bind_result().
+     * \MySQLi_STMT::bind_result() requires the arguments to be
+     * references, so not only we have to create a result row
+     * variables to store fetched row variables, we also have to
+     * create references to them to be used when binding result.
      *
      * @see $result_row
      * @see $references_result_row
@@ -775,7 +827,7 @@ class StatementWrapper
      */
     protected function createResultVariablesAndReferences()
     {
-        if (is_object($this->result_metadata) && is_a($this->result_metadata, '\MySQLi_Result'))
+        if ($this->has_result_set)
         {
             foreach ($this->result_metadata->fetch_fields() as $field)
             {
@@ -786,7 +838,7 @@ class StatementWrapper
     }
     
     /**
-     * Binds result row references using MySQLi_STMT::bind_result().
+     * Binds result row references using \MySQLi_STMT::bind_result().
      * 
      * We only need to bind the result once, hence this method is called
      * only at the constructor.
@@ -798,7 +850,7 @@ class StatementWrapper
      */
     protected function bindResult()
     {
-        if (is_object($this->result_metadata) && is_a($this->result_metadata, '\MySQLi_Result'))
+        if ($this->has_result_set)
         {
             call_user_func_array(array($this->statement_object, 'bind_result'), $this->references_result_row);
         }
@@ -851,7 +903,7 @@ class StatementWrapper
     /**
      * Fills parameter types string to the $references_param property.
      * 
-     * MySQLi_STMT::bind_param() requires us to specify parameter types
+     * \MySQLi_STMT::bind_param() requires us to specify parameter types
      * when binding. Allowed parameter types are (as per 5.3.6):
      *
      * <code>
@@ -896,7 +948,7 @@ class StatementWrapper
     }
     
     /**
-     * Binds parameter references array using MySQLi_STMT::bind_param().
+     * Binds parameter references array using \MySQLi_STMT::bind_param().
      *
      * This method is called each time the user provides new arguments.
      * Assumes that parameter types string has already been generated.
@@ -908,5 +960,20 @@ class StatementWrapper
     protected function bindParam()
     {
         call_user_func_array(array($this->statement_object, 'bind_param'), $this->references_params);
+    }
+    
+    /**
+     * Checks if the statement has a result set or not.
+     *
+     * If the statement has a result set, \MySQLi_STMT::result_metadata() will
+     * return a \MySQLi_Result object. If the statement has no result set it
+     * will return false.
+     * 
+     * @return bool True if the statement has a result set, false otherwise.
+     *
+     */
+    protected function hasResultSet()
+    {
+        return (is_object($this->result_metadata) && is_a($this->result_metadata, '\MySQLi_Result'));
     }
 }
