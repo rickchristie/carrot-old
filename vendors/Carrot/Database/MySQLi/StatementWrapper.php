@@ -695,7 +695,7 @@ class StatementWrapper
     /**
      * Wrapper for \MySQLi_STMT->sqlstate.
      *
-     * @return string SQLSTATE error from previous statement operation.
+     * @return string SQLSTATE code from previous statement operation.
      *
      */
     public function getSQLState()

@@ -31,7 +31,6 @@
  * @param DependencyInjectionContainer $dic Carrot's default dependency injection container.
  * 
  */
-
 $dic->register('\Carrot\Core\FrontController@main', function($dic)
 {
     return new \Carrot\Core\FrontController
@@ -56,7 +55,6 @@ $dic->register('\Carrot\Core\FrontController@main', function($dic)
  * @param string $routes_file_path Absolute path to the file that contains the routes.
  * 
  */
-
 $dic->register('\Carrot\Core\Router@shared', function($dic)
 {   
     // Destination to go to when there is no matching route
@@ -90,7 +88,6 @@ $dic->register('\Carrot\Core\Router@shared', function($dic)
  * @param string $exception_template_div Optional. Absolute path to the development uncaught exception template. Used when ErrorHandler::development_mode is true.
  *
  */
-
 $dic->register('\Carrot\Core\ErrorHandler@main', function($dic)
 {   
     return new \Carrot\Core\ErrorHandler
@@ -127,7 +124,6 @@ $dic->register('\Carrot\Core\ErrorHandler@main', function($dic)
  * @param string $base_path Optional. Base path, with starting and trailing slash.
  *
  */
- 
 $dic->register('\Carrot\Core\Request@shared', function($dic)
 {
     $object = new \Carrot\Core\Request
@@ -155,7 +151,6 @@ $dic->register('\Carrot\Core\Request@shared', function($dic)
  * @param string $server_protocol Used when setting the response code, either 'HTTP/1.0' or 'HTTP/1.1'.
  *
  */
-
 $dic->register('\Carrot\Core\Response@main', function($dic)
 {
     return new \Carrot\Core\Response
@@ -172,7 +167,6 @@ $dic->register('\Carrot\Core\Response@main', function($dic)
  * @param Response $response Instance of \Carrot\Core\Response
  *
  */
-
 $dic->register('\Carrot\Core\Controllers\NoMatchingRouteController@main', function($dic)
 {
     return new \Carrot\Core\Controllers\NoMatchingRouteController
@@ -191,7 +185,6 @@ $dic->register('\Carrot\Core\Controllers\NoMatchingRouteController@main', functi
  * @param string $root_directory Path to the framework's root directory, without trailing slash.
  *
  */
-
 $dic->register('\Carrot\Core\Controllers\WelcomeController@main', function($dic)
 {
     return new \Carrot\Core\Controllers\WelcomeController

@@ -9,14 +9,7 @@
 
 require 'autoload.php';
 
-/**
- * If you wanted to store result set, you must call store_result()
- * after each execution.
- *
- */
-
 $mysqli = new MySQLi('localhost', 'root', 'root', 'test2');
-
 $statement = new Carrot\Database\MySQLi\StatementWrapper($mysqli, 'SELECT * FROM account WHERE id = :id');
 $statement->throwExceptionWhenExecutionFails(true);
 $result = $statement->execute(array(':id' => 1));
