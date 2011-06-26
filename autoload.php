@@ -10,36 +10,24 @@
  */
 
 /**
- * Default autoloader behavior
+ * Carrot autoloader file.
  *
- * Implementation adheres to the PSR-0 universal autoloader final proposal. Modified
- * from a sample found in: {@link http://groups.google.com/group/php-standards/web/psr-0-final-proposal?pli=1}
+ * This file is loaded by Carrot and has the responsibility of
+ * defining the autoloader. Carrot doesn't care about the contents
+ * of this file as long as every class file is autoloaded without
+ * problems. The reason the autoloading process is on this file
+ * instead of a Bootstrap class is to make it easier for you to
+ * unit test your application.
  * 
- * Carrot supports PSR-0 by default but does not force you too adhere to it. If you
- * have a class that does not adhere to PSR-0 proposal, simply add another function to
- * the spl_autoload_register list. You can add them in this file after the first
- * registration.
+ * See the documentation for Carrot\Core\Autoloader for more
+ * information on how to properly autoload.
  *
  */
 
-spl_autoload_register(function($class)
-{
-    $class = ltrim($class, '\\');
-    $path = '';
-    $namespace = '';
-    
-    // Separate namespace with class, change namespace to path
-    if ($last_namespace_pos = strripos($class, '\\'))
-    {
-        $namespace = substr($class, 0, $last_namespace_pos);
-        $class = substr($class, $last_namespace_pos + 1);
-        $path = __DIR__ . DIRECTORY_SEPARATOR . 'vendors' . DIRECTORY_SEPARATOR . str_replace('\\', DIRECTORY_SEPARATOR, $namespace) . DIRECTORY_SEPARATOR;
-    }
-    
-    $path .= str_replace('_', DIRECTORY_SEPARATOR, $class) . '.php';
-    
-    if (file_exists($path))
-    {
-        require $path;
-    }
-});
+// Load the autoloader class file
+require __DIR__ . DIRECTORY_SEPARATOR . 'vendors' . DIRECTORY_SEPARATOR . 'Carrot' . DIRECTORY_SEPARATOR . 'Core' . DIRECTORY_SEPARATOR . 'Autoloader.php';
+
+// Start the autoloader
+$autoloader = new Carrot\Core\Autoloader();
+$autoloader->bindNamespaceToDirectory('\\', __DIR__ . DIRECTORY_SEPARATOR . 'vendors');
+$autoloader->register();

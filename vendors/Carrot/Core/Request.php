@@ -63,7 +63,7 @@ class Request
     protected $env;
     
     /**
-     * @var string Base path (relative path from the server root to the folder where the front controller/index.php file resides), with starting and trailing slash.
+     * @var string Base path (relative path from the server root to the folder where the front controller/index.php file resides), with starting and trailing directory separator.
      */
     protected $base_path;
     
@@ -86,7 +86,7 @@ class Request
      *
      * Base path is the relative path from the server root to the folder where the
      * main request handler (assumed to be /index.php) file resides, with starting
-     * and trailing slash.
+     * and trailing directory separator.
      *
      * @param array $server $_SERVER variable.
      * @param array $get $_GET variable.
@@ -95,7 +95,7 @@ class Request
      * @param array $cookie $_COOKIE variable.
      * @param array $request $_REQUEST variable.
      * @param array $env $_ENV variable.
-     * @param string $base_path Optional. Base path, with starting and trailing slash.
+     * @param string $base_path Optional. Base path, with starting and trailing directory separator.
      *
      */
     public function __construct($server, $get, $post, $files, $cookie, $request, $env, $base_path = '')
@@ -239,7 +239,7 @@ class Request
     // ---------------------------------------------------------------
     
     /**
-     * Returns base path (with starting and trailing slash).
+     * Returns base path (with starting and trailing directory separator).
      *
      * Base path is the relative path from server root to the folder
      * where the front controller is located. If the front controller
@@ -289,7 +289,7 @@ class Request
      * request handler. This method will be called if base path is not
      * given in the constructor.
      *
-     * Base path always have starting and trailing slash.
+     * Base path always have starting and trailing directory separator.
      * 
      * >> WARNING <<
      * 

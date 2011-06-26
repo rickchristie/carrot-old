@@ -8,6 +8,8 @@ TODO: Start making unit tests
 TODO: Add bootstrap class capability, create BootstrapInterface to make it easier, probably add TearDownInterface too, e.g. code to run after Response is set?
 TODO: Make StatementWrapper has a result object that implements Iterator?
 TODO: Make the default app (welcome screen) a sample app, don't bake it to the system?
+TODO: Fix exception handling, make it default to exception handling? Use Http404Exception?
+TODO: Make it so that the $dic exists solely at index.php, remove FrontController's dependency to $dic, refactor.
 
 DOCUMENTATION
 -------------

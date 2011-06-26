@@ -34,7 +34,7 @@ class WelcomeController
     protected $response;
     
     /**
-     * @var string Path to the DIC root directory (default is /vendors), without trailing slash.
+     * @var string Path to the DIC root directory (default is /vendors), without trailing directory separator.
      */
     protected $root_directory;
     
@@ -43,7 +43,7 @@ class WelcomeController
      *
      * @param Request $request Instance of \Carrot\Core\Request.
      * @param Response $response Instance of \Carrot\Core\Response.
-     * @param string $root_directory Path to the framework's root directory, without trailing slash.
+     * @param string $root_directory Path to the framework's root directory, without trailing directory separator.
      *
      */
     public function __construct(\Carrot\Core\Request $request, \Carrot\Core\Response $response, $root_directory)
