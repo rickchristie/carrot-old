@@ -9,12 +9,41 @@
  *
  */
 
-// ---------------------------------------------------------------
-
 /**
  * Autoloader
  * 
- * Set 
+ * Used to set autoloading behavior. Adheres to PSR-0 final
+ * proposal specifications. Configure the autoloader by binding a
+ * namespace with a particular directory:
+ *
+ * <code>
+ * $autoloader = new Autoloader;
+ * $autoloader->bindNamespaceToDirectory('Carrot\Core', '/absolute/path/to/folder');
+ * </code>
+ *
+ * Autoloader will then look for class files for namespaces
+ * Carrot\Core inside that folder according to PSR-0 specs.
+ *
+ * You can bind the root namespace to have every class looked for
+ * in that directory:
+ *
+ * <code>
+ * $autoloader->bindNamespaceToDirectory('\', '/vendors');
+ * </code>
+ *
+ * If more than one directory is bound to the same namespace, the
+ * first file found will be loaded and Autoloader will stop
+ * searching. Autoloader searches the file from the first
+ * binding to the last.
+ *
+ * <code>
+ * $autoloader->bindNamespaceToDirectory('\', '/vendors');
+ * $autoloader->bindNamespaceToDirectory('\', '/providers');
+ * </code>
+ *
+ * For the example code above, the Autoloader will first look for
+ * the class file in '/vendors', if none found, '/providers' will
+ * be searched.
  *
  * @author      Ricky Christie <seven.rchristie@gmail.com>
  * @license     http://www.opensource.org/licenses/mit-license.php MIT License
