@@ -6,7 +6,7 @@ class FrontControllerProvider extends Provider
 {
     protected $dependencies = array
     (
-        'router' => 'Carrot\Core\Router@Shared'
+        'router' => 'Carrot\Core\Router@Main'
     );
     
     public function getMain()

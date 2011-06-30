@@ -4,9 +4,9 @@ namespace Carrot\Core;
 
 class RouterProvider extends Provider
 {
-    protected $singletons = array('Shared');
+    protected $singletons = array('Main');
     
-    public function getShared()
+    public function getMain()
     {
         
     }

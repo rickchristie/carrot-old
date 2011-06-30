@@ -10,7 +10,7 @@
  */
 
 /**
- * Default Response
+ * Response
  * 
  * Carrot's default ResponseInterface implementation. Can be used by controllers
  * to built their response. Supports only HTTP/1.0 and HTTP/1.1.
@@ -32,7 +32,7 @@ class Response implements \Carrot\Core\Interfaces\ResponseInterface
     /**
      * @var array List of sent headers, grabbed using headers_list().
      */
-    protected $headers_list = array();
+    protected $headersList = array();
     
     /**
      * @var string A string containing the request body.
@@ -47,12 +47,12 @@ class Response implements \Carrot\Core\Interfaces\ResponseInterface
     /**
      * @var array The protocol to be written in header when returning status codes.
      */
-    protected $server_protocol;
+    protected $serverProtocol;
     
     /**
      * @var array Array containing the list of status codes and their default message.
      */
-    protected $status_code_messages = array
+    protected $statusCodeMessages = array
     (
         // Class 1 - Informational
         100 => 'Continue',
@@ -109,17 +109,17 @@ class Response implements \Carrot\Core\Interfaces\ResponseInterface
     /**
      * Constructs a Response object.
      *
-     * @param string $server_protocol Used when setting the response code, either 'HTTP/1.0' or 'HTTP/1.1'.
+     * @param string $serverProtocol Used when setting the response code, either 'HTTP/1.0' or 'HTTP/1.1'.
      *
      */
-    public function __construct($server_protocol)
+    public function __construct($serverProtocol)
     {
-        if (!in_array($server_protocol, array('HTTP/1.0', 'HTTP/1.1')))
+        if (!in_array($serverProtocol, array('HTTP/1.0', 'HTTP/1.1')))
         {
             throw new InvalidArgumentException('Error in instantiating Response. Server protocol must be HTTP/1.0 or HTTP/1.1.');
         }
         
-        $this->server_protocol = $server_protocol;
+        $this->serverProtocol = $serverProtocol;
     }
     
     /**
@@ -136,17 +136,17 @@ class Response implements \Carrot\Core\Interfaces\ResponseInterface
      *
      * <code>header('Content-Type: text/html');</code>
      *
-     * @param string $header_name
+     * @param string $headerName
      * @param string $contents
      * @return bool True if successful, false if otherwise.
      *
      */
-    public function setHeader($header_name, $contents)
+    public function setHeader($headerName, $contents)
     {   
         if (!headers_sent())
         {
-            $this->headers[$header_name] = $contents;
-            header("{$header_name}: {$contents}");
+            $this->headers[$headerName] = $contents;
+            header("{$headerName}: {$contents}");
             return true;
         }
         
@@ -159,16 +159,16 @@ class Response implements \Carrot\Core\Interfaces\ResponseInterface
      * This is a wrapper for header_remove(). Other than also removing
      * the actual header, it also removes the record in $this->headers.
      *
-     * @param string $header_name If not specified, all previously set headers will be removed.
+     * @param string $headerName If not specified, all previously set headers will be removed.
      * @return bool True if headers are not sent yet, false if otherwise.
      *
      */
-    public function removeHeader($header_name = '')
+    public function removeHeader($headerName = '')
     {
         if (!headers_sent())
         {
             // Remove all headers
-            if (empty($header_name))
+            if (empty($headerName))
             {
                 header_remove();
                 $this->headers = array();
@@ -176,8 +176,8 @@ class Response implements \Carrot\Core\Interfaces\ResponseInterface
             }
             
             // Remove one particular header
-            header_remove($header_name);
-            unset($this->headers[$header_name]);
+            header_remove($headerName);
+            unset($this->headers[$headerName]);
             return true;
         }
         
@@ -200,19 +200,19 @@ class Response implements \Carrot\Core\Interfaces\ResponseInterface
     {
         if (!headers_sent())
         {
-            if (!array_key_exists($code, $this->status_code_messages))
+            if (!array_key_exists($code, $this->statusCodeMessages))
             {
                 return false;
             }
             
-            if (empty($message) && isset($this->status_code_messages[$code]))
+            if (empty($message) && isset($this->statusCodeMessages[$code]))
             {
-                $message = $this->status_code_messages[$code];
+                $message = $this->statusCodeMessages[$code];
             }
             
             $code = intval($code);
             $this->status_code = $code;
-            header("{$this->server_protocol} {$code} {$message}");
+            header("{$this->serverProtocol} {$code} {$message}");
             
             return true;
         }
@@ -251,12 +251,12 @@ class Response implements \Carrot\Core\Interfaces\ResponseInterface
      * Although this class already records each headers set by Response::setHeader(), it
      * doesn't record headers that are set directly by the user using PHP header() function -
      * so it uses headers_list() to get the actual headers sent and stores them in
-     * Response::headers_list.
+     * $headersList class property.
      *
      */
     public function send()
     {
-        $this->headers_list = headers_list();
+        $this->headersList = headers_list();
         echo $this->body;
     }
     
@@ -315,6 +315,6 @@ class Response implements \Carrot\Core\Interfaces\ResponseInterface
      */
     public function getHeaderList()
     {
-        return $this->headers_list;
+        return $this->headersList;
     }
 }

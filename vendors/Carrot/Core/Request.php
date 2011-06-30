@@ -63,30 +63,7 @@ class Request
     protected $env;
     
     /**
-     * @var string Base path (relative path from the server root to the folder where the front controller/index.php file resides), with starting and trailing directory separator.
-     */
-    protected $base_path;
-    
-    /**
-     * @var array Application request URI, segmented inside an array.
-     */
-    protected $app_request_uri_segments;
-    
-    /**
-     * @var string File name 
-     */
-    protected $main_request_handler;
-    
-    /**
      * Constructs the Request object.
-     *
-     * Although this class can guess the base path of this application, it is
-     * recommended that you hardcode the base path in request object instantiation
-     * to mitigate security risks.
-     *
-     * Base path is the relative path from the server root to the folder where the
-     * main request handler (assumed to be /index.php) file resides, with starting
-     * and trailing directory separator.
      *
      * @param array $server $_SERVER variable.
      * @param array $get $_GET variable.
@@ -95,10 +72,9 @@ class Request
      * @param array $cookie $_COOKIE variable.
      * @param array $request $_REQUEST variable.
      * @param array $env $_ENV variable.
-     * @param string $base_path Optional. Base path, with starting and trailing directory separator.
      *
      */
-    public function __construct($server, $get, $post, $files, $cookie, $request, $env, $base_path = '')
+    public function __construct($server, $get, $post, $files, $cookie, $request, $env)
     {
         $this->server = $server;
         $this->get = $get;
@@ -107,14 +83,6 @@ class Request
         $this->cookie = $cookie;
         $this->request = $request;
         $this->env = $env;
-        
-        if (empty($base_path))
-        {
-            $base_path = $this->guessBasePath();
-        }
-        
-        $this->base_path = $base_path;
-        $this->app_request_uri_segments = $this->generateAppRequestURISegments();
     }
     
     /**
@@ -235,137 +203,6 @@ class Request
         
         return $this->env[$item];
     }
-    
-    // ---------------------------------------------------------------
-    
-    /**
-     * Returns base path (with starting and trailing directory separator).
-     *
-     * Base path is the relative path from server root to the folder
-     * where the front controller is located. If the front controller
-     * is in the server root, it simply returns '/'.
-     *
-     * @return string Base path.
-     *
-     */
-    public function getBasePath()
-    {
-        return $this->base_path;
-    }
-    
-    /**
-     * Returns the application URI segments (array).
-     *
-     * Application request URI is different from Request URI in that it doesn't
-     * include the base path. So if your base path is '/base/path/' and
-     * your the request uri is '/base/path/item/id', the application request
-     * URI will be:
-     *
-     * <code>
-     * array('item', 'id')
-     * </code>
-     *
-     * @param int $index Index of the segment to be returned, leave empty to return the whole array.
-     * @return mixed Either one segment or the entire segment array.
-     *
-     */
-    public function getAppRequestURISegments($index = '')
-    {
-        if (empty($index))
-        {
-            return $this->app_request_uri_segments;
-        }
-        
-        return $this->app_request_uri_segments[$index];
-    }
-    
-    // ---------------------------------------------------------------
-    
-    /**
-     * Generates base path.
-     *
-     * Assuming that each request will be handled by the main 'index.php'
-     * file, we will use SCRIPT_NAME to get the path from root to the
-     * request handler. This method will be called if base path is not
-     * given in the constructor.
-     *
-     * Base path always have starting and trailing directory separator.
-     * 
-     * >> WARNING <<
-     * 
-     * When you can, specify the base path manually - guessing the base
-     * path using SCRIPT_NAME is a security risk.
-     *
-     * @return string Path from root to the request handler.
-     *
-     */
-    protected function guessBasePath()
-    {
-        $path = str_ireplace('/index.php', '', $this->server['SCRIPT_NAME']);
-        
-        // Add trailing slash to default path, if it doesn't have it
-        if (empty($path) or substr($path, -1) != '/')
-        {
-            $path .= '/';
-        }
-        
-        return $path;
-    }
-    
-    /**
-     * Generate an application request URI segments array.
-     *
-     * Application request URI is different from Request URI in that it doesn't
-     * include the base path. So if your base path is '/base/path/' and
-     * your the request uri is '/base/path/item/id', the application request
-     * URI will be:
-     *
-     * <code>
-     * array('item', 'id')
-     * </code>
-     *
-     * This method checks if base path is in the REQUEST_URI. If it
-     * doesn't, it throws a RuntimeException. It then proceeds to
-     * cut query string and base path from REQUEST_URI, then exploding
-     * it to array of uri segments.
-     *
-     * @return array Application request URI in segments.
-     *
-     */
-    protected function generateAppRequestURISegments()
-    {   
-        $app_uri_string = $this->server['REQUEST_URI'];
-        
-        // Remove base path if it exists
-        if (strpos($this->server['REQUEST_URI'], $this->base_path) === 0)
-        {
-            $app_uri_string = substr($app_uri_string, strlen($this->base_path));
-        }
-        
-        // Remove query string, if it exists
-        $pos = strpos($app_uri_string, '?');
-        
-        if ($pos !== false)
-        {
-            $app_uri_string = substr($app_uri_string, 0, $pos);
-        }
-        
-        // Explode it to segments
-        $app_uri_string_expld = explode('/', $app_uri_string);
-        $app_request_uri_segments = array();
-        
-        foreach ($app_uri_string_expld as $segment)
-        {
-            if (!empty($segment))
-            {
-                $app_request_uri_segments[] = urldecode($segment);
-            }
-        }
-        
-        return $app_request_uri_segments;
-    }
-    
-    // ---------------------------------------------------------------
     
     /**
      * Wrapper for PHP isset on $_SERVER index.

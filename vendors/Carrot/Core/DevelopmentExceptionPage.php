@@ -86,7 +86,8 @@ class DevelopmentExceptionPage implements ExceptionPageInterface
                     <div id="stack-trace-wrapper">
                         <?php foreach ($stacktrace as $index => $trace) $this->displayStackTrace($index, $trace); ?>
                     </div>
-                    <h3>Global Variables</h3>
+                    <h3><code>$_SERVER</code></h3>
+                    <pre><?php var_dump($_SERVER) ?></pre>
                 </div>
             </body>
         </html>
