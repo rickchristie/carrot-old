@@ -19,3 +19,12 @@
  *
  */
 
+namespace Carrot\Helper;
+
+class Config
+{
+    public function get($configName)
+    {
+        
+    }
+}

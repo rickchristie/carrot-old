@@ -1,15 +1,6 @@
 <?php
 
 /**
- * This file is part of the Carrot framework.
- *
- * Copyright (c) 2011 Ricky Christie <seven.rchristie@gmail.com>
- *
- * Licensed under the MIT License.
- *
- */
-
-/**
  * Carrot autoloader file.
  *
  * This file is loaded by Carrot and has the responsibility of
@@ -24,10 +15,11 @@
  *
  */
 
-// Load the autoloader class file
+// Load the autoloader and namespace extractor class file
 require __DIR__ . DIRECTORY_SEPARATOR . 'vendors' . DIRECTORY_SEPARATOR . 'Carrot' . DIRECTORY_SEPARATOR . 'Core' . DIRECTORY_SEPARATOR . 'Autoloader.php';
 
 // Start the autoloader
-$autoloader = new Carrot\Core\Autoloader();
+$autoloader = new Carrot\Core\Autoloader(new ClassNameExtractor);
 $autoloader->bindNamespaceToDirectory('\\', __DIR__ . DIRECTORY_SEPARATOR . 'vendors');
+$autoloader->bindNamespaceToDirectory('\\', __DIR__ . DIRECTORY_SEPARATOR . 'providers');
 $autoloader->register();

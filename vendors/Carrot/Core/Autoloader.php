@@ -104,7 +104,7 @@ class Autoloader
         $namespace = rtrim($namespace, '\\');
         $namespace = $this->addBackslashPrefix($namespace);
         $pathToDirectory = $this->validateDirectory($pathToDirectory);
-        $this->namespaceToDirectoryBindings[$namespace] = $pathToDirectory;
+        $this->namespaceToDirectoryBindings[] = array('namespace' => $namespace, 'directory' => $pathToDirectory);
     }
     
     /**
@@ -180,8 +180,6 @@ class Autoloader
         
         $this->loadClassFromNamespaceToDirectoryBindings($className);
     }
-    
-    // ---------------------------------------------------------------
     
     /**
      * Adds a backslash prefix to a string.
@@ -276,11 +274,14 @@ class Autoloader
      */
     protected function loadClassFromNamespaceToDirectoryBindings($className)
     {   
-        foreach ($this->namespaceToDirectoryBindings as $namespaceBinding => $directoryBound)
+        foreach ($this->namespaceToDirectoryBindings as $binding)
         {
-            if (stripos($className, $namespaceBinding) === 0)
+            $namespaceBound = $binding['namespace'];
+            $directoryBound = $binding['directory'];
+            
+            if (stripos($className, $namespaceBound) === 0)
             {   
-                $classFilePath = $this->determineFilePath(substr($className, strlen($namespaceBinding)), $directoryBound);
+                $classFilePath = $this->determineFilePath(substr($className, strlen($namespaceBound)), $directoryBound);
                 
                 if (file_exists($classFilePath))
                 {

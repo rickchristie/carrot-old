@@ -12,8 +12,9 @@
 /**
  * Destination
  * 
- * Value object, represents a Destination, namely, the controller's DIC item ID
- * (for instantiation), the method to call and the arguments to pass to the method.
+ * Value object, represents a Destination, namely, the
+ * controller's instance name (used by the DIC for instantiation),
+ * the method to call and the arguments to pass to the method.
  * Returned by Router class, used by the front controller.
  *
  * @author      Ricky Christie <seven.rchristie@gmail.com>
@@ -26,35 +27,35 @@ namespace Carrot\Core;
 class Destination
 {
     /**
-     * @var string Controller's DIC item ID.
+     * @var string Controller's instance name, consists of fully qualified class name and a configuration name.
      */
-    protected $controller_dic_id;
+    protected $instanceName;
     
     /**
      * @var string Method name to be called.
      */
-    protected $method;
+    protected $methodName;
     
     /**
-     * @var array Array of paramters to be passed.
+     * @var array Array of arguments to be passed to the controller method.
      */
-    protected $params;
+    protected $arguments;
     
     /**
-     * @var string The name of the controller class derived from the DIC ID.
+     * @var string Fully qualified class name extracted from the instance name.
      */
-    protected $class_name;
+    protected $className;
     
     /**
      * Creates a Destination object.
      *
-     * Will throw an exception if the controller DIC item ID doesn't
-     * pass validation process. Example usage:
+     * Will throw an exception if the controller instance name doesn't
+     * pass validation process. Example object construction:
      *
      * <code>
      * $destination = new Destination
      * (
-     *     '\Vendor\Namespace\Subnamespace\BlogController@main',
+     *     '\Vendor\Namespace\Subnamespace\BlogController@Main',
      *     'index',
      *     array(5, 'Foo', 'Bar')
      * );
@@ -65,28 +66,24 @@ class Destination
      * @param array $params Array of parameters, to be passed in sequence.
      *
      */
-    public function __construct($controller_dic_id, $method, array $params = array())
+    public function __construct($instanceName, $methodName, array $arguments = array())
     {
-        if (!$this->validateID($controller_dic_id))
-        {
-            throw new \InvalidArgumentException("Error in creating Destination object, Controller DIC registration ID is not valid ({$controller_dic_id}).");
-        }
-        
-        $this->controller_dic_id = $controller_dic_id;
-        $this->method = $method;
-        $this->params = $params;
-        $this->class_name = $this->getClassNameFromID($controller_dic_id);
+        $instanceName = $this->validateInstanceName($instanceName);
+        $this->instanceName = $instanceName;
+        $this->methodName = $methodName;
+        $this->arguments = $arguments;
+        $this->className = $this->extractClassName($instanceName);
     }
     
     /**
-     * Returns the controller DIC item registration ID.
+     * Returns the controller instance Name.
      *
      * @return string Controller DIC item registration ID.
      *
      */
-    public function getControllerDICItemID()
+    public function getInstanceName()
     {
-        return $this->controller_dic_id;
+        return $this->instanceName;
     }
     
     /**
@@ -97,68 +94,74 @@ class Destination
      */
     public function getMethodName()
     {
-        return $this->method;
+        return $this->methodName;
     }
     
     /**
-     * Returns parameters to pass to the method.
+     * Returns arguments to pass to the method.
      *
-     * @return array Parameters to be passed to the controller method, sequentially.
+     * @return array Arguments to be passed to the controller method, sequentially.
      *
      */
-    public function getParams()
+    public function getArguments()
     {
-        return $this->params;
+        return $this->arguments;
     }
     
     /**
      * Returns class name.
      *
-     * @return string The controller's class name, generated from the DIC item ID.
+     * @return string The controller's fully qualified class name (with backslash prefix).
      *
      */
     public function getClassName()
     {
-        return $this->class_name;
+        return '\\' . $this->className;
     }
     
-    // ---------------------------------------------------------------
-    
     /**
-     * Validates DIC registration ID.
-     *
-     * The following rules must be satisfied:
-     *
-     *  1. Must use fully qualifed name (with starting backslash).
-     *  2. Must have a configuration name after FQN, separated by '@'.
-     *
-     * @param string $dic_id DIC item ID.
-     * @return bool True if valid, false otherwise.
+     * Throws exception if instance name is invalid.
+     * 
+     * Checks that the instance name has the '@' character as the
+     * separator between class name and configuration name. Also
+     * makes sure that both are not empty.
+     * 
+     * @throws \RuntimeException
+     * @param string $instanceName Instance name to be validated.
+     * @return string Instance name (with any backslash prefix trimmed).
      *
      */
-    protected function validateID($dic_id)
+    protected function validateInstanceName($instanceName)
     {
-        $dic_id_exploded = explode('@', $dic_id);
+        $instanceName = ltrim($instanceName, '\\');
+        $instanceNameExploded = explode('@', $instanceName);
         
-        return
-        (
-            count($dic_id_exploded) == 2 &&
-            !empty($dic_id_exploded[0]) &&
-            !empty($dic_id_exploded[1]) &&
-            $dic_id_exploded[0]{0} == '\\'
-        );
+        if (count($instanceNameExploded) != 2 or
+            empty($instanceNameExploded[0]) or
+            empty($instanceNameExploded[1]))
+        {
+            throw new \RuntimeException("Error in creating a Destination object, '{$instanceName}' is not a valid instance name.");
+        }
+        
+        return $instanceName;
     }
     
     /**
-     * Get the fully qualified class name from DIC item ID.
+     * Extracts class name from an instance name.
      *
-     * @param string $id DIC item ID.
-     * @return string Fully qualified class name.
+     * Example extractions:
+     *
+     * <code>
+     * Carrot\Core\FrontController@Main -> Carrot\Core\FrontController
+     * Carrot\Database\MySQLi@Backup -> Carrot\Database\MySQLi
+     * </code>
+     *
+     * @param string $instanceName
      *
      */
-    protected function getClassNameFromID($id)
+    protected function extractClassName($instanceName)
     {
-        $id_exploded = explode('@', $id);
-        return $id_exploded[0];
+        $instanceNameExploded = explode('@', $instanceName);
+        return $instanceNameExploded[0];
     }
 }

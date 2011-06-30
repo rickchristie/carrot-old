@@ -12,83 +12,52 @@
 /**
  * Dependency Injection Container
  * 
- * This class was modified from the 40 LOC DIC example by Fabien Potencier
- * {@link http://www.slideshare.net/fabpot/dependency-injection-with-php-53}.
+ * Carrot's dependency injection container (DIC) creates object
+ * graph with provider classes, similar to provider bindings in
+ * Google Guice.
  * 
- * This DIC implementation uses anonymous functions to describe how to create
- * an instance without actually creating it. You use it by registering an anonymous
- * function that returns the class instance to an identification:
+ * The provider class must implement
+ * Carrot\Core\Interfaces\ProviderInterface. You can extend
+ * Carrot\Core\Provider instead to avoid re-implementing methods
+ * for each provider classes.
  * 
- * <code>
- * $dic->register('\Carrot\Core\DependencyInjectionContainer@main', function($dic)
- * {
- *    return new \Carrot\Core\DependencyInjectionContainer();
- * });
- * </code>
+ * As the default behavior, this class will look for provider
+ * class inside the same namespace as the class being provided,
+ * with the same class name with added 'Provider' suffix. This
+ * means that it will look for Vendor\Namespace\ClassNameProvider
+ * when it needs to construct Vendor\Namespace\ClassName.
  *
- * You can then call it using its identification:
- *
- * <code>
- * $object = $dic->getInstance('\Carrot\Core\DependencyInjectionContainer@main');
- * </code>
- *
- * You have to use a fully qualified class name plus a configuration name separated
- * by '@' sign as the registration ID. This way you can have different anonymous functions
- * registered on the same class:
+ * This behavior can be overridden by binding another provider
+ * class:
  *
  * <code>
- * \Namespace\Subnamespace\ClassName@configuration_name
- * \Carrot\Library\MySQLDatabase@primary_database
- * \Carrot\Library\MySQLDatabase@backup_database
+ * $dic->bindProviderClass('App\CustomProviderClassName', 'Carrot\Core\FrontController');
  * </code>
  *
- * Please note that this class doesn't have the responsibility to require the class
- * files, it is the responsibility of the autoloader to do so.
- *
- * Dependency registrations are done in dependency registration files, which are assigned
- * to either a fully qualified namespace or the fully qualified class name. This means
- * you can assign registration files to: '\Namespace' or '\Namespace\Subnamespace\ClassName':
+ * Each instantiation configuration is identified by an instance
+ * name, which consists of the fully qualified class name and the
+ * configuration name, separated by '@' character:
  *
  * <code>
- * $registrations['\Namespace'] = 'abs/path/to/conf-b.php';
- * $registrations['\Namespace\Subnamespace'] = 'abs/path/to/conf-a.php';
+ * Carrot\Database\MySQLi@Main
+ * Carrot\Database\MySQLi@Logging
+ * Carrot\Helper\Config@Shared
  * </code>
  *
- * When this class is used to get an instance of '\Namespace\Subnamespace\ClassName@main',
- * it will first search for an existing registration by that ID. If it doesn't exist,
- * this class will look (and load) dependency registration files assigned to (in order):
+ * When specifying the instance you want in the provider class,
+ * you will have to provide the full instance name. The DIC will
+ * call the appropriate method based on the configuration name:
  *
  * <code>
- * \Namespace
- * \Namespace\Subnamespace
- * \Namespace\Subnamespace\ClassName
+ * Carrot\Database\MySQLi@Main -> Carrot\Database\MySQLiProvider::getMain()
+ * Carrot\Database\MySQLi@Logging -> Carrot\Database\MySQLiProvider::getLogging()
+ * Carrot\Helper\Config@Shared -> Carrot\Helper\ConfigProvider::getShared()
  * </code>
+ *
+ * For more information, please see the docs for
+ * {@see Carrot\Core\Interfaces\ProviderInterface} and
+ * {@see Carrot\Core\Provider}.
  * 
- * If after loading a registration file the item ID exists, it will stop loading files
- * immediately. If after loading all of the possible files the configuration item still
- * doesn't exists, it will try to instantiate the class without any construction arguments.
- * This will throw a warning if your class needs construction parameter(s).
- *
- * Default behavior is to instantiate new object every time it is needed (transient
- * lifecycle). If you want an object to have a singleton lifecycle, save an instance
- * of the object to the cache before returning it:
- *
- * <code>
- * // We don't want another database instance created
- * $dic->register('\Carrot\Library\MySQLDatabase:primary_shared', function($dic)
- * {
- *    // Create an instance
- *    $db = new \Carrot\Library\MySQLDatabase('localhost', 'user', 'pass', 'database');
- *
- *    // Save it into the cache
- *    $dic->saveShared('\Carrot\Library\MySQLDatabase:primary_shared', $db);
- *
- *    return $db;
- * });
- * </code>
- *
- * This would make every subsequent requests to the item return the cached object.
- *
  * @author      Ricky Christie <seven.rchristie@gmail.com>
  * @license     http://www.opensource.org/licenses/mit-license.php MIT License
  *
@@ -96,324 +65,330 @@
 
 namespace Carrot\Core;
 
+use RuntimeException;
+
 class DependencyInjectionContainer
 {
     /**
-     * @var array List of loaded dependency registration file IDs.
+     * @var array Contains provider class bindings.
      */
-    protected $dependency_registration_files_loaded = array();
+    protected $providerClassBindings = array();
     
     /**
-     * @var type List of dependency registration file paths, indexed by their assignment IDs.
+     * @var string Suffix to the provider class name, added after the class name being provided.
      */
-    protected $dependency_registration_files = array();
+    protected $providerClassSuffix = 'Provider';
     
     /**
-     * @var array List of formatted configuration items indexed by their registration ID.
+     * @var string Prefix added to the configuration name as the method to be called.
      */
-    protected $items = array();
+    protected $providerMethodPrefix = 'get';
     
     /**
-     * @var array List of shared objects indexed by their registration ID.
+     * @var array Contains references to objects that has singleton lifecycle.
      */
-    protected $shared = array();
+    protected $singletons = array();
     
     /**
-     * Constructs a DIC object.
+     * Loads a file that contains provider bindings.
      * 
-     * @param array $dependency_registration_files List of dependency registration file paths indexed by their assignment IDs.
-     *
-     */
-    public function __construct(array $dependency_registration_files)
-    {
-        $this->dependency_registration_files = $dependency_registration_files;
-    }
-    
-    /**
-     * Registers a DIC item.
-     *
-     * Example usage, registering an instantiation configuration for a Config
-     * object:
-     *
-     * <code> 
-     * $dic->register('\Carrot\Library\Config@main', function($dic)
-     * {
-     *    // Get the request instance to fill in details
-     *    $request = $dic->getInstance('\Carrot\Core\Request@shared');
-     *
-     *    // Returns the instance
-     *    return new \Carrot\Library\Config
-     *    (
-     *        'foo',
-     *        'bar',
-     *        $request->server('REQUEST_URI')
-     *    );
-     * });
-     * </code>
-     * 
-     * The DIC item registration ID must use fully qualified name. This is so
-     * that we can determine which namespace it belongs to. After the fully
-     * qualified name, type the configuration name prefixed by '@'. You can
-     * register two different instances of the same class with different
-     * configuration name:
+     * In the file, you can use $dic variable to define provider class
+     * bindings:
      *
      * <code>
-     * \Carrot\Library\Config@main
-     * \Carrot\Library\Config@sitemap
+     * $dic->bindProviderClass('App\Providers\ConfigProvider', 'Carrot\Helpers\Config');
      * </code>
+     *
+     * If you need to do some logic, don't forget that you can use the
+     * $dic to get an instance of the classes you need.
      * 
-     * @param string $dic_id DIC item registration ID.
-     * @param Closure $function Anonymous function that returns the instantiated object.
-     * 
+     * @throws \InvalidArgumentException
+     * @param string $providerFilePath Absolute file path to the provider configuration file.
+     * @param bool $mustExist If true, will throw exception if the file doesn't exist. Defaults to true.
+     *
      */
-    public function register($dic_id, \Closure $function)
+    public function loadProviderFile($providerFilePath, $mustExist = true)
     {
-        if (isset($this->items[$dic_id]))
+        if (!file_exists($providerFilePath) && $mustExist)
         {
-            throw new \InvalidArgumentException("Error in registering DIC item, ID '{$dic_id}' already exists.");
+            throw new \InvalidArgumentException("DIC error, cannot load provider file '{$providerFilePath}', file does not exist.");
         }
         
-        if (!$this->validateID($dic_id))
+        $require = function($providerFilePath, $dic)
         {
-            throw new \InvalidArgumentException("Error in registering DIC item, '{$dic_id}' is not a valid DIC registration ID.");
-        }
+            require $providerFilePath;
+        };
         
-        $this->items[$dic_id]['function'] = $function;
-        $this->items[$dic_id]['class_name'] = $this->getClassNameFromID($dic_id);
+        $require($providerFilePath, $this);
     }
     
     /**
-     * Saves an instance to the cache.
+     * Binds a provider class to a fully qualified class name.
+     * 
+     * Direct provider class bindings overrides the default provider
+     * class searching behavior.
      *
-     * Use this method when you are registering an instance that should only be
-     * instantiated once (singleton lifecycle):
-     *
-     * <code> 
-     * $dic->register('\Carrot\Library\Config@shared', function($dic)
-     * {
-     *    // Instantiate the object first
-     *    $config = new \Carrot\Library\Config
-     *    (
-     *        'foo',
-     *        'bar'
-     *    );
-     *
-     *    // Save as shared
-     *    $dic->saveShared('\Carrot\Library\Config@shared', $config);
-     *    
-     *    // Return the object
-     *    return $config;
-     * });
+     * <code>
+     * $dic->bindProviderClass('App\Providers\ConfigProvider', 'Carrot\Helpers\Config');
      * </code>
-     *
-     * This will make the object instantiated only once, any subsequent requests
-     * will return the reference to the instantiated object.
-     *
-     * @param string $dic_id DIC item registration ID.
-     * @param mixed $object The object reference to be saved.
+     * 
+     * @param string $providerClassName Fully qualified class name for the provider class.
+     * @param string $className Fully qualified class name for the class being provided.
      *
      */
-    public function saveShared($dic_id, $object)
-    {   
-        if (!isset($this->items[$dic_id]))
+    public function bindProviderClass($providerClassName, $className)
+    {
+        $className = ltrim($className, '\\');
+        $providerClassName = ltrim($providerClassName, '\\');        
+        $this->providerClassBindings[$className] = $providerClassName;
+    }
+    
+    /**
+     * Adds a provider class binding array.
+     * 
+     * If you need to do a lot of binding, using this method you can
+     * just pass an array to avoid having to call bindProviderClass()
+     * multiple times.
+     *
+     * <code>
+     * $bindings = array
+     * (
+     *     'App\Providers\ConfigProvider' => 'Carrot\Helpers\Config',
+     *     'App\Providers\MySQLiProvider' => 'Carrot\Database\MySQLi',
+     *     'App\Providers\FrontControllerProvider' => 'Carrot\Core\FrontController',
+     *     ...
+     * );
+     *
+     * $this->addProviderClassBindings($bindings);
+     * </code>
+     *
+     * @param array $bindings Array containing the bindings.
+     *
+     */
+    public function addProviderClassBindings(array $bindings)
+    {
+        foreach ($bindings as $providerClassName => $className)
         {
-            throw new \InvalidArgumentException("Error in saving shared object reference, DIC item '{$dic_id}' doesn't exist.");
+            $providerClassName = ltrim($providerClassName, '\\');
+            $className = ltrim($className, '\\');
+            $this->providerClassBindings[$className] = $providerClassName;
         }
+    }
+    
+    /**
+     * Gets an instance from the provider.
+     * 
+     * This method will find and instantiate the provider class. It
+     * will provide the dependencies to the provider recursively by
+     * calling ProviderInterface::getDependencies() and
+     * ProviderInterface::setDependencies(). The appropriate provider
+     * method is then called to return the instance needed.
+     *
+     * This method also calls ProviderInterface::isSingleton() to find
+     * out if the object being instantiated has a singleton lifecycle.
+     * It saves the object reference into a cache if it is indeed the
+     * case.
+     *
+     * <code>
+     * $mysqli = $dic->getInstance('Carrot\Database\MySQLi@Main');
+     * </code>
+     * 
+     * @param string $instanceName The instance name.
+     * @return mixed Object instance that was needed.
+     * 
+     */
+    public function getInstance($instanceName)
+    {
+        // Return cache if possible
+        if (isset($this->singletons[$instanceName]))
+        {
+            return $this->singletons[$instanceName];
+        }
+        
+        $instanceName = $this->validateInstanceName($instanceName);
+        $className = $this->extractClassName($instanceName);
+        $configName = $this->extractConfigName($instanceName);
+        
+        if ($configName == 'NoProvider')
+        {
+            return $this->instantiateClassWithoutProvider('\\' . $className);
+        }
+        
+        $providerClassName = $this->getProviderClassName($className);
+        $providerMethodName = $this->providerMethodPrefix . $configName;
+        $provider = $this->getProviderObject($providerClassName, $providerMethodName);
+        $dependencies = $provider->getDependencies();
+        
+        // Get dependencies recursively
+        foreach ($dependencies as $index => $dependencyInstanceName)
+        {
+            $dependencies[$index] = $this->getInstance($dependencyInstanceName);
+        }
+        
+        $provider->setDependencies($dependencies);
+        $object = $provider->$providerMethodName();
         
         if (!is_object($object))
         {
-            throw new \InvalidArgumentException("Error in saving shared object reference ({$dic_id}), expected object, '{$object}' given.");
+            $providerClassName = ltrim($providerClassName, '\\');
+            throw new RuntimeException("DIC error in getting instance {$instanceName}, the provider method {$providerClassName}::{$providerMethodName}() does not return an object.");
         }
         
-        // Validate class name
-        $class_name_from_id = $this->getClassNameFromID($dic_id);
-        $class_name_from_obj = '\\' . get_class($object);
-        
-        if ($class_name_from_id !== $class_name_from_obj)
+        if (get_class($object) !== $className)
         {
-            throw new \InvalidArgumentException("Error in saving shared object reference ({$dic_id}), expected an instance of '{$class_name_from_id}', got '{$class_name_from_obj}' instead.");
+            $providerClassName = ltrim($providerClassName, '\\');
+            throw new RuntimeException("DIC error in getting instance {$instanceName}, the provider method {$providerClassName}::{$providerMethodName}() does not return an instance of {$className}.");
         }
         
-        $this->shared[$dic_id] = $object;
-    }
-    
-    /**
-     * Returns an instance of a registered DIC item.
-     *  
-     * Use it to get an instance of a registered DIC item:
-     * 
-     * <code>
-     * $object = $dic->getInstance('\Carrot\Library\Config@main');
-     * </code>
-     *
-     * If the registration item does not exist, it will try to load registration
-     * file assigned to it, from the top level namespace to the class name. For
-     * example, when loading '\Carrot\Library\Config@main' it will try to find
-     * the DIC item in dependency registration files assigned to (in order):
-     *
-     * <code>
-     * \Carrot
-     * \Carrot\Library
-     * \Carrot\Library\Config
-     * </code>
-     *
-     * If the item doesn't exist even after it has loaded all possible registration
-     * files, it will try to instantiate the class without parameters.
-     *
-     * @id string $dic_id DIC item ID.
-     * @return Object 
-     *
-     */
-    public function getInstance($dic_id)
-    {
-        if (!$this->validateID($dic_id))
+        // Save to cache if it has a singleton lifecycle
+        if ($provider->isSingleton($configName))
         {
-            throw new \InvalidArgumentException("Error in getting instance, '{$dic_id}' is not a valid DIC item ID.");
-        }
-        
-        // Return shared instance if it exists
-        if (isset($this->shared[$dic_id]))
-        {
-            return $this->shared[$dic_id];
-        }
-        
-        // Load dependency registration file for the package in question if we haven't already
-        $this->loadDependencyRegistrationFile($dic_id);
-        $class_name = $this->getClassNameFromID($dic_id);
-        
-        // If it doesn't exist, try to instantiate it without parameters
-        if (!isset($this->items[$dic_id]))
-        {
-            if (!class_exists($class_name))
-            {
-                throw new \InvalidArgumentException("Error in getting instance, DIC item '{$dic_id}' does not exist, class name '{$class_name}' also doesn't exist.");
-            }
-            
-            $object = new $class_name();
-            return $object;
-        }
-        
-        // Otherwise instantiate it using saved anonymous function
-        $object = $this->items[$dic_id]['function']($this);
-        $class_name_from_obj = '\\' . get_class($object);
-        
-        if ($class_name_from_obj !== $class_name)
-        {
-             throw new \RuntimeException("Error in getting instance, DIC item '{$dic_id}' does not return the correct instance, expecting an instance of '{$class_name}', got '{$class_name_from_obj}' instead.");
+            $this->singletons[$instanceName] = $object;
         }
         
         return $object;
     }
     
-    // ---------------------------------------------------------------
+    /**
+     * Instantiate the class without constructor arguments.
+     *
+     * Throws RuntimeException if the class does not exist.
+     *
+     * @throws RuntimeException
+     * @param string $className Fully qualified class name (with backslash prefix for safe instantiation).
+     * @return object The instantiated class.
+     *
+     */
+    protected function instantiateClassWithoutProvider($className)
+    {
+        if (!class_exists($className))
+        {
+            $className = ltrim($className, '\\');
+            throw new RuntimeException("DIC error in getting instance '{$className}@NoProvider', class does not exist.");
+        }
+        
+        return new $className;
+    }
     
     /**
-     * Loads a dependency registration file for a particular ID.
-     *
-     * Does not load registration file if it has been loaded already, will mark a
-     * registration file ID as loaded even if the file doesn't exist.
+     * Throws exception if instance name is invalid.
      * 
-     * @param string $dic_id
+     * Checks that the instance name has the '@' character as the
+     * separator between class name and configuration name. Also
+     * makes sure that both are not empty.
+     * 
+     * @throws RuntimeException
+     * @param string $instanceName Instance name to be validated.
+     * @return string Instance name (with any backslash prefix trimmed).
      *
      */
-    protected function loadDependencyRegistrationFile($dic_id)
-    {  
-        if (array_key_exists($dic_id, $this->items))
+    protected function validateInstanceName($instanceName)
+    {
+        $instanceName = ltrim($instanceName, '\\');
+        $instanceNameExploded = explode('@', $instanceName);
+        
+        if (count($instanceNameExploded) != 2 or
+            empty($instanceNameExploded[0]) or
+            empty($instanceNameExploded[1]))
         {
-            return;
+            throw new RuntimeException("DIC error in getting an instance, '{$instanceName}' is not a valid instance name.");
         }
         
-        $registration_file_assignment_id = '';
-        $class_name_exploded = explode('\\', $this->getClassNameFromID($dic_id));
-        
-        foreach ($class_name_exploded as $segment)
-        {
-            if (empty($segment))
-            {
-                continue;
-            }
-            
-            $registration_file_assignment_id .= "\\{$segment}";
-            
-            // Don't load if already loaded
-            if (in_array($registration_file_assignment_id, $this->dependency_registration_files_loaded))
-            {
-                continue;
-            }
-            
-            // Mark the registration file ID as loaded
-            $this->dependency_registration_files_loaded[] = $registration_file_assignment_id;
-            
-            // Load the file if exists
-            if (isset($this->dependency_registration_files[$registration_file_assignment_id]))
-            {
-                $this->requireDependencyRegistrationFile($this->dependency_registration_files[$registration_file_assignment_id]);   
-                
-                if (array_key_exists($dic_id, $this->items))
-                {
-                    break;
-                }
-            }
-        }
+        return $instanceName;
     }
     
     /**
-     * Actually requires() the given file path.
+     * Extracts class name from an instance name.
      *
-     * This function is needed in order give the required dependency registration
-     * file paths a clean variable scope.
+     * Example extractions:
      *
-     * @param string $file_path Absolute path to the dependency registration file.
+     * <code>
+     * Carrot\Core\FrontController@Main -> Carrot\Core\FrontController
+     * Carrot\Database\MySQLi@Backup -> Carrot\Database\MySQLi
+     * </code>
+     *
+     * @param string $instanceName
      *
      */
-    protected function requireDependencyRegistrationFile($file_path)
+    protected function extractClassName($instanceName)
+    {
+        $instanceNameExploded = explode('@', $instanceName);
+        return $instanceNameExploded[0];
+    }
+    
+    /**
+     * Extracts configuration name from an instance name.
+     *
+     * Example extractions:
+     *
+     * <code>
+     * Carrot\Core\FrontController@Main -> Main
+     * Carrot\Database\MySQLi@Backup -> Backup
+     * </code>
+     *
+     * @param string $instanceName
+     *
+     */
+    protected function extractConfigName($instanceName)
+    {
+        $instanceNameExploded = explode('@', $instanceName);
+        return $instanceNameExploded[1];
+    }
+    
+    /**
+     * Returns the provider class name to be instantiated.
+     * 
+     * This method first searches for provider class binding. If none
+     * found, it then assumes that the provider class is in the same
+     * namespace, having the same class name only with 'Provider'
+     * suffix at the end. Example:
+     *
+     * <code>
+     * Carrot\Core\FrontController -> Carrot\Core\FrontControllerProvider
+     * Carrot\Database\MySQLi -> Carrot\Database\MySQLi
+     * </code>
+     * 
+     * @param string $className Fully qualified class name without backslash prefix.
+     * @return string Fully qualified class name of the provider (with backslash prefix for safe instantiation).
+     *
+     */
+    protected function getProviderClassName($className)
+    {
+        if (array_key_exists($className, $this->providerClassBindings))
+        {
+            return $this->providerClassBindings[$className];
+        }
+        
+        return '\\' . $className . $this->providerClassSuffix;
+    }
+    
+    /**
+     * Instantiates and return the provider class.
+     * 
+     * Also checks whether the provider method needed are present,
+     * throws a RuntimeException if it does not.
+     *
+     * @throws RuntimeException 
+     * @param string $providerClassName The provider class name (with backslash prefix for safe instantiation).
+     * @param string $providerMethodName The method name that must exist at the provider class.
+     * @return \Carrot\Core\Interfaces\ProviderInterface An implementation of ProviderInterface.
+     *
+     */
+    protected function getProviderObject($providerClassName, $providerMethodName)
     {   
-        if (file_exists($file_path))
+        if (!class_exists($providerClassName) or !is_subclass_of($providerClassName, '\Carrot\Core\Interfaces\ProviderInterface'))
         {
-            $require = function($dic, $file_path)
-            {
-                require_once($file_path);
-            };
-            
-            $require($this, $file_path);
+            $providerClassName = ltrim($providerClassName, '\\');
+            throw new RuntimeException("DIC error in getting provider, either {$providerClassName} doesn't implement Carrot\Core\Interfaces\ProviderInterface or it doesn't exist.");
         }
-    }
-    
-    /**
-     * Validates DIC registration ID.
-     *
-     * The following rules must be satisfied:
-     *
-     *  1. Must use fully qualifed name (with starting backslash).
-     *  2. Must have a configuration name after FQN, separated by '@'.
-     *
-     * @param string $dic_id DIC item ID.
-     * @return bool True if valid, false otherwise.
-     *
-     */
-    protected function validateID($dic_id)
-    {
-        $dic_id_exploded = explode('@', $dic_id);
         
-        return
-        (
-            count($dic_id_exploded) == 2 &&
-            !empty($dic_id_exploded[0]) &&
-            !empty($dic_id_exploded[1]) &&
-            $dic_id_exploded[0]{0} == '\\'
-        );
-    }
-    
-    /**
-     * Get the fully qualified class name from DIC item ID.
-     *
-     * @param string $dic_id DIC item ID.
-     * @return string Fully qualified class name.
-     *
-     */
-    protected function getClassNameFromID($dic_id)
-    {
-        $dic_id_exploded = explode('@', $dic_id);
-        return $dic_id_exploded[0];
+        $provider = new $providerClassName;
+        
+        if (!method_exists($provider, $providerMethodName))
+        {
+            throw new RuntimeException("DIC error in getting provider, the provider method {$providerClassName}::{$providerMethodName}() doesn't exist.");
+        }
+        
+        return $provider;
     }
 }
