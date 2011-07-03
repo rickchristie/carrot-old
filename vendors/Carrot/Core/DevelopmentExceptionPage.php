@@ -59,20 +59,20 @@ class DevelopmentExceptionPage implements ExceptionPageInterface
     {
         $summaryCode = $this->getSummaryCode($this->exception->getFile(), $this->exception->getLine());
         $stacktrace = $this->exception->getTrace();
+        $pageTitle = get_class($this->exception) . ' (' . $this->exception->getCode() . ') - ' . htmlspecialchars($this->exception->getMessage(), ENT_QUOTES);
         echo '<!DOCTYPE HTML PUBLIC "-//W3C//DTD HTML 4.01//EN" "http://www.w3.org/TR/html4/strict.dtd">';
         
         ?>
         
         <html>
             <head>
-                <title>Uncaught Exception!</title>
+                <title><?php echo $pageTitle ?></title>
                 <?php $this->displayCSS() ?>
                 <?php $this->displayScript() ?>
             </head>
             <body>
                 <div id="wrapper">
-                    <h2><?php echo get_class($this->exception) ?> (<?php echo $this->exception->getCode() ?>) - <?php echo htmlspecialchars($this->exception->getMessage(), ENT_QUOTES) ?></h2>
-                    <p></p>
+                    <h2><?php echo $pageTitle ?></h2>
                     <div class="code-container">
                         <ol>
                             <?php foreach ($summaryCode as $line):  ?>
@@ -220,7 +220,7 @@ class DevelopmentExceptionPage implements ExceptionPageInterface
     {
         if (isset($trace['file'], $trace['line']))
         {
-            return "#{$index} " . htmlspecialchars($trace['file'], ENT_QUOTES) . ' on line ' . htmlspecialchars($trace['line'], ENT_QUOTES);
+            return "{$index}. " . htmlspecialchars($trace['file'], ENT_QUOTES) . ' on line ' . htmlspecialchars($trace['line'], ENT_QUOTES);
         }
         else
         {

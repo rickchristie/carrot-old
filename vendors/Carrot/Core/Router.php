@@ -12,10 +12,40 @@
 /**
  * Router
  * 
- * Carrot's default Router. Uses two anonymous functions to store a two way route.
- * One anonymous function is responsible for routing, the other one is responsible
- * for reverse-routing. This class will call the routing functions one by one until
- * one of them returns an instance of Destination.
+ * Carrot's default Router class. To use this class, first you
+ * register the routes:
+ *
+ * <code>
+ * $router->registerRoute('blogShow', 'Blog\Routes\BlogShowRoute');
+ * $router->registerRoute('pageAbout', 'Blog\Routes\PageAboutRoute');
+ * </code>
+ *
+ * When getDestination() is called, this class will loop through
+ * the routes to run RouteInterface::translateToDestination()
+ * until one of them returns an instance of Destination.
+ * 
+ * By default, your route will always be instantiated and run on
+ * every request. You can add regex filter as the third argument
+ * when registering the route to have the regex matched to the
+ * application request URI.
+ *
+ * For example, if you want your route class to be consulted only
+ * when the application request URI starts with '/blog/[...]' you
+ * can register it with the following regex:
+ * 
+ * <code>
+ * $router->registerRoute('blogShow', 'Blog\Routes\BlogShowRoute', '|^/blog/|');
+ * </code>
+ *
+ * Notice that we use '|' character as the regex delimiter instead
+ * of the usual '/' so that we don't have to escape the slashes.
+ *
+ * This Router class provides mechanisms to do two-way routing by
+ * requiring each route class to also provide
+ * RouteInterface::translateToURL() method.
+ *
+ * For more information on the route class please see the docs on
+ * {@see RouteInterface}.
  *
  * @author      Ricky Christie <seven.rchristie@gmail.com>
  * @license     http://www.opensource.org/licenses/mit-license.php MIT License
@@ -24,229 +54,329 @@
 
 namespace Carrot\Core;
 
-class Router implements \Carrot\Core\Interfaces\RouterInterface
+use Carrot\Core\Interfaces\RouterInterface;
+use Carrot\Core\Interfaces\RouteInterface;
+use Carrot\Core\Destination;
+use InvalidArgumentException;
+use RuntimeException;
+
+class Router implements RouterInterface
 {
     /**
-     * @var array List of anonymous functions returning an instance of Destination.
+     * @var array Array of parameters to be passed to the route classes.
      */
-    protected $route_functions = array();
+    protected $routingParams;
     
     /**
-     * @var array List of anonymous functions returning a formatted URL.
+     * @var Destination The destination instance to return to if there is no matching route.
      */
-    protected $reverse_route_functions = array();
+    protected $destinationForNoMatchingRoute;
     
     /**
-     * @var array List of route names that has been successfully defined.
+     * @var array List of route registrations data.
      */
-    protected $route_names = array();
+    protected $routeRegistrations = array();
     
     /**
-     * @var Destination Default Destination object to return if there's no matching route. 
+     * @var array Contains instantiated route classes.
      */
-    protected $no_matching_route_destination;
+    protected $routeObjects = array();
     
     /**
-     * @var StdClass PHP standard class containing the routing parameters, to be passed to the routing/reverse-routing functions.
+     * @var string Application request URI string to be checked with the route's regex filter pattern.
      */
-    protected $params;
+    protected $appRequestURIString;
     
     /**
-     * Constructs a Router object.
-     *
-     * Routing parameters set here in construction will be passed to the routing and reverse
-     * routing function. They can be objects, strings, or plain arrays. Routin parameters is 
-     * injected as arrays, but it will be casted into an object for easier access by the
-     * anonymous functions, so make sure the index is simple strings. This array:
-     *
-     * <code>
-     * $params = array('base_url' => 'http://localhost/carrot-dev', 'request' => $request);
-     * </code>
-     *
-     * will be accessed as object at routing/reverse-routing functions:
-     *
-     * <code>
-     * $params->base_url
-     * $params->request
-     * </code>
-     *
-     * @param array $params Routing parameters to be passed to the anonymous functions.
-     * @param Destination $no_matching_route_destination Default destination to return when there is no matching route.
-     * @param string $routes_file_path Absolute path to the file that contains the routes.
+     * Constructs the Router object.
+     * 
+     * Routing parameters an array of variables that is passed to the
+     * translation methods in RouteInterface. It could be anything,
+     * from a string to an object. You can change the contents of
+     * routing parameters by editing this class's provider class.
+     * 
+     * @param array $routingParams Array of parameters to be passed to the route classes.
+     * @param string $appRequestURIString Application request URI string to be matched with routes's regex filter pattern.
      *
      */
-    public function __construct(array $params, \Carrot\Core\Destination $no_matching_route_destination, $routes_file_path)
+    public function __construct($appRequestURIString, array $routingParams = array())
     {
-        $this->params = (object)$params;
-        $this->no_matching_route_destination = $no_matching_route_destination;
-        $this->loadRoutesFile($routes_file_path);
+        $this->appRequestURIString = $appRequestURIString;
+        $this->routingParams = (object) $routingParams;
     }
     
     /**
-     * Adds a new named route.
+     * Goes through all the routes to get the destination instance.
      * 
-     * Your route must be defined in anonymous function that takes one argument: $params, which
-     * contains the routing parameters. Routing parameters are set during object construction.
-     * In addition to defining a routing function, you must also define a reverse-routing function,
-     * this allows you to use two way routing.
+     * Loops through all the registered routes and run the
+     * RouteInterface::translateToDestination() method. If the method
+     * does not return an instance of destination, continue to the
+     * next route.
      *
-     * Routing function should use the routing parameters to determine if the current request
-     * is its responsibility to route. On routing, this class will accept the first Destination
-     * return as a valid route, so early defined routes always wins. Reverse routing function should
-     * accept two parameters, $params (routing parameters), and additional $vars that contains arguments
-     * that are sent via generateURL() method (see documentation for that method for more info).
-     *
-     * Here is an example of adding a route for home page (/), assuming that Request object
-     * is injected as a parameter:
+     * If the route is exhausted and there is still no destination,
+     * this method will run getDestinationForNoMatchingRoute() method
+     * to get the destination instance for no matching route.
      * 
-     * <code>
-     * // Route:welcome
-     * // Translates {/} to WelcomeController::index()
-     * $router->addRoute
-     * (   
-     *     'welcome',
-     *     function($params)
-     *     {
-     *         // Assuming that Request object is injected as a parameter at Router construction
-     *         $uri_segments = $params->request->getAppRequestURISegments();
-     *         
-     *         // We don't need to return any value at all if it's not our route.
-     *         if (empty($uri_segments))
-     *         {
-     *             return new Destination('\Carrot\Core\Controllers\WelcomeController@main', 'index');
-     *         }
-     *     },
-     *     function($params, $vars)
-     *     {
-     *         // Since it's a route to the home page, we simply return a relative path.
-     *         return $params->request->getBasePath();
-     *     }
-     * );
-     * <code>
-     *
-     * Your reverse-routing function should return string, it will be casted to string anyway
-     * by the generateURL() method.
-     * 
-     * @param string $route_name Name of the route, must be unique for each route.
-     * @param Closure $route_function Anonymous function that returns an instance of Destination.
-     * @param Closure $reverse_route_function Anonymous function that returns a URL string.
-     *
-     */
-    public function addRoute($route_name, \Closure $route_function, \Closure $reverse_route_function)
-    {
-        if (in_array($route_name, $this->route_names))
-        {
-            throw new \RuntimeException("Router error in adding route, route name '{$route_name}' already defined.");
-        }
-        
-        $this->route_names[] = $route_name;
-        $this->route_functions[$route_name] = $route_function;
-        $this->reverse_route_functions[$route_name] = $reverse_route_function;
-    }
-    
-    /**
-     * Walks through the defined route functions until one of them returns an instance of Destination.
-     *
-     * If none of the route returns an instance of Destination, this method will return no-matching-route
-     * Destination instead. No matching route destination is set during object construction.
-     * 
-     * @return Destination
+     * @return Destination Instance of destination.
      *
      */
     public function getDestination()
     {
-        $destination = $this->no_matching_route_destination;
-        
-        foreach ($this->route_functions as $route)
+        foreach ($this->routeRegistrations as $routeID => $routeInfo)
         {
-            $return = $route($this->params);
-            
-            if (is_object($return) && is_a($return, '\Carrot\Core\Destination'))
+            if (!$this->regexFilterMatchRequestURI($routeInfo['regex'], $routeID))
             {
-                $destination = $return;
-                break;
+                continue;
+            }
+            
+            $routeObject = $this->getRouteObject($routeID);
+            $destination = $routeObject->translateToDestination($this->routingParams);
+            
+            if (is_object($destination) && $destination instanceof Destination)
+            {
+                return $destination;
             }
         }
         
-        return $destination;
+        return $this->getDestinationForNoMatchingRoute();
     }
     
     /**
-     * Uses the user defined reverse-routing function to return a URL.
+     * Runs RouteInterface::translateURL() of the route object from the route ID provided to get the URL.
      * 
-     * You can invoke the reverse-routing function you previously defined in your route using
-     * this wrapper function. State the unique route name and variables to be passed to the
-     * said function. The ideal way to use this method will be to inject the Router instance
-     * to your template class so you can call it from your template files.
+     * Call this method from your views/templates to do two-way
+     * routing, as in:
      *
-     * If the provided route name does not exist, this method will throw a RuntimeException.
-     * 
      * <code>
-     * <a href="<?php $router->generateURL('blog_post', array('page' => 4), true) ?>"></a>
+     * <a href="<?php $router->getURL('blogShow', array('id' => 'AB3467')) ?>">Read more &raquo;</a>
      * </code>
      * 
-     * @param string $route_name Name of the route to invoke.
-     * @param array $array_parameters Array parameters to send to reverse routing function.
-     * @param bool $escape_url If true, the method escapes the returned string with htmlspecialchars(ENT_QUOTES).
-     * @return string
+     * This way it decouples your template from your URLs. Your
+     * template and views are calling the method only providing
+     * information that are required to construct the URL. This way if
+     * your URL scheme changes in the future, you only need to update
+     * your route class and all the links will still be valid.
+     * 
+     * @param string $routeID The ID of the route object we want to use for translation.
+     * @param array $viewParams Arguments from view/template to be sent to RouteInterface::translateURL().
+     * @return string The string returned from RouteInterface::translateToURL().
      *
      */
-    public function generateURL($route_name, array $array_parameters = array(), $escape_url = false)
+    public function getURL($routeID, array $viewParams = array())
     {
-        if (!in_array($route_name, $this->route_names))
+        $viewParams = (object) $viewParams;
+        
+        if (!isset($this->routeRegistrations[$routeID]))
         {
-            throw new \RuntimeException("Router error in generating URL, route name '{$route_name}' does not exist.");
+            throw new InvalidArgumentException("Router error in getting URL, route '{$routeID}' is not registered.");
         }
         
-        $return = (string) $this->reverse_route_functions[$route_name]($this->params, $array_parameters);
-        
-        if ($escape_url)
-        {
-            #TODO: Find out if we have to define UTF-8 here
-            $return = htmlspecialchars($return, ENT_QUOTES);
-        }
-        
-        return $return;
+        $routeObject = $this->getRouteObject($routeID);
+        return $routeObject->translateURL($this->routingParams, $viewParams);
     }
     
     /**
-     * Sets a default destination to return if there is no matching route.
-     *
-     * @param Destination
+     * Sets the destination instance to return when there is no matching route.
+     * 
+     * This destination instance is returned when this class has gone
+     * through all the routes and there is still no destination.
+     * 
+     * @param Destination $destination The destination instance to return to when there is no matching route.
      *
      */
-    public function setDestinationForNoMatchingRoute(\Carrot\Core\Destination $destination)
+    public function setDestinationForNoMatchingRoute(Destination $destination)
     {
-        $this->no_matching_route_destination = $destination;
+        $this->destinationForNoMatchingRoute = $destination;
     }
     
     /**
-     * Gets the default destination to go to if there's no matching route.
+     * Gets the destination instance to be returned when there is no matching route.
      *
-     * @return Destination
+     * When getDestination() method is called, this class will go
+     * through all the routes until one of them returns an instance
+     * of destination. If the routes has been exhausted and there is
+     * still no destination, this method will be called to retrieve
+     * the route for no matching destination.
+     *
+     * Throws RuntimeException when the destination for no matching
+     * route is not set.
+     * 
+     * @throws RuntimeException
+     * @return Destination Instance of Destination to be returned when there is no matching route.
      *
      */
     public function getDestinationForNoMatchingRoute()
-    {   
-        return $this->no_matching_route_destination;
+    {
+        if (!is_object($this->destinationForNoMatchingRoute) or !($this->destinationForNoMatchingRoute instanceof Destination))
+        {
+            throw new RuntimeException('Router error in routing. No matching route was found and no destination was set to be returned if there is no matching route.');
+        }
+        
+        return $this->destinationForNoMatchingRoute;
     }
     
     /**
-     * Loads a file that defines routes.
+     * Registers a route.
+     * 
+     * To register a route, you have to provide these information:
      *
-     * @param string $path Absolute path to the file.
+     * <ul>
+     *  <li>
+     *   Route ID. A string used for route identification. This ID
+     *   is used in two way routing to refer to the route.
+     *  </li>
+     *  <li>
+     *   Route class name. The name of the class that contains the
+     *   route translation logic. The class must implement
+     *   RouteInterface.
+     *  </li>
+     *  <li>
+     *   Regex filter. The regex string that will be matched to the
+     *   application request URI string. This is optional.
+     *  </li>
+     * </ul>
+     *
+     * Example regular route registration:
+     *
+     * <code>
+     * $router->registerRoute('blogShow', 'Blog\Routes\BlogShowRoute');
+     * </code>
+     *
+     * To determine destination, this class will go through all
+     * registered route class one by one until one of them returns an
+     * instance of Destination. If a route class is registered with a
+     * regex filter, this router will run the pattern to the request
+     * URI string. If a match is found, the route will be consulted,
+     * if not the route will be bypassed.
+     *
+     * For example, if you want your route class to be consulted only
+     * when the application request URI starts with '/blog/[...]'
+     * 
+     * <code>
+     * $router->registerRoute('blogShow', 'Blog\Routes\BlogShowRoute', '|^/blog/|');
+     * </code>
+     *
+     * Notice that we use '|' character as the regex delimiter instead
+     * of the usual '/' so that we don't have to escape the slashes.
+     * 
+     * @param string $routeID Route identification, used to identify route in two way routing.
+     * @param string $routeClassName Fully qualified class name of the route.
+     * @param string $regexFilter The regex filter to 
      *
      */
-    public function loadRoutesFile($path)
+    public function registerRoute($routeID, $routeClassName, $routeRegexFilter = null)
     {
-        if (file_exists($path))
+        if (isset($this->routeRegistrations[$routeID]))
         {
-            $require = function($router, $path)
-            {
-                require_once($path);
-            };
-            
-            $require($this, $path);
+            throw new InvalidArgumentException("Router error when trying to register a route, route ID '{$routeID}' has already been registered.");
         }
+        
+        if (substr($routeClassName, 0, 1) != '\\')
+        {
+            $routeClassName = '\\' . $routeClassName;
+        }
+        
+        if (!class_exists($routeClassName))
+        {
+            $routeClassName = ltrim($routeClassName, '\\');
+            throw new InvalidArgumentException("Router error when trying to register a route, route class {$routeClassName} does not exist.");
+        }
+        
+        $this->routeRegistrations[$routeID] = array
+        (
+            'class' => $routeClassName,
+            'regex' => $routeRegexFilter
+        );
+    }
+    
+    /**
+     * Loads a route registration file.
+     * 
+     * The route file will have access to the Router object via the
+     * $router variable. You can use this file to register your
+     * routes. The alternative way to register routes will be to edit
+     * the provider class for this Router class.
+     *
+     * Throws InvalidArgumentException if the file doesn't exist.
+     * 
+     * @throws InvalidArgumentException
+     * @param string $filePath Absolute file path to the route file.
+     *
+     */
+    public function loadRouteRegistrationFile($filePath)
+    {
+        $requireRouteFile = function($filePath, $router)
+        {
+            require $filePath;
+        };
+        
+        if (!file_exists($filePath))
+        {
+            throw new InvalidArgumentException("Router error when trying to load route file, '{$filePath}' doesn't exist.");
+        }
+        
+        $requireRouteFile($filePath, $this);
+    }
+    
+    /**
+     * Runs the regex to application request URI and returns the result.
+     *
+     * If the regex is empty (null), then this method assumes that the
+     * route is to be consulted on every request, so it returns true.
+     *
+     * This method will throw a RuntimeException if the regex string
+     * is invalid.
+     * 
+     * @throws RuntimeException
+     * @param string $regex Regex string to be run.
+     * @param string $routeID ID of the route that has the regex.
+     * @return bool True if matches, false if no match.
+     *
+     */
+    protected function regexFilterMatchRequestURI($regex, $routeID)
+    {
+        if (empty($regex))
+        {
+            return true;
+        }
+        
+        try
+        {
+            $match = preg_match($regex, $this->appRequestURIString);
+        }
+        catch (Exception $exception)
+        {
+            throw new RuntimeException("Router error in getting destination, '{$regex}' from '{$routeID}' is not a valid pattern.");
+        }
+        
+        return $match;
+    }
+    
+    /**
+     * Gets the route object registered to a specific route ID.
+     * 
+     * Returns the cache stored in $routeObjects class property by
+     * default. If the cache does not exist it will create the route
+     * object on the fly.
+     * 
+     * @param string $routeID The route ID whose object is needed.
+     * @return RouteInterface The route object.
+     *
+     */
+    protected function getRouteObject($routeID)
+    {
+        if (!isset($this->routeObjects[$routeID]))
+        {
+            $this->routeObjects[$routeID] = new $this->routeRegistrations[$routeID]['class']();
+            
+            if (!($this->routeObjects[$routeID] instanceof \Carrot\Core\Interfaces\RouteInterface))
+            {
+                $routeClassName = ltrim($this->routeRegistrations[$routeID]['class'], '\\');
+                throw new InvalidArgumentException("Router error when trying to get a route object, route class {$routeClassName} is not an implementation of Carrot\Core\Interfaces\RouteInterface.");
+            }
+            
+        }
+        
+        return $this->routeObjects[$routeID];
     }
 }

@@ -356,7 +356,7 @@ class DependencyInjectionContainer
     {
         if (array_key_exists($className, $this->providerClassBindings))
         {
-            return $this->providerClassBindings[$className];
+            return '\\' . $this->providerClassBindings[$className];
         }
         
         return '\\' . $className . $this->providerClassSuffix;
@@ -376,13 +376,19 @@ class DependencyInjectionContainer
      */
     protected function getProviderObject($providerClassName, $providerMethodName)
     {   
-        if (!class_exists($providerClassName) or !is_subclass_of($providerClassName, '\Carrot\Core\Interfaces\ProviderInterface'))
+        if (!class_exists($providerClassName))
         {
             $providerClassName = ltrim($providerClassName, '\\');
-            throw new RuntimeException("DIC error in getting provider, either {$providerClassName} doesn't implement Carrot\Core\Interfaces\ProviderInterface or it doesn't exist.");
+            throw new RuntimeException("DIC error in getting provider, the provider class {$providerClassName} doesn't exist.");
         }
         
         $provider = new $providerClassName;
+        
+        if (!($provider instanceof \Carrot\Core\Interfaces\ProviderInterface))
+        {
+            $providerClassName = ltrim($providerClassName, '\\');
+            throw new RuntimeException("DIC error in getting provider, the provider class {$providerClassName} does not implement Carrot\Core\Interfaces\ProviderInterface.");
+        }
         
         if (!method_exists($provider, $providerMethodName))
         {

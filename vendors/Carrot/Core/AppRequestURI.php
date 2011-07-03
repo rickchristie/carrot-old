@@ -33,11 +33,15 @@ namespace Carrot\Core;
 
 class AppRequestURI
 {
-
     /**
-     * @var Request Instance of Request.
+     * @var string The contents of $_SERVER['SCRIPT_NAME'], injected at construction.
      */
-    protected $request;
+    protected $serverScriptName;
+    
+    /**
+     * @var string The contents of $_SERVER['REQUEST_URI'], injected at construction.
+     */
+    protected $serverRequestURI;
     
     /**
      * @var string Relative path from the root to the folder where Carrot's index.php file resides, with trailing directory separator.
@@ -55,27 +59,40 @@ class AppRequestURI
     protected $segmentCount;
     
     /**
+     * @var string The application request URI in string.
+     */
+    protected $string;
+    
+    /**
      * Construct the application request URI object.
      * 
      * If base path is not provided, this class will try to guess on
      * its own. Please note that it is safer to provide the base path
      * manually rather to let this class guess.
+     * 
+     * <code>
+     * $appRequestURI = new AppRequestURI($request, '/base/path/to/framework/');
+     * </code>
      *
-     * @param Request $request Instance of Request.
+     * @param string $serverScriptName The contents of $_SERVER['SCRIPT_NAME'].
+     * @param string $serverRequestURI The contents of $_SERVER['REQUEST_URI'].
      * @param string $basePath Relative path from the root to the folder where Carrot's index.php file resides, with trailing directory separator.
      *
      */
-    public function __construct(Request $request, $basePath = null)
-    {        
+    public function __construct($serverScriptName, $serverRequestURI, $basePath = null)
+    {
+        $this->serverScriptName = $serverScriptName;
+        $this->serverRequestURI = $serverRequestURI;
+                
         if (empty($basePath))
         {
             $basePath = $this->guessBasePath();
         }
         
-        $this->request = $request;
         $this->basePath = $basePath;
         $this->segments = $this->generateSegments();
         $this->segmentCount = count($this->segments);
+        $this->string = $this->generateString();
     }
     
     /**
@@ -105,6 +122,74 @@ class AppRequestURI
     }
     
     /**
+     * Returns the application request URI string.
+     *
+     * The application request URI string is similar to the
+     * REQUEST_URI except that it doesn't contain the base path.
+     * 
+     * @return string Application request URI string.
+     *
+     */
+    public function getString()
+    {
+        return $this->string;
+    }
+    
+    /**
+     * Returns the total number of segments the application request URI has.
+     * 
+     * @return int Count of the application URI segments.
+     * 
+     */
+    public function getSegmentCount()
+    {
+        return $this->segmentCount;
+    }
+    
+    /**
+     * Returns the base path in string.
+     *
+     * @return string The base path.
+     *
+     */
+    public function getBasePath()
+    {
+        return $this->basePath;
+    }
+    
+    /**
+     * Guesses the base path.
+     *
+     * Assuming that each request will be handled by the 'index.php'
+     * file, we use SCRIPT_NAME to get the path from the root to the
+     * request handler. SCRIPT_NAME is used because it is available
+     * to both Apache and IIS and are consistent in form (using
+     * slashes as separator):
+     * 
+     * <code>
+     * /index.php -> /
+     * /carrot-dev/index.php -> /carrot-dev/
+     * </code>
+     * 
+     * Base path returned will always have a trailing directory
+     * separator.
+     *
+     * @return string Base path (with trailing slash).
+     *
+     */
+    protected function guessBasePath()
+    {
+        $path = str_ireplace('/index.php', '', $this->serverScriptName);
+        
+        if (empty($path) or substr($path, -1) != '/')
+        {
+            $path .= '/';
+        }
+        
+        return $path;
+    }
+    
+    /**
      * Generates the application URI segments.
      *
      * Application request URI is different from Request URI in that
@@ -114,28 +199,29 @@ class AppRequestURI
      *
      * <code>
      * array('item', 'id')
-     * </code>
+     * </code> 
      *
      * This method checks if base path is in the REQUEST_URI. If it
      * doesn't, it throws a RuntimeException. It then proceeds to
      * cut query string and base path from REQUEST_URI, then exploding
-     * it to array of uri segments.
+     * it to array of uri segments. Query strings will not be part of
+     * the segment.
      *
-     * @return array Application URI segment array.
+     * @return array Application request URI segment array.
      *
      */
-    public function generateSegments()
+    protected function generateSegments()
     {
-        $appURIString = $this->server->getServer('REQUEST_URI');
+        $appURIString = $this->serverRequestURI;
         
         // Remove base path if it exists
-        if (strpos($appURIString, $this->basePath) === 0)
+        if (strrpos($appURIString, $this->basePath) === 0)
         {
             $appURIString = substr($appURIString, strlen($this->basePath));
         }
         
         // Remove query string, if it exists
-        $pos = strpos($appURIString, '?');
+        $pos = strrpos($appURIString, '?');
         
         if ($pos !== false)
         {
@@ -158,28 +244,32 @@ class AppRequestURI
     }
     
     /**
-     * Guesses the base path.
-     *
-     * Assuming that each request will be handled by the 'index.php'
-     * file, we use SCRIPT_NAME to get the path from the root to the
-     * request handler. SCRIPT_NAME is used because it is available
-     * to both Apache and IIS. 
-     *
-     * Base path returned will always have a trailing directory
-     * separator.
-     *
-     * @return string Base path (with trailing slash).
-     *
+     * Constructs a string similar to REQUEST_URI, but without base path.
+     * 
+     * This method removes the base path from the REQUEST_URI to
+     * create an application request URI. Unlike segments, query
+     * string will be retained as part of the string. The string this
+     * method produces will be similar to REQUEST_URI only without the
+     * base path.
+     * 
+     * @return string Application request URI in one string.
+     * 
      */
-    public function guessBasePath()
-    {   
-        $path = str_ireplace('/index.php', '', $this->server->getServer('SCRIPT_FILENAME'));
+    protected function generateString()
+    {
+        $appRequestURIString = $this->serverRequestURI;
         
-        if (empty($path) or substr($path, -1) != '/')
+        // Removes base path if it exists
+        if (strrpos($appRequestURIString, $this->basePath) === 0)
         {
-            $path .= '/';
+            $appRequestURIString = substr($appRequestURIString, strlen($this->basePath));
         }
         
-        return $path;
+        if (empty($appRequestURIString) or substr($appRequestURIString, 0, 1) != '/')
+        {
+            $appRequestURIString = '/' . $appRequestURIString;
+        }
+        
+        return $appRequestURIString;
     }
 }

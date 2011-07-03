@@ -311,7 +311,7 @@ class Autoloader
     {
         $className = ltrim($className, '\\');
         $namespace = $this->extractNamespace($className);
-        $className = $this->extractClassName($className);
+        $className = $this->extractClassNameWithoutNamespaces($className);
         return $rootDirectory . str_replace('\\', DIRECTORY_SEPARATOR, $namespace) . DIRECTORY_SEPARATOR . str_replace('_', DIRECTORY_SEPARATOR, $className) . '.php';
     }
     
@@ -341,7 +341,7 @@ class Autoloader
     }
     
     /**
-     * Extract the class name from a fully qualified class name.
+     * Extract the class name without namespaces.
      * 
      * <code>
      * Carrot\Core\Autoloader -> 'Autoloader'
@@ -350,10 +350,10 @@ class Autoloader
      * </code>
      *
      * @param string $className Fully qualified class name (without backslash prefix).
-     * @return string The class name (without backslashes).
+     * @return string Class name without namespaces (no backslashes).
      *
      */
-    protected function extractClassName($className)
+    protected function extractClassNameWithoutNamespaces($className)
     {
         if ($lastNamespaceSeparatorPosition = strripos($className, '\\'))
         {

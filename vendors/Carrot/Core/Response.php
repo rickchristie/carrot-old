@@ -22,7 +22,9 @@
 
 namespace Carrot\Core;
 
-class Response implements \Carrot\Core\Interfaces\ResponseInterface
+use Carrot\Core\Interfaces\ResponseInterface;
+
+class Response implements ResponseInterface
 {
     /**
      * @var array List of headers set by the user.

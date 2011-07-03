@@ -32,13 +32,23 @@ if (version_compare(PHP_VERSION, '5.3.0') < 0)
 }
 
 /**
+ * We advocate strict coding, thus this framework will report all
+ * errors, even the tiniest mistakes.
+ */
+
+error_reporting(E_ALL | E_STRICT);
+
+/**
  * Geting the autoloader up and running. Note that Carrot doesn't
  * care if you're using the default Autoloader class or not.
  * What's important is that after requiring this file, all classes
  * are autoloaded successfully.
  */
 
+require __DIR__ . DIRECTORY_SEPARATOR . 'vendors' . DIRECTORY_SEPARATOR . 'Carrot' . DIRECTORY_SEPARATOR . 'Core' . DIRECTORY_SEPARATOR . 'Autoloader.php';
+$autoloader = new Carrot\Core\Autoloader(new ClassNameExtractor);
 require __DIR__ . DIRECTORY_SEPARATOR . 'autoload.php';
+$autoloader->register();
 
 /**
  * Instantiates the dependency injection container and load the
