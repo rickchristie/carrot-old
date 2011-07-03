@@ -45,8 +45,8 @@ error_reporting(E_ALL | E_STRICT);
  * are autoloaded successfully.
  */
 
-require __DIR__ . DIRECTORY_SEPARATOR . 'vendors' . DIRECTORY_SEPARATOR . 'Carrot' . DIRECTORY_SEPARATOR . 'Core' . DIRECTORY_SEPARATOR . 'Autoloader.php';
-$autoloader = new Carrot\Core\Autoloader(new ClassNameExtractor);
+require __DIR__ . DIRECTORY_SEPARATOR . 'Carrot' . DIRECTORY_SEPARATOR . 'Core' . DIRECTORY_SEPARATOR . 'Autoloader.php';
+$autoloader = new Carrot\Core\Autoloader();
 require __DIR__ . DIRECTORY_SEPARATOR . 'autoload.php';
 $autoloader->register();
 

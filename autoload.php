@@ -11,5 +11,5 @@
  *
  */
 
-$autoloader->bindNamespaceToDirectory('\\', __DIR__ . DIRECTORY_SEPARATOR . 'vendors');
+$autoloader->bindNamespaceToDirectory('Carrot', __DIR__ . DIRECTORY_SEPARATOR . 'Carrot');
 $autoloader->bindNamespaceToDirectory('HelloWorld', __DIR__ . DIRECTORY_SEPARATOR . 'HelloWorld');

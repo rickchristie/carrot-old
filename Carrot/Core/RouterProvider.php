@@ -73,7 +73,7 @@ class RouterProvider extends Provider
         );
         
         $router = new Router($this->appRequestURI->getString(), $routingParams);
-        $carrotRootDirectory = realpath(dirname(dirname(dirname(__DIR__))));
+        $carrotRootDirectory = realpath(dirname(dirname(__DIR__)));
         $router->loadRouteRegistrationFile($carrotRootDirectory . DIRECTORY_SEPARATOR . 'routes.php');
         
         return $router;
