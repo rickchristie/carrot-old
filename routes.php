@@ -19,3 +19,4 @@
  */
 
 $router->registerRoute('HelloWorld', 'HelloWorld\Routes\HelloWorldRoute');
+$router->registerRoute('Guide', 'Carrot\Guide\Route');

@@ -85,7 +85,7 @@ class ExceptionHandler
         // We wrap everything in this exception handler in a try catch
         // block so that if an exception occurs when we are handling
         // an exception, we still get an error message instead of a
-        // debugging nightmare.        
+        // debugging nightmare.
         try
         {        
             $outputBuffer = $this->getAndCleanOutputBuffer();

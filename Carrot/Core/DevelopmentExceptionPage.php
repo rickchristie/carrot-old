@@ -106,11 +106,19 @@ class DevelopmentExceptionPage implements ExceptionPageInterface
      *
      */
     protected function displayStackTrace($index, array $trace)
-    {
+    {   
         $stackTraceTitle = $this->getStackTraceTitle($index, $trace);
         $functionName = $this->getFunctionName($trace);
         $functionArguments = $this->getFunctionArguments($trace);
-        $summaryCode = $this->getSummaryCode($trace['file'], $trace['line']);
+        
+        if (isset($trace['file'], $trace['line']))
+        {
+            $summaryCode = $this->getSummaryCode($trace['file'], $trace['line']);
+        }
+        else
+        {
+            $summaryCode = array();
+        }
         
         ?>
         <div class="exception-stack-trace">
