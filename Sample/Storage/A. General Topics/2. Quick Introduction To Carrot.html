@@ -1,20 +1,15 @@
 <h1>Quick Introduction to Carrot</h1>
-
-<p>Carrot is yet another PHP framework. It is experimental in nature. Carrot's core libraries depends heavily on anonymous functions and mandates the usage of dependency injection container. Carrot as a framework consists of a front controller, a default router, a dependency injection container, and an error/exception handler. You can say that it's a sort of micro framework.</p>
-
+<p>The very first thing you need to know is that Carrot is an experimental framework built by someone who is in junior level programming, so don't expect too much. Another thing is that I am developing Carrot for my personal use (and as a learning project), so some of the design decisions might not suit you. Since Carrot is still in its early stages, you might not want to use it in production.</p>
+<h2>Globals and statics</h2>
 <blockquote>
-Static methods are death to testability. <cite>Misko Hevery</cite>
+<p>&ldquo;The keyword static now enables us to use methods and properties (state) per-class and not on a per-object basis. This basically leaves us with class oriented programming. This seems to make a lot of things simpler, at a first glance, but will almost certainly hurt you in the long term.&rdquo; - <cite><a href="http://kore-nordmann.de/blog/0103_static_considered_harmful.html">Static Considered Harmful, by Kore Nordmann</a></cite></p>
 </blockquote>
-
-<pre>/**
- * Constructs the guide controller.
- * 
- * @param Response $response The response object to be returned.
- * 
- */
-public function __construct(View $view, Model $model, Response $response)
-{
-    $this->model = $model;
-    $this->view = $view;
-    $this->response = $response;
-}</pre>
+<p>Carrot doesn't use globals and statics. This is a design decision already made and it is not going to change. In fact, the entire code in Carrot is written so that when I use it, I never have to resort to global variables or static methods. Ruling out globals and statics means also ruling out <a href="http://martinfowler.com/eaaCatalog/registry.html">Registry</a> and <a href="http://en.wikipedia.org/wiki/Singleton_pattern">Singleton pattern</a>. This perplexes me for a while, until I found out about <a href="http://martinfowler.com/articles/injection.html">dependency injection container</a> - hence why the usage of dependency injection container is mandatory in Carrot.</p>
+<h2>The request-response cycle</h2>
+<p>When a request arrived at Carrot's <code>index.php</code> file, here is what happens:</p>
+<ol>
+    <li></li>
+</ol>
+<h2>Directory structure</h2>
+<h3>Taking the tour</h3>
+<h3>PSR-0 compliance</h3>
