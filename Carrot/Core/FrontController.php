@@ -116,9 +116,14 @@ class FrontController
         $className = $destination->getClassName();
         $methodName = $destination->getMethodName();
         
-        if (!class_exists($className) or !method_exists($className, $methodName))
+        if (!class_exists($className))
         {
-            throw new RuntimeException("Front controller error, cannot run controller method {$className}::{$methodName}(), either controller class doesn't exist or the method does not exist.");
+            throw new RuntimeException("Front controller error, cannot run controller method {$className}::{$methodName}(). Controller class does not exist.");
+        }
+        
+        if (!method_exists($className, $methodName))
+        {
+            throw new RuntimeException("Front controller error, cannot run controller method {$className}::{$methodName}(). Method does not exist.");
         }
     }
 }

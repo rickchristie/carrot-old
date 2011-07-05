@@ -10,35 +10,32 @@
  */
 
 /**
- * Provider for View
+ * Provider for Model
  * 
  * @author      Ricky Christie <seven.rchristie@gmail.com>
  * @license     http://www.opensource.org/licenses/mit-license.php MIT License
  *
  */
 
-namespace Carrot\Guide;
+namespace Carrot\SimpleDocs;
 
 use Carrot\Core\Provider;
 
-class ViewProvider extends Provider
+class ModelProvider extends Provider
 {
     /**
-     * @var array List of dependencies that this provider class needs.
+     * @var array List of singleton configurations (case-sensitive).
      */
-    protected $dependencies = array
-    (
-        'model' => 'Carrot\Guide\Model@Main'
-    );
+    protected $singletons = array('Sample');
     
     /**
-     * Returns the instance for 'Main' configuration.
+     * Returns the instance for 'Sample' configuration.
      * 
-     * @return View
+     * @return Model
      *
      */
-    public function getMain()
+    public function getSample()
     {
-        return new View($this->model);
+        return new Model(dirname(__DIR__) . DIRECTORY_SEPARATOR . 'Storage');
     }
 }

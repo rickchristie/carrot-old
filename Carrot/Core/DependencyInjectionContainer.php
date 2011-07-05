@@ -387,12 +387,12 @@ class DependencyInjectionContainer
         if (!($provider instanceof \Carrot\Core\Interfaces\ProviderInterface))
         {
             $providerClassName = ltrim($providerClassName, '\\');
-            throw new RuntimeException("DIC error in getting provider, the provider class {$providerClassName} does not implement Carrot\Core\Interfaces\ProviderInterface.");
+            throw new RuntimeException("DIC error in getting provider. Provider class {$providerClassName} does not implement Carrot\Core\Interfaces\ProviderInterface.");
         }
         
         if (!method_exists($provider, $providerMethodName))
         {
-            throw new RuntimeException("DIC error in getting provider, the provider method {$providerClassName}::{$providerMethodName}() doesn't exist.");
+            throw new RuntimeException("DIC error in getting provider configuration method. {$providerClassName}::{$providerMethodName}() doesn't exist.");
         }
         
         return $provider;

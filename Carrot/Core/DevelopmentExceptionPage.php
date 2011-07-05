@@ -59,7 +59,7 @@ class DevelopmentExceptionPage implements ExceptionPageInterface
     {
         $summaryCode = $this->getSummaryCode($this->exception->getFile(), $this->exception->getLine());
         $stacktrace = $this->exception->getTrace();
-        $pageTitle = get_class($this->exception) . ' (' . $this->exception->getCode() . ') - ' . htmlspecialchars($this->exception->getMessage(), ENT_QUOTES);
+        $pageTitle = get_class($this->exception) . ' (' . $this->exception->getCode() . ') - ' . htmlspecialchars($this->exception->getMessage(), ENT_QUOTES) . ' in file ' . $this->exception->getFile() . ' on line ' . $this->exception->getLine() . '.';
         echo '<!DOCTYPE HTML PUBLIC "-//W3C//DTD HTML 4.01//EN" "http://www.w3.org/TR/html4/strict.dtd">';
         
         ?>

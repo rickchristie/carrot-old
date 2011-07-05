@@ -34,4 +34,12 @@ interface RouterInterface
      * 
      */
     public function getDestination();
+    
+    /**
+     * Use the route ID and view parameters to generate a valid URL.
+     *
+     * @return string Valid URL.
+     *
+     */
+    public function getURL($routeID, array $viewParams = array());
 }

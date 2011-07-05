@@ -155,7 +155,7 @@ class ExceptionHandler
         
         while (ob_get_level())
         {
-            $outputBuffer .= $ob_get_clean();
+            $outputBuffer .= ob_get_clean();
         }
         
         return $outputBuffer;

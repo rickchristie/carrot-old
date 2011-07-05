@@ -10,32 +10,37 @@
  */
 
 /**
- * Provider for HelloWorldController
+ * Sample provider for SimpleDocs controller
  * 
  * @author      Ricky Christie <seven.rchristie@gmail.com>
  * @license     http://www.opensource.org/licenses/mit-license.php MIT License
  *
  */
 
-namespace HelloWorld\Controllers;
+namespace Carrot\SimpleDocs;
 
 use Carrot\Core\Provider;
 
-class HelloWorldControllerProvider extends Provider
+class ControllerProvider extends Provider
 {
     /**
      * @var array List of dependencies that this provider class needs.
      */
-    protected $dependencies = array('response' => 'Carrot\Core\Response@Main');
+    protected $dependencies = array
+    (
+        'response' => 'Carrot\Core\Response@Main',
+        'view' => 'Carrot\SimpleDocs\View@Sample',
+        'model' => 'Carrot\SimpleDocs\Model@Sample'
+    );
     
     /**
-     * Returns the instance for 'Main' configuration.
+     * Returns the instance for 'Sample' configuration.
      * 
      * @return HelloWorldController
      *
      */
-    public function getMain()
+    public function getSample()
     {
-        return new HelloWorldController($this->response);
+        return new Controller($this->view, $this->model, $this->response);
     }
 }

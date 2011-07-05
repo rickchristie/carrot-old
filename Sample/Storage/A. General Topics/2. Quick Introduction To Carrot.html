@@ -1,0 +1,20 @@
+<h1>Quick Introduction to Carrot</h1>
+
+<p>Carrot is yet another PHP framework. It is experimental in nature. Carrot's core libraries depends heavily on anonymous functions and mandates the usage of dependency injection container. Carrot as a framework consists of a front controller, a default router, a dependency injection container, and an error/exception handler. You can say that it's a sort of micro framework.</p>
+
+<blockquote>
+Static methods are death to testability. <cite>Misko Hevery</cite>
+</blockquote>
+
+<pre>/**
+ * Constructs the guide controller.
+ * 
+ * @param Response $response The response object to be returned.
+ * 
+ */
+public function __construct(View $view, Model $model, Response $response)
+{
+    $this->model = $model;
+    $this->view = $view;
+    $this->response = $response;
+}</pre>

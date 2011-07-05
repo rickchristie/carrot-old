@@ -164,15 +164,15 @@ class Router implements RouterInterface
      */
     public function getURL($routeID, array $viewParams = array())
     {
-        $viewParams = (object) $viewParams;
+        $routeID = (string) $routeID;
         
-        if (!isset($this->routeRegistrations[$routeID]))
+        if (!array_key_exists($routeID, $this->routeRegistrations))
         {
             throw new InvalidArgumentException("Router error in getting URL, route '{$routeID}' is not registered.");
         }
         
         $routeObject = $this->getRouteObject($routeID);
-        return $routeObject->translateURL($this->routingParams, $viewParams);
+        return $routeObject->translateToURL($this->routingParams, $viewParams);
     }
     
     /**

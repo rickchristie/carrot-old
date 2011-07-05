@@ -32,8 +32,6 @@
 
 namespace Carrot\Core\Interfaces;
 
-use StdClass;
-
 interface RouteInterface
 {
     /**
@@ -57,7 +55,7 @@ interface RouteInterface
      * @return mixed Either an instance of \Carrot\Core\Destination or null.
      *
      */
-    public function translateToDestination(StdClass $params);
+    public function translateToDestination($params);
     
     /**
      * Translates the view parameters into a valid string URL.
@@ -68,9 +66,9 @@ interface RouteInterface
      * URL.
      *
      * @param StdClass $params Routing parameters in a container object.
-     * @param StdClass $viewParams Parameters sent from view inside a container object
+     * @param array $viewParams Parameters sent from view inside a container object
      * @return string Valid URL.
      *
      */
-    public function translateToURL(StdClass $params, StdClass $viewParams);
+    public function translateToURL($params, array $viewParams);
 }

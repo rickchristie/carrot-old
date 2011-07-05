@@ -10,37 +10,36 @@
  */
 
 /**
- * Provider for Controller
+ * Provider for View
  * 
  * @author      Ricky Christie <seven.rchristie@gmail.com>
  * @license     http://www.opensource.org/licenses/mit-license.php MIT License
  *
  */
 
-namespace Carrot\Guide;
+namespace Carrot\SimpleDocs;
 
 use Carrot\Core\Provider;
 
-class ControllerProvider extends Provider
+class ViewProvider extends Provider
 {
     /**
      * @var array List of dependencies that this provider class needs.
      */
     protected $dependencies = array
     (
-        'response' => 'Carrot\Core\Response@Main',
-        'view' => 'Carrot\Guide\View@Main',
-        'model' => 'Carrot\Guide\Model@Main'
+        'model' => 'Carrot\SimpleDocs\Model@Sample',
+        'router' => 'Carrot\Core\Router@Main'
     );
     
     /**
-     * Returns the instance for 'Main' configuration.
+     * Returns the instance for 'Sample' configuration.
      * 
-     * @return HelloWorldController
+     * @return View
      *
      */
-    public function getMain()
+    public function getSample()
     {
-        return new Controller($this->view, $this->model, $this->response);
+        return new View($this->model, $this->router, 'Sample');
     }
 }

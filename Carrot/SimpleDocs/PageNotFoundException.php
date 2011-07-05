@@ -10,21 +10,22 @@
  */
 
 /**
- * Guide Not Found Exception
+ * Page Not Found Exception
  * 
- * Exception thrown by Model when it can't find the guide queried,
- * see {@see Model} for more information on when this is thrown.
+ * Exception thrown SimpleDocs model when it can't find the page
+ * it needs to display. See {@see Model} for more information on
+ * when this exception is thrown.
  * 
  * @author      Ricky Christie <seven.rchristie@gmail.com>
  * @license     http://www.opensource.org/licenses/mit-license.php MIT License
  *
  */
 
-namespace Carrot\Guide;
+namespace Carrot\SimpleDocs;
 
-use InvalidArgumentException;
+use RuntimeException;
 
-class GuideNotFoundException extends InvalidArgumentException
+class PageNotFoundException extends RuntimeException
 {
     
 }
