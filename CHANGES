@@ -18,6 +18,8 @@ TRUNK
     - Added Carrot\Database\MySQLiStatementWrapper.
 - SimpleDocs
     - Used for sample application and showing the docs.
+- ExceptionHandling
+    - Every errors now turned into ErrorException.
 
 
 VERSION 0.1
