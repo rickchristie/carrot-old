@@ -15,7 +15,7 @@
  * This interface represents the contract between the Response
  * class with the framework. An implementation of this interface
  * is what the front controller expects as a return value from
- * each controller method it calls. The response object represents
+ * each routine method it calls. The response object represents
  * the application's response to a specific request.
  *
  * @author      Ricky Christie <seven.rchristie@gmail.com>

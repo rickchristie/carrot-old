@@ -29,14 +29,14 @@ Framework design goals
   dependencies of user classes, thus eliminating the need for a
   global objects and registry.
 - Build and make use of decoupled classes, avoid inheritance
-  whenever possible. This would allow the user's controller class
+  whenever possible. This would allow the user's routine class
   to be a plain old PHP object managed by the dependency injection
   container.
 - Make the core as small and focused as possible. Carrot's main
   job is to be the front controller, setting up the dependency
-  injection container, instantiating the user's controller and
-  getting a response from it. It does not know, much less
-  dictate how the controller is getting the response.
+  injection container, instantiating the user's routine object
+  and getting a response from it. It does not know, much less
+  dictate how the routine method is getting the response.
 - Allow the user to replace some of the core classes of Carrot
   using their own class only by implementing an interface as a
   contract to the core classes.

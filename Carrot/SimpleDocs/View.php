@@ -10,7 +10,7 @@
  */
 
 /**
- * Controller for Carrot's 
+ * SimpleDoc's View
  * 
  * 
  * 
@@ -124,7 +124,7 @@ class View
     		pre { font-family: 'Monaco', 'Consolas', 'Courier', 'Courier New', monospace; font-size: 12px; display: block; overflow: auto; background: #edf0f3; border: 1px solid #cbd3db; line-height: 17px; -moz-border-radius: 5px; border-radius: 5px; padding: 15px; margin: 25px 0; }
             p { margin: 18px 0; }
             em { font-style: italic }
-            blockquote { margin: 18px 0 20px 40px; font-size: 14px; color: #666; }
+            blockquote { margin: 18px 0 18px 40px; font-size: 14px; color: #666; }
             blockquote cite { font-size: 12px; font-style: normal; }
             a { color: #d56600; text-decoration: none; }
             a:visited { color: #b05400; }

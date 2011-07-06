@@ -8,6 +8,8 @@ CORE FEATURES/CHANGES
 
 TODO: Refactor index.php to use Bootstrap class using BootstrapInterface? Then you can inject ExceptionHandler to it? Or create an event system, see Symfony's event manager.
 TODO: ExceptionHandler is still not flexible. Users cannot run custom callbacks or handle unhandled exception by themselves. Maybe use event manager?
+TODO: Place the lifecycle type to the instance name, example: Carrot\Core\Router@Main:transient or Carrot\Core\Router@Main:singleton. This requires it to be explicitly set, which forces people to really think of each class's state and removes the need for ProviderInterface::isSingleton() method. It also makes it clearer, people don't have to look at the provider class to find out if the instance is shared or transient.
+TODO: Bring back internal redirection? Will need major redesign in 'index.php' and FrontController, but may be worth it since you can implement HMVC with it.
 
 NEW MODULES/CLASSES
 -------------------

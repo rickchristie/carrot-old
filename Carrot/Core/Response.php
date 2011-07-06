@@ -12,8 +12,9 @@
 /**
  * Response
  * 
- * Carrot's default ResponseInterface implementation. Can be used by controllers
- * to built their response. Supports only HTTP/1.0 and HTTP/1.1.
+ * Carrot's default ResponseInterface implementation. Can be used
+ * by routine methods to built their response. Supports only
+ * HTTP/1.0 and HTTP/1.1.
  *
  * @author      Ricky Christie <seven.rchristie@gmail.com>
  * @license     http://www.opensource.org/licenses/mit-license.php MIT License

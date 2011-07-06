@@ -70,9 +70,14 @@ use RuntimeException;
 class DependencyInjectionContainer
 {
     /**
-     * @var array Contains provider class bindings.
+     * @var array Contains provider to class bindings.
      */
-    protected $providerClassBindings = array();
+    protected $providerToClassBindings = array();
+    
+    /**
+     * @var array Contains provider to instance name bindings.
+     */
+    protected $providerToInstanceNameBindings = array();
     
     /**
      * @var string Suffix to the provider class name, added after the class name being provided.
@@ -123,24 +128,81 @@ class DependencyInjectionContainer
     }
     
     /**
+     * Binds a provider class to a specific instance name.
+     * 
+     * Binding provider class to an instance name means that no matter
+     * what, if the instance name is called, the provider class bound
+     * to it will be the one used.
+     *
+     * <code>
+     * $dic->bindProviderToInstanceName('App\Providers\ConfigProvider', 'Carrot\Helpers\Config@Main');
+     * </code>
+     *
+     * This supersedes everything, including provider to class
+     * bindings. You can't bind an instance name to more than one
+     * provider class.
+     *
+     * @param string $providerClassName Fully qualified class name for the provider class.
+     * @param string $instanceName The instance name to be bound to the provider class.
+     *
+     */
+    public function bindProviderToInstanceName($providerClassName, $instanceName)
+    {
+        $instanceName = ltrim($instanceName, '\\');
+        $providerClassName = ltrim($providerClassName, '\\');
+        $this->providerToInstanceNameBindings[$instanceName] = $providerClassName;
+    }
+    
+    /**
+     * Adds a provider to instance name bindings array.
+     *
+     * If you need to do a lot of binding, you can define them in an
+     * array first to reduce the total number of method calls.
+     *
+     * <code>
+     * $bindings = array
+     * (
+     *     'App\Providers\ConfigProvider' => 'Carrot\Helpers\Config@Main',
+     *     'App\Providers\MySQLiProvider' => 'Carrot\Database\MySQLi@BackupDB',
+     *     'App\Providers\FrontControllerProvider' => 'Carrot\Core\FrontController@Main',
+     *     ...
+     * );
+     *
+     * $this->addProviderToInstanceNameBindings($bindings);
+     * </code>
+     *
+     * @param array $bindings The bindings inside an array.
+     *
+     */
+    public function addProviderToInstanceNameBindings(array $bindings)
+    {
+        foreach ($bindings as $providerClassName => $instanceName)
+        {
+            $instanceName = ltrim($instanceName, '\\');
+            $providerClassName = ltrim($providerClassName, '\\');
+            $this->providerToInstanceNameBindings[$instanceName] = $providerClassName;
+        }
+    }
+    
+    /**
      * Binds a provider class to a fully qualified class name.
      * 
      * Direct provider class bindings overrides the default provider
      * class searching behavior.
      *
      * <code>
-     * $dic->bindProviderClass('App\Providers\ConfigProvider', 'Carrot\Helpers\Config');
+     * $dic->bindProviderToClass('App\Providers\ConfigProvider', 'Carrot\Helpers\Config');
      * </code>
      * 
      * @param string $providerClassName Fully qualified class name for the provider class.
      * @param string $className Fully qualified class name for the class being provided.
      *
      */
-    public function bindProviderClass($providerClassName, $className)
+    public function bindProviderToClass($providerClassName, $className)
     {
         $className = ltrim($className, '\\');
         $providerClassName = ltrim($providerClassName, '\\');        
-        $this->providerClassBindings[$className] = $providerClassName;
+        $this->providerToClassBindings[$className] = $providerClassName;
     }
     
     /**
@@ -159,19 +221,19 @@ class DependencyInjectionContainer
      *     ...
      * );
      *
-     * $this->addProviderClassBindings($bindings);
+     * $this->addProviderToClassBindings($bindings);
      * </code>
      *
      * @param array $bindings Array containing the bindings.
      *
      */
-    public function addProviderClassBindings(array $bindings)
+    public function addProviderToClassBindings(array $bindings)
     {
         foreach ($bindings as $providerClassName => $className)
         {
             $providerClassName = ltrim($providerClassName, '\\');
             $className = ltrim($className, '\\');
-            $this->providerClassBindings[$className] = $providerClassName;
+            $this->providerToClassBindings[$className] = $providerClassName;
         }
     }
     
@@ -214,7 +276,7 @@ class DependencyInjectionContainer
             return $this->instantiateClassWithoutProvider('\\' . $className);
         }
         
-        $providerClassName = $this->getProviderClassName($className);
+        $providerClassName = $this->getProviderClassName($className, $instanceName);
         $providerMethodName = $this->providerMethodPrefix . $configName;
         $provider = $this->getProviderObject($providerClassName, $providerMethodName);
         $dependencies = $provider->getDependencies();
@@ -338,25 +400,32 @@ class DependencyInjectionContainer
     /**
      * Returns the provider class name to be instantiated.
      * 
-     * This method first searches for provider class binding. If none
-     * found, it then assumes that the provider class is in the same
-     * namespace, having the same class name only with 'Provider'
+     * This method first searches provider to instance name bindings.
+     * If none found it searches the provider to class bindings. If
+     * none found, it then assumes that the provider class is in the
+     * same namespace, having the same class name only with 'Provider'
      * suffix at the end. Example:
      *
      * <code>
      * Carrot\Core\FrontController -> Carrot\Core\FrontControllerProvider
-     * Carrot\Database\MySQLi -> Carrot\Database\MySQLi
+     * Carrot\Database\MySQLi -> Carrot\Database\MySQLiProvider
      * </code>
      * 
      * @param string $className Fully qualified class name without backslash prefix.
+     * @param string $instanceName The instance name of the class to be instantiated.
      * @return string Fully qualified class name of the provider (with backslash prefix for safe instantiation).
      *
      */
-    protected function getProviderClassName($className)
+    protected function getProviderClassName($className, $instanceName)
     {
-        if (array_key_exists($className, $this->providerClassBindings))
+        if (array_key_exists($instanceName, $this->providerToInstanceNameBindings))
         {
-            return '\\' . $this->providerClassBindings[$className];
+            return '\\' . $this->providerToInstanceNameBindings[$instanceName];
+        }
+        
+        if (array_key_exists($className, $this->providerToClassBindings))
+        {
+            return '\\' . $this->providerToClassBindings[$className];
         }
         
         return '\\' . $className . $this->providerClassSuffix;

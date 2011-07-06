@@ -14,9 +14,9 @@
  * 
  * The front controller's responsibility is to use RouterInterface
  * to get the destination instance. It then uses information from
- * the destination instance to instantiate the controller (using
- * the DIC) and call the appropriate method along with the given
- * arguments.
+ * the destination instance to instantiate the routine object
+ * (using DIC) and then calls the routine method along with the
+ * given arguments.
  * 
  * @author      Ricky Christie <seven.rchristie@gmail.com>
  * @license     http://www.opensource.org/licenses/mit-license.php MIT License
@@ -53,17 +53,17 @@ class FrontController
     }
     
     /**
-     * Dispatches the request by calling the controller's method.
+     * Dispatches the request by calling the routine object's method.
      *
      * This method first gets the destination from RouterInterface. It
-     * then uses the DIC to instantiate the controller and calling the
-     * method will call_user_func_array().
+     * then uses the DIC to instantiate the routine object and calling
+     * the routine method using call_user_func_array().
      *
-     * Throws RuntimeException if the return value from the controller
+     * Throws RuntimeException if the return value from the routine
      * method is not an implementation of ResponseInterface.
      *
      * @throws RuntimeException
-     * @param DependencyInjectionContainer $dic Used to instantiate the controller.
+     * @param DependencyInjectionContainer $dic Used to instantiate the routine object.
      * @return ResponseInterface
      *
      */
@@ -71,14 +71,14 @@ class FrontController
     {
         $destination = $this->router->getDestination();
         $this->checkDestination($destination);
-        $controller = $dic->getInstance($destination->getInstanceName());
-        $response = call_user_func_array(array($controller, $destination->getMethodName()), $destination->getArguments());
+        $routineObject = $dic->getInstance($destination->getInstanceName());
+        $response = call_user_func_array(array($routineObject, $destination->getRoutineMethodName()), $destination->getArguments());
         
         if (!($response instanceof ResponseInterface))
         {
-            $className = ltrim($destination->getClassName(), '\\');
-            $methodName = $destination->getMethodName();
-            throw new RuntimeException("Front controller error in dispatch, the controller method {$className}::{$methodName}() doesn't return an implementation of ResponseInterface.");
+            $className = ltrim($destination->getRoutineClassName(), '\\');
+            $methodName = $destination->getRoutineMethodName();
+            throw new RuntimeException("Front controller error in dispatch, the routine method {$className}::{$methodName}() doesn't return an implementation of ResponseInterface.");
         }
         
         return $response;
@@ -89,8 +89,8 @@ class FrontController
      * 
      * Throws RuntimeException if the variable returned by
      * RouterInterface::getDestination() is not an instance of
-     * Destination or the controller's class/method to be called does
-     * not exist.
+     * Destination or the routine class or routine method does not
+     * exist.
      *
      * @throws RuntimeException
      * @param Destination $destination Destination instance to be validated.
@@ -113,17 +113,17 @@ class FrontController
             throw new RuntimeException("Front controller error, expected an instance of Carrot\Core\Destination from {$routerClassName}::getDestination(), got {$type} instead.");
         }
         
-        $className = $destination->getClassName();
-        $methodName = $destination->getMethodName();
+        $className = $destination->getRoutineClassName();
+        $methodName = $destination->getRoutineMethodName();
         
         if (!class_exists($className))
         {
-            throw new RuntimeException("Front controller error, cannot run controller method {$className}::{$methodName}(). Controller class does not exist.");
+            throw new RuntimeException("Front controller error, cannot run routine method {$className}::{$methodName}(). Routine class does not exist.");
         }
         
         if (!method_exists($className, $methodName))
         {
-            throw new RuntimeException("Front controller error, cannot run controller method {$className}::{$methodName}(). Method does not exist.");
+            throw new RuntimeException("Front controller error, cannot run routine method {$className}::{$methodName}(). Method does not exist.");
         }
     }
 }

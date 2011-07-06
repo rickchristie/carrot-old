@@ -12,10 +12,10 @@
 /**
  * Destination
  * 
- * Value object, represents a Destination, namely, the
- * controller's instance name (used by the DIC for instantiation),
+ * Value object, represents a Destination, namely, the routine
+ * object's instance name (used by the DIC for instantiation),
  * the method to call and the arguments to pass to the method.
- * Returned by Router class, used by the front controller.
+ * Returned by Router class, used by the FrontController.
  *
  * @author      Ricky Christie <seven.rchristie@gmail.com>
  * @license     http://www.opensource.org/licenses/mit-license.php MIT License
@@ -27,30 +27,30 @@ namespace Carrot\Core;
 class Destination
 {
     /**
-     * @var string Controller's instance name, consists of fully qualified class name and a configuration name.
+     * @var string Routine object's instance name, consists of fully qualified class name and a configuration name.
      */
     protected $instanceName;
     
     /**
      * @var string Method name to be called.
      */
-    protected $methodName;
+    protected $routineMethodName;
     
     /**
-     * @var array Array of arguments to be passed to the controller method.
+     * @var array Array of arguments to be passed to the routine method.
      */
     protected $arguments;
     
     /**
      * @var string Fully qualified class name extracted from the instance name.
      */
-    protected $className;
+    protected $routineClassName;
     
     /**
      * Creates a Destination object.
      *
-     * Will throw an exception if the controller instance name doesn't
-     * pass validation process. Example object construction:
+     * Will throw an exception if the routine object's instance name
+     * doesn't pass validation process. Example object construction:
      *
      * <code>
      * $destination = new Destination
@@ -61,24 +61,24 @@ class Destination
      * );
      * </code>
      *
-     * @param string $controller_dic_id DIC item ID for the controller.
-     * @param string $method Method name to call.
+     * @param string $instanceName The instance name of the routine object.
+     * @param string $routineMethodName The name of the routine method.
      * @param array $params Array of parameters, to be passed in sequence.
      *
      */
-    public function __construct($instanceName, $methodName, array $arguments = array())
+    public function __construct($instanceName, $routineMethodName, array $arguments = array())
     {
         $instanceName = $this->validateInstanceName($instanceName);
         $this->instanceName = $instanceName;
-        $this->methodName = $methodName;
+        $this->routineMethodName = $routineMethodName;
         $this->arguments = $arguments;
-        $this->className = $this->extractClassName($instanceName);
+        $this->routineClassName = $this->extractClassName($instanceName);
     }
     
     /**
-     * Returns the controller instance Name.
+     * Returns the routine object's instance Name.
      *
-     * @return string Controller DIC item registration ID.
+     * @return string Routine object's instance name.
      *
      */
     public function getInstanceName()
@@ -87,20 +87,20 @@ class Destination
     }
     
     /**
-     * Returns the method to call from the controller.
+     * Returns the routine method name.
      *
-     * @return string Method name to call.
+     * @return string Routine method name.
      *
      */
-    public function getMethodName()
+    public function getRoutineMethodName()
     {
-        return $this->methodName;
+        return $this->routineMethodName;
     }
     
     /**
      * Returns arguments to pass to the method.
      *
-     * @return array Arguments to be passed to the controller method, sequentially.
+     * @return array Arguments to be passed to the routine method, sequentially.
      *
      */
     public function getArguments()
@@ -109,14 +109,14 @@ class Destination
     }
     
     /**
-     * Returns class name.
+     * Returns the routine object's fully qualified class name.
      *
-     * @return string The controller's fully qualified class name (with backslash prefix).
+     * @return string The routine object's fully qualified class name (with backslash prefix).
      *
      */
-    public function getClassName()
+    public function getRoutineClassName()
     {
-        return '\\' . $this->className;
+        return '\\' . $this->routineClassName;
     }
     
     /**

@@ -1,0 +1,17 @@
+<h1>The request-response cycle</h1>
+<p>This section lists the events that transpire when a request arrives at Carrot's <code>index.php</code>. Here they are laid out chronologically:</p>
+<h2>System bootstrap</h2>
+<p>Carr</p>
+<ul>
+    <li>Requirements are checked. Execution stops when magic quotes or register globals are turned on.</li>
+    <li>Autoloading is set. <code>Autoloader</code> is instantiated and <code>autoload.php</code> is loaded.</li>
+    <li><code>DependencyInjectionContainer</code> (DIC) is instantiated and <code>providers.php</code> is loaded.</li>
+    <li>Errors are turned into <code>ErrorException</code>s and exception handler is set.</li>
+    <li><code>FrontController</code> is instantiated using DIC. An implementation of <code>RouterInterface</code> is injected at instantiation.</li>
+    <li><code>FrontController::dispatch()</code> is called.</li>
+</ul>
+<h2>Routing the request</h2>
+<p>Before the <code>FrontController</code> </p>
+
+
+<p>At the end, <code>Carrot\Core\Interfaces\ResponseInterface::send()</code> is called, sending the response header and body to the client.</p>
