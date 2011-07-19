@@ -252,32 +252,32 @@ class DependencyInjectionContainer
      * case.
      *
      * <code>
-     * $mysqli = $dic->getInstance('Carrot\Database\MySQLi@Main');
+     * $mysqli = $dic->getInstance(new InstanceName('Carrot\Database\MySQLi@Main:Singleton'));
      * </code>
      * 
      * @param string $instanceName The instance name.
      * @return mixed Object instance that was needed.
      * 
      */
-    public function getInstance($instanceName)
+    public function getInstance(InstanceName $instanceName)
     {
-        // Return cache if possible
-        if (isset($this->singletons[$instanceName]))
-        {
-            return $this->singletons[$instanceName];
-        }
+        $instanceNameString = $instanceName->getInstanceName();
+        $className = $instanceName->getClassName();
+        $providerMethodName = $instanceName->getProviderMethodName();
+        $configName = $instanceName->getConfigurationName();
         
-        $instanceName = $this->validateInstanceName($instanceName);
-        $className = $this->extractClassName($instanceName);
-        $configName = $this->extractConfigName($instanceName);
+        // Return cache if possible
+        if (isset($this->singletons[$instanceNameString]))
+        {
+            return $this->singletons[$instanceNameString];
+        }
         
         if ($configName == 'NoProvider')
         {
             return $this->instantiateClassWithoutProvider('\\' . $className);
         }
         
-        $providerClassName = $this->getProviderClassName($className, $instanceName);
-        $providerMethodName = $this->providerMethodPrefix . $configName;
+        $providerClassName = $this->getProviderClassName($className, $instanceNameString);
         $provider = $this->getProviderObject($providerClassName, $providerMethodName);
         $dependencies = $provider->getDependencies();
         
@@ -333,71 +333,6 @@ class DependencyInjectionContainer
     }
     
     /**
-     * Throws exception if instance name is invalid.
-     * 
-     * Checks that the instance name has the '@' character as the
-     * separator between class name and configuration name. Also
-     * makes sure that both are not empty.
-     * 
-     * @throws RuntimeException
-     * @param string $instanceName Instance name to be validated.
-     * @return string Instance name (with any backslash prefix trimmed).
-     *
-     */
-    protected function validateInstanceName($instanceName)
-    {
-        $instanceName = ltrim($instanceName, '\\');
-        $instanceNameExploded = explode('@', $instanceName);
-        
-        if (count($instanceNameExploded) != 2 or
-            empty($instanceNameExploded[0]) or
-            empty($instanceNameExploded[1]))
-        {
-            throw new RuntimeException("DIC error in getting an instance, '{$instanceName}' is not a valid instance name.");
-        }
-        
-        return $instanceName;
-    }
-    
-    /**
-     * Extracts class name from an instance name.
-     *
-     * Example extractions:
-     *
-     * <code>
-     * Carrot\Core\FrontController@Main -> Carrot\Core\FrontController
-     * Carrot\Database\MySQLi@Backup -> Carrot\Database\MySQLi
-     * </code>
-     *
-     * @param string $instanceName
-     *
-     */
-    protected function extractClassName($instanceName)
-    {
-        $instanceNameExploded = explode('@', $instanceName);
-        return $instanceNameExploded[0];
-    }
-    
-    /**
-     * Extracts configuration name from an instance name.
-     *
-     * Example extractions:
-     *
-     * <code>
-     * Carrot\Core\FrontController@Main -> Main
-     * Carrot\Database\MySQLi@Backup -> Backup
-     * </code>
-     *
-     * @param string $instanceName
-     *
-     */
-    protected function extractConfigName($instanceName)
-    {
-        $instanceNameExploded = explode('@', $instanceName);
-        return $instanceNameExploded[1];
-    }
-    
-    /**
      * Returns the provider class name to be instantiated.
      * 
      * This method first searches provider to instance name bindings.
@@ -416,11 +351,11 @@ class DependencyInjectionContainer
      * @return string Fully qualified class name of the provider (with backslash prefix for safe instantiation).
      *
      */
-    protected function getProviderClassName($className, $instanceName)
+    protected function getProviderClassName($className, $instanceNameString)
     {
-        if (array_key_exists($instanceName, $this->providerToInstanceNameBindings))
+        if (array_key_exists($instanceNameString, $this->providerToInstanceNameBindings))
         {
-            return '\\' . $this->providerToInstanceNameBindings[$instanceName];
+            return '\\' . $this->providerToInstanceNameBindings[$instanceNameString];
         }
         
         if (array_key_exists($className, $this->providerToClassBindings))

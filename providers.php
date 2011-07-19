@@ -14,7 +14,7 @@
  * way of editing core provider classes).
  *
  * <code>
- * $dic->bindProviderClass('App\CoreProviders\ExceptionHandlerProvider', 'Carrot\Core\ExceptionHandler');
+ * $dic->bindProviderToClass('App\CoreProviders\ExceptionHandlerProvider', 'Carrot\Core\ExceptionHandler');
  * </code>
  *
  * @see Carrot\Core\DependencyInjectionContainer

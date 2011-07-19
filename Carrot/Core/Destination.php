@@ -122,25 +122,30 @@ class Destination
     /**
      * Throws exception if instance name is invalid.
      * 
-     * Checks that the instance name has the '@' character as the
-     * separator between class name and configuration name. Also
-     * makes sure that both are not empty.
+     * Trims the instance name for backslashes using ltrim() before
+     * validating. Checks the instance name against the pattern (in
+     * PHP preg_match()):
      * 
-     * @throws \RuntimeException
+     * <code>
+     * /^([A-Za-z_\\\\]+)@([A-Za-z0-9_]+):(transient|singleton)$/D
+     * </code>
+     * 
+     * @throws RuntimeException
      * @param string $instanceName Instance name to be validated.
      * @return string Instance name (with any backslash prefix trimmed).
      *
      */
     protected function validateInstanceName($instanceName)
     {
+        $matches = array();
         $instanceName = ltrim($instanceName, '\\');
-        $instanceNameExploded = explode('@', $instanceName);
+        $regexMatch = preg_match('/^([A-Za-z_\\\\]+)@([A-Za-z0-9_]+):(transient|singleton)$/D', $instanceName, $matches);
         
-        if (count($instanceNameExploded) != 2 or
-            empty($instanceNameExploded[0]) or
-            empty($instanceNameExploded[1]))
+        if (!$regexMatch or count($matches) != 4 or
+            empty($matches[1]) or empty($matches[2]) or
+            empty($matches[3]))
         {
-            throw new \RuntimeException("Error in creating a Destination object, '{$instanceName}' is not a valid instance name.");
+            throw new RuntimeException("DIC error in getting an instance, '{$instanceName}' is not a valid instance name.");
         }
         
         return $instanceName;

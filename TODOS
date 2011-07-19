@@ -8,8 +8,12 @@ CORE FEATURES/CHANGES
 
 TODO: Refactor index.php to use Bootstrap class using BootstrapInterface? Then you can inject ExceptionHandler to it? Or create an event system, see Symfony's event manager.
 TODO: ExceptionHandler is still not flexible. Users cannot run custom callbacks or handle unhandled exception by themselves. Maybe use event manager?
-TODO: Place the lifecycle type to the instance name, example: Carrot\Core\Router@Main:transient or Carrot\Core\Router@Main:singleton. This requires it to be explicitly set, which forces people to really think of each class's state and removes the need for ProviderInterface::isSingleton() method. It also makes it clearer, people don't have to look at the provider class to find out if the instance is shared or transient.
+TODO: Place the lifecycle type to the instance name, example: Carrot\Core\Router@Main:transient or Carrot\Core\Router@Main:singleton. This requires it to be explicitly set, which forces people to really think of each class's state and removes the need for ProviderInterface::isSingleton() method. It also makes it clearer, people don't have to look at the provider class to find out if the instance is shared or transient. Maybe instead of exception handler you can have ExceptionHandlerManager class, you can do $exceptionHandlerManager->setExceptionHandler('NoMatchingRouteException', $this->noMatchingRouteExceptionHandler) - instead of ExceptionPageInterface, you have ExceptionHandlerInterface.
 TODO: Bring back internal redirection? Will need major redesign in 'index.php' and FrontController, but may be worth it since you can implement HMVC with it.
+TODO: Inject DIC and Autoloader to exception handler, for debugging purposes. Have the DIC log which provider class/method is used, which instance name is instantiated and how many times it has been instantiated. The autoloader: which file is loaded, what class is expected on that file, the time of the load, which file gets loaded first, etc.
+TODO: Consider EventManager class to hook into core events, or a specialized interface containing event methods that the user can implement. This would help in use cases like filtering the final response body, request/response logging, etc.
+TODO: Take a look at Symfony's HTTPKernel for hints to improve your request and response objects.
+TODO: The manual -> make the tone of the voice less aggressive, acknowledge that global state in PHP cannot be avoided (i.e. the use of superglobals at least when constructing the Request instance, )
 
 NEW MODULES/CLASSES
 -------------------

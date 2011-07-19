@@ -67,12 +67,23 @@ class FrontController
      * @return ResponseInterface
      *
      */
-    public function dispatch(DependencyInjectionContainer $dic)
+    public function dispatch(DependencyInjectionContainer $dic, Destination $destination = null)
     {
-        $destination = $this->router->getDestination();
+        if (!$destination)
+        {
+            $destination = $this->router->getDestination();
+        }
+        
         $this->checkDestination($destination);
         $routineObject = $dic->getInstance($destination->getInstanceName());
         $response = call_user_func_array(array($routineObject, $destination->getRoutineMethodName()), $destination->getArguments());
+        
+        // Run the dispatch method again if
+        // internal redirection is called
+        if ($response instanceof Destination)
+        {
+            return $this->dispatch($dic, $response);
+        }
         
         if (!($response instanceof ResponseInterface))
         {

@@ -1,6 +1,12 @@
 TRUNK
 -----
 
+
+
+
+VERSION 0.2
+-----------
+
 - Refactored spaghetti index.php to \Carrot\Core\FrontController.
 - User's controller are no longer called controller, it is called routine class/object. The method to be called is called 'routine method'. This removes ambiguity in Carrot's documentation. Carrot doesn't care if the routine class is controller, view, model, etc., so the term 'controller' is misleading.
 - Removed config.php, all configurations now done in provider files
@@ -10,6 +16,7 @@ TRUNK
     - Removed the concept of 'default dependency registration files', _dicregistrations.php now gone.
     - Configurations are now stored inside separate provider classes.
     - Explicit assignment of providers to a particular class.
+    - You can no longer inject the (currently used) DIC instance to any class.
 - Router
     - Each route now is a separate class, implementing RouteInterface.
     - Supports two way routing, no longer uses chain of responsibility pattern.
