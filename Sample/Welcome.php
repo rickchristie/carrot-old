@@ -1,17 +1,30 @@
 <?php
 
+/**
+ * This file is part of the Carrot framework.
+ *
+ * Copyright (c) 2011 Ricky Christie <seven.rchristie@gmail.com>
+ *
+ * Licensed under the MIT License.
+ *
+ */
+
+/**
+ * Sample Routine Object
+ * 
+ * asd
+ *
+ * @author      Ricky Christie <seven.rchristie@gmail.com>
+ * @license     http://www.opensource.org/licenses/mit-license.php MIT License
+ *
+ */
+
 namespace Sample;
 
 use Carrot\Core\Response;
 
 class Welcome
-{
-    public function __construct($router, $request)
-    {
-        $this->router = $router;
-        $this->request = $request;
-    }
-    
+{   
     public function getWelcomeResponse()
     {
         ob_start();

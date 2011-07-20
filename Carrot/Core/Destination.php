@@ -12,10 +12,11 @@
 /**
  * Destination
  * 
- * Value object, represents a Destination, namely, the routine
- * object's instance name (used by the DIC for instantiation),
- * the method to call and the arguments to pass to the method.
- * Returned by Router class, used by the FrontController.
+ * Value object, represents a Destination, namely, the object
+ * reference for the routine object (used by the DIC for
+ * instantiation), the routine method to call and the arguments to
+ * pass to the method. Returned by Router class, used by the
+ * FrontController.
  *
  * @author      Ricky Christie <seven.rchristie@gmail.com>
  * @license     http://www.opensource.org/licenses/mit-license.php MIT License
@@ -46,14 +47,12 @@ class Destination
     /**
      * Creates a Destination object.
      *
-     * Will throw an exception if the routine object's instance name
-     * doesn't pass validation process. Example object construction:
+     * Example usage:
      *
      * <code>
-     * $destination = new Destination
-     * (
-     *     '\Vendor\Namespace\Subnamespace\BlogController@Main',
-     *     'index',
+     * $destination = new Destination(
+     *     new ObjectReference('Sample\Welcome{Main:Transient}'),
+     *     'welcome',
      *     array(5, 'Foo', 'Bar')
      * );
      * </code>
@@ -71,9 +70,9 @@ class Destination
     }
     
     /**
-     * Returns the routine object's DIC reference.
+     * Returns the routine object's instance of object reference.
      *
-     * @return ObjectReference The routine object's DIC reference.
+     * @return ObjectReference The routine object's instance of object reference.
      *
      */
     public function getObjectReference()

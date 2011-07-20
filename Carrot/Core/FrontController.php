@@ -12,11 +12,13 @@
 /**
  * Front Controller
  * 
- * The front controller's responsibility is to use RouterInterface
- * to get the destination instance. It then uses information from
- * the destination instance to instantiate the routine object
- * (using DIC) and then calls the routine method along with the
- * given arguments.
+ * Used to dispatch request by instantiating the relevant routine
+ * object and calling the appropriate routine method. The routine
+ * method must return an instance of Response.
+ *
+ * Supports internal redirection. If routine method returns an
+ * instance of Destination instead of Response, the front
+ * controller will re-dispatch to the returned destination.
  * 
  * @author      Ricky Christie <seven.rchristie@gmail.com>
  * @license     http://www.opensource.org/licenses/mit-license.php MIT License
@@ -41,8 +43,20 @@ class FrontController
     
     /**
      * Constructs the front controller.
-     * 
-     * 
+     *
+     * Since Response is a value object, it may be created anywhere
+     * in the code. However, the response class defaults to HTTP/1.0
+     * protocol which the server may not actually use. The front
+     * controller by default overrides the server protocol of response
+     * objects by replacing it with its own. You can disable this
+     * behavior by injecting false for the second constructor
+     * argument.
+     *
+     * Example object construction: 
+     *
+     * <code>
+     * $frontController = new FrontController($_SERVER['SERVER_PROTOCOL'], true);
+     * </code>
      * 
      * @param string $serverProtocol The server protocol currently used by the server.
      * @param bool $overrideResponseProtocol If true, front controller will override response object's server protocol with its own.
@@ -57,7 +71,9 @@ class FrontController
     /**
      * Dispatches the request based on the destination object provided.
      * 
-     * 
+     * Supports internal redirection. If routine method returns an
+     * instance of Destination instead of Response, the front
+     * controller will re-dispatch to the returned destination.
      * 
      * @param DependencyInjectionContainer $dic Used to instantiate the routine object.
      * @param Destination $destination The destination to dispatch.
@@ -120,5 +136,4 @@ class FrontController
             throw new RuntimeException("Front controller error, cannot run routine method {$className}::{$methodName}(). Method does not exist.");
         }
     }
-    
 }

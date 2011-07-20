@@ -12,10 +12,9 @@
 /**
  * Response
  * 
- * Carrot's response object. Currently it supports only HTTP/1.0
- * and HTTP/1.1. Server protocol defaults to HTTP/1.0. The
- * response object is a value object. So feel free to create it
- * anywhere you wish.
+ * Value object, Carrot's response object. Currently it supports
+ * only HTTP/1.0 and HTTP/1.1. Server protocol defaults to
+ * HTTP/1.0.
  *
  * @author      Ricky Christie <seven.rchristie@gmail.com>
  * @license     http://www.opensource.org/licenses/mit-license.php MIT License
@@ -254,6 +253,8 @@ class Response
      * Sends the headers, including the status code.
      *
      * Loops through the added headers and sends them using header().
+     * This method will not send the header if headers are already
+     * sent.
      *
      */
     protected function sendHeaders()

@@ -14,9 +14,7 @@
  * 
  * Carrot's default Request class, represents an actual request to the server.
  * Accepts and stores $_SERVER, $_GET, $_POST, $_FILES, $_COOKIE, $_REQUEST,
- * and $_ENV as immutable arrays, also generates the application request uri
- * segments. This class assumes that the main request handler is always named
- * 'index.php'.
+ * and $_ENV as immutable arrays.
  *
  * @author      Ricky Christie <seven.rchristie@gmail.com>
  * @license     http://www.opensource.org/licenses/mit-license.php MIT License
