@@ -258,11 +258,14 @@ class Response
      */
     protected function sendHeaders()
     {
-        header("{$this->serverProtocol} {$this->statusCode} {$this->statusMessage}");
-        
-        foreach ($this->headers as $headerName => $contents)
+        if (!headers_sent())
         {
-            header("{$headerName}: {$contents}");
+            header("{$this->serverProtocol} {$this->statusCode} {$this->statusMessage}");
+        
+            foreach ($this->headers as $headerName => $contents)
+            {
+                header("{$headerName}: {$contents}");
+            }
         }
     }
     

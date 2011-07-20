@@ -12,11 +12,80 @@
 /**
  * Dependency Injection Container
  * 
+ * Carrot uses this class to wire the dependencies of almost all
+ * of the core class and your classes. You can bind constructor
+ * arguments to an instance name:
+ *
+ * <code>
+ * $dic->bind('Carrot\Database\MySQL{Logging:Singleton}', array(
+ *     'hostname',
+ *     'username',
+ *     'password',
+ *     'database'
+ * ));
+ * </code>
+ *
+ * The instance name consists of fully qualified class name, the
+ * configuration name and the configuration lifecycle. The
+ * lifecycle can be 'Transient' or 'Singleton'. If set to
+ * transient, new instance is created every time it is needed. If
+ * set to singleton one instance is created, cached, and returned.
+ *
+ * <code>
+ * Carrot\Database\MySQL{Logging:Singleton}
+ * Carrot\Core\FrontController{Main:Transient}
+ * </code>
+ *
+ * Object references in the constructor arguments will be
+ * converted to actual instances. For example, if your controller
+ * has a dependency to your model:
+ *
+ * <code>
+ * $dic->bind('App\Controller{Main:Transient}', array(
+ *     new ObjectReference('App\Model{Main:Singleton}')
+ * ));
+ * </code>
+ *
+ * The object graph is built recursively so beware of infinite
+ * loops. After everything is bound, you can get the instance:
+ *
+ * <code>
+ * $dic->getInstance(new ObjectReference('App\Controller{Main:Transient}'));
+ * </code>
+ *
+ * If you need logic on wiring the dependencies, create a provider
+ * class (implement ProviderInterface):
+ *
+ * <code>
+ * namespace App;
+ *
+ * use Carrot\Core\Interfaces\ProviderInterface;
  * 
+ * class ControllerProvider implements ProviderInterface
+ * {
+ *     public function get()
+ *     {
+ *         // Logic goes here..
+ *         return new Controller($model);
+ *     }
+ * }
+ * </code>
+ *
+ * and bind the provider:
+ *
+ * <code>
+ * $dic->bindProvider('App\Controller{Main:Transient}', 'App\ControllerProvider{Main:Transient}');
+ * </code>
+ *
+ * If your provider class has dependencies, don't forget to bind
+ * it too. Provider bindings gets a priority over regular
+ * constructor argument bindings.
+ *
+ * If no bindings were found, the DIC will try to create the class
+ * without constructor parameters.
  *
  * For more information, please see the docs for
- * {@see Carrot\Core\Interfaces\ProviderInterface} and
- * {@see Carrot\Core\Provider}.
+ * {@see Carrot\Core\Interfaces\ProviderInterface}.
  * 
  * @author      Ricky Christie <seven.rchristie@gmail.com>
  * @license     http://www.opensource.org/licenses/mit-license.php MIT License
@@ -94,12 +163,15 @@ class DependencyInjectionContainer
     }
     
     /**
-     * Binds an instance name to a provider class.
+     * Binds an instance name to a provider instance name.
      * 
-     * The provider class must implement ProviderInterface. Any
-     * dependencies of the provider class will be injected via the
-     * constructor by reading @Inject annotation at the constructor's
-     * doc block.
+     * The provider class must implement ProviderInterface. This is
+     * useful if you need logic in wiring dependencies. If your
+     * provider has dependencies, also bind it using bind().
+     *
+     * <code>
+     * $dic->bindProvider('App\Controller{Main:Transient}', 'App\ControllerProvider{Main:Transient}');
+     * </code>
      * 
      * Provider bindings have higher priority than regular bindings
      * and will be used whenever it is available. 
@@ -127,6 +199,10 @@ class DependencyInjectionContainer
      * load the file so that the file doesn't have access to this
      * class's protected methods.
      *
+     * <code>
+     * $dic->loadConfigurationFile('/absolute/path/to/file.php');
+     * </code>
+     *
      * Throws InvalidArgumentException if the file doesn't exist.
      *
      * @throws InvalidArgumentException
@@ -151,9 +227,14 @@ class DependencyInjectionContainer
     /**
      * Gets an instance of an instance name.
      * 
+     * If a provider binding exists, it will be used. Otherwise it
+     * will use regular constructor argument bindings. If it also
+     * doesn't exist, this method will try to create the object
+     * without any instantiation parameters.
      * 
-     * 
-     * 
+     * <code>
+     * $model = $dic->getInstance(new ObjectReference('App\Model{Main:Singleton}'));
+     * </code>
      * 
      * @param string $instanceName The instance name.
      * @return mixed Object instance that was needed.
@@ -165,10 +246,10 @@ class DependencyInjectionContainer
         $configName = $objectReference->getConfigurationName();
         $lifecycle = $objectReference->getLifecycleSetting();
         
-        // Return cache if possible
-        if (isset($this->cache[$className][$configName]))
+        // Returns cache if possible
+        if (isset($this->cache[$className][$configName][$lifecycle]))
         {
-            return $this->cache[$className][$configName];
+            return $this->cache[$className][$configName][$lifecycle];
         }
         
         if (!class_exists($className))
@@ -186,31 +267,51 @@ class DependencyInjectionContainer
             return $this->getInstanceFromBindings($objectReference);
         }
         
-        $instanceName = $objectReference->getInstanceName();
-        return $this->tryToInstantiateWithoutParameters($className, $instanceName);
+        return $this->tryToInstantiateWithoutParameters($objectReference);
     }
     
     /**
-     * 
+     * Tries to instantiate the object without any constructor parameter.
      *
+     * Throws RuntimeException if it fails to instantiate the object
+     * without constructor parameters.
+     * 
+     * @throws RuntimeException
+     * @param ObjectReference $objectReference The object reference to the instance to get.
+     * @return mixed Object instance that was needed.
+     * 
      */
-    protected function tryToInstantiateWithoutParameters($className, $instanceName)
+    protected function tryToInstantiateWithoutParameters(ObjectReference $objectReference)
     {
+        $className = $objectReference->getClassName();
+        $configName = $objectReference->getConfigurationName();
+        $lifecycle = $objectReference->getLifecycleSetting();
+        
         try
         {
             $object = new $className;
-            return $object;
         }
         catch (Exception $e)
         {
+            $instanceName = $objectReference->getInstanceName();
             throw new RuntimeException("DIC error in getting instance. Instance '{$instanceName}' does not have bindings and the DIC fails to create the object without constructor parameters.");
         }
+        
+        if ($lifecycle == 'Singleton')
+        {
+            $this->cache[$className][$configName][$lifecycle] = $object;
+        }
+        
+        return $object;
     }
     
     /**
      * Gets the instance from regular bindings, i.e. constructor arguments bindings.
      * 
-     * 
+     * This method loops through the arguments and converts instances
+     * of object references to actual instances of the referred
+     * object. If the lifecycle is singleton, a cache of an
+     * instantiated object is saved.
      * 
      * @param ObjectReference $objectReference The object reference to the instance to get.
      * @return mixed Object instance that was needed.
@@ -224,22 +325,33 @@ class DependencyInjectionContainer
         $ctorArgs = array();
         
         foreach ($this->bindings[$className][$configName][$lifecycle]['args'] as $argument)
-        {
+        {   
             if ($argument instanceof ObjectReference)
-            {
+            {   
                 $ctorArgs[] = $this->getInstance($argument);
+                continue;
             }
             
             $ctorArgs[] = $argument;
         }
         
-        return $this->createObject($className, $ctorArgs);
+        $object = $this->createObject($className, $ctorArgs);
+        
+        if ($lifecycle == 'Singleton')
+        {
+            $this->cache[$className][$configName][$lifecycle] = $object;
+        }
+        
+        return $object;
     }
     
     /**
      * Gets the instance from the provider classes.
      * 
-     * 
+     * The provider object is obtained using getInstance(), so any
+     * dependencies should get sorted out. After that
+     * ProviderInterface::get() is called and if it's singleton it's
+     * saved to cache.
      * 
      * @param ObjectReference $objectReference The object reference to the instance to get.
      * @return mixed Object instance that was needed.
@@ -265,6 +377,11 @@ class DependencyInjectionContainer
         {
             $providerClassName = $providerObjectReference->getClassName();
             throw new RuntimeException("DIC error in getting instance. Provider class '{$providerClassName}' does not return an instance of '{$className}'.");
+        }
+        
+        if ($lifecycle == 'Singleton')
+        {
+            $this->cache[$className][$configName][$lifecycle] = $object;
         }
         
         return $object;
@@ -299,6 +416,27 @@ class DependencyInjectionContainer
             break;
             case 3:
                 return new $className($args[0], $args[1], $args[2]);
+            break;
+            case 4:
+                return new $className($args[0], $args[1], $args[2], $args[3]);
+            break;
+            case 5:
+                return new $className($args[0], $args[1], $args[2], $args[3], $args[4]);
+            break;
+            case 6:
+                return new $className($args[0], $args[1], $args[2], $args[3], $args[4], $args[5]);
+            break;
+            case 7:
+                return new $className($args[0], $args[1], $args[2], $args[3], $args[4], $args[5], $args[6]);
+            break;
+            case 8:
+                return new $className($args[0], $args[1], $args[2], $args[3], $args[4], $args[5], $args[6], $args[7]);
+            break;
+            case 9:
+                return new $className($args[0], $args[1], $args[2], $args[3], $args[4], $args[5], $args[6], $args[7], $args[8]);
+            break;
+            case 10:
+                return new $className($args[0], $args[1], $args[2], $args[3], $args[4], $args[5], $args[6], $args[7], $args[8], $args[9]);
             break;
         }
         

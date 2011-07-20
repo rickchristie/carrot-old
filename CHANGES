@@ -1,8 +1,19 @@
 TRUNK
 -----
 
-
-
+- Dependency Injection Container
+    - Created ObjectReference to refer to instance names.
+    - Instance names now in this form: Carrot\Core\FrontController{Main:Transient}
+    - Providers can be bound only to specific instance names.
+    - Simplified ProviderInterface.
+- Router
+    - Simplified RouteInterface.
+    - Simplified Router.
+    - Route classes now instantiated by the DIC, means they can have their own dependencies.
+    - Removed RouterInterface, usage of Carrot's Router class is now mandatory.
+- Response
+    - Headers are now only sent when Response::send() is called.
+    - Response now a value object.
 
 VERSION 0.2
 -----------

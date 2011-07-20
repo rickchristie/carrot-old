@@ -11,9 +11,9 @@
  *
  */
 
-require __DIR__ . DIRECTORY_SEPARATOR . 'Carrot' . DIRECTORY_SEPARATOR . 'Core' . DIRECTORY_SEPARATOR . 'Autoloader.php';
-$autoloader = new Carrot\Core\Autoloader();
-$autoloader->register();
+
+
+
 
 /**
  * blah
