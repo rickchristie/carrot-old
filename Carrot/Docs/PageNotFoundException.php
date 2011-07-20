@@ -21,7 +21,7 @@
  *
  */
 
-namespace Carrot\SimpleDocs;
+namespace Carrot\Docs;
 
 use RuntimeException;
 

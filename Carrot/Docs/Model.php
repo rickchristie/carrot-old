@@ -59,10 +59,9 @@
  *
  */
 
-namespace Carrot\SimpleDocs;
+namespace Carrot\Docs;
 
 use InvalidArgumentException;
-use Carrot\SimpleDocs\PageNotFoundException;
 
 class Model
 {
@@ -99,8 +98,13 @@ class Model
      * @param string $pageFileSuffix The suffix to the page file name, added after the page title.
      *
      */
-    public function __construct($storageDirectory, $pageFileSuffix = '.html')
+    public function __construct($storageDirectory = null, $pageFileSuffix = '.html')
     {
+        if (!$storageDirectory)
+        {
+            $storageDirectory = __DIR__ . DIRECTORY_SEPARATOR . 'Storage';
+        }
+        
         $this->pageFileSuffix = $pageFileSuffix;
         $realpath = realpath($storageDirectory);
         

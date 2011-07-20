@@ -86,6 +86,21 @@ $dic->bind('Carrot\Core\FrontController{Main:Transient}', array(
     $_SERVER['SERVER_PROTOCOL']
 ));
 
+$dic->bind('Carrot\Docs\Route{Main:Transient}', array(
+    new ObjectReference('Carrot\Core\AppRequestURI{Main:Transient}')
+));
+
+$dic->bind('Carrot\Docs\Controller{Main:Transient}', array(
+    new ObjectReference('Carrot\Docs\View{Main:Transient}'),
+    new ObjectReference('Carrot\Docs\Model{Main:Singleton}')
+));
+
+$dic->bind('Carrot\Docs\View{Main:Transient}', array(
+    new ObjectReference('Carrot\Docs\Model{Main:Singleton}'),
+    new ObjectReference('Carrot\Core\Router{Main:Singleton}'),
+    'CarrotDocs'
+));
+
 /**
  * Loads the user configuration file for Carrot's DIC. This is
  * where the user can override previously set default bindings.

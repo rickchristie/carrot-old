@@ -10,7 +10,7 @@
  */
 
 /**
- * SimpleDocs Controller
+ * Docs Controller
  * 
  * 
  * 
@@ -19,11 +19,10 @@
  *
  */
 
-namespace Carrot\SimpleDocs;
+namespace Carrot\Docs;
 
 use Carrot\Core\Response;
 use Carrot\Core\Router;
-use Carrot\SimpleDocs\PageNotFoundException;
 
 class Controller
 {   
@@ -33,11 +32,10 @@ class Controller
      * @param Response $response The response object to be returned.
      * 
      */
-    public function __construct(View $view, Model $model, Response $response)
+    public function __construct(View $view, Model $model)
     {
         $this->model = $model;
         $this->view = $view;
-        $this->response = $response;
     }
     
     /**
@@ -67,7 +65,6 @@ class Controller
             $this->response->setStatus(404);
         }
         
-        $this->response->setBody($responseBody);
-        return $this->response;
+        return new Response($responseBody);
     }
 }
