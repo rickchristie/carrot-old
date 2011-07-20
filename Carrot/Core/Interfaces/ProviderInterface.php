@@ -19,20 +19,14 @@
  *
  * Usually this wiring is done by using DIC's bind method, but if
  * you need to have logic in wiring the dependencies you can use
- * provider class to store that logic for you.
+ * provider class to store that logic for you. This interface has
+ * only one method, and that method must return the provided
+ * object.
  * 
- * 
- * 
- * 
- * 
- * This interface defines the contract between your provider
- * classes with Carrot's dependency injection container. In order
- * to make provider class development easier, you can extend
- * Carrot\Core\Provider instead of re-implementing this interface
- * for every provider class.
+ * If your provider class has its own dependencies, don't forget
+ * to bind it also using the DIC.
  *
  * For more information, please see the docs for
- * {@see Carrot\Core\Interfaces\Provider} and
  * {@see Carrot\Core\DependencyInjectionContainer}.
  * 
  * @author      Ricky Christie <seven.rchristie@gmail.com>
@@ -45,9 +39,9 @@ namespace Carrot\Core\Interfaces;
 interface ProviderInterface
 {
     /**
-     * Defies imagination, extends boundaries and saves the world ...all before breakfast!
+     * Returns the provided object.
      * 
-     * @return mixed The instance of 
+     * @return Object The provided object.
      *
      */
     public function get();
