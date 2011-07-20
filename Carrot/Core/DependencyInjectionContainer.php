@@ -12,47 +12,7 @@
 /**
  * Dependency Injection Container
  * 
- * Carrot's dependency injection container (DIC) creates object
- * graph with provider classes, similar to provider bindings in
- * Google Guice.
  * 
- * The provider class must implement
- * Carrot\Core\Interfaces\ProviderInterface. You can extend
- * Carrot\Core\Provider instead to avoid re-implementing methods
- * for each provider classes.
- * 
- * As the default behavior, this class will look for provider
- * class inside the same namespace as the class being provided,
- * with the same class name with added 'Provider' suffix. This
- * means that it will look for Vendor\Namespace\ClassNameProvider
- * when it needs to construct Vendor\Namespace\ClassName.
- *
- * This behavior can be overridden by binding another provider
- * class:
- *
- * <code>
- * $dic->bindProviderClass('App\CustomProviderClassName', 'Carrot\Core\FrontController');
- * </code>
- *
- * Each instantiation configuration is identified by an instance
- * name, which consists of the fully qualified class name and the
- * configuration name, separated by '@' character:
- *
- * <code>
- * Carrot\Database\MySQLi@Main
- * Carrot\Database\MySQLi@Logging
- * Carrot\Helper\Config@Shared
- * </code>
- *
- * When specifying the instance you want in the provider class,
- * you will have to provide the full instance name. The DIC will
- * call the appropriate method based on the configuration name:
- *
- * <code>
- * Carrot\Database\MySQLi@Main -> Carrot\Database\MySQLiProvider::getMain()
- * Carrot\Database\MySQLi@Logging -> Carrot\Database\MySQLiProvider::getLogging()
- * Carrot\Helper\Config@Shared -> Carrot\Helper\ConfigProvider::getShared()
- * </code>
  *
  * For more information, please see the docs for
  * {@see Carrot\Core\Interfaces\ProviderInterface} and
@@ -65,340 +25,284 @@
 
 namespace Carrot\Core;
 
+use Carrot\Core\Interfaces\ProviderInterface;
+use InvalidArgumentException;
 use RuntimeException;
+use Exception;
+use ReflectionClass;
+use ReflectionMethod;
 
 class DependencyInjectionContainer
 {
     /**
-     * @var array Contains provider to class bindings.
+     * @var array Contains the constructor arguments bindings.
      */
-    protected $providerToClassBindings = array();
+    protected $bindings = array();
     
     /**
-     * @var array Contains provider to instance name bindings.
+     * @var array Contains the instance name to provider bindings.
      */
-    protected $providerToInstanceNameBindings = array();
+    protected $providerBindings = array();
     
     /**
-     * @var string Suffix to the provider class name, added after the class name being provided.
+     * @var array Contains cache of objects with singleton lifecycles.
      */
-    protected $providerClassSuffix = 'Provider';
+    protected $cache = array();
     
     /**
-     * @var string Prefix added to the configuration name as the method to be called.
-     */
-    protected $providerMethodPrefix = 'get';
-    
-    /**
-     * @var array Contains references to objects that has singleton lifecycle.
-     */
-    protected $singletons = array();
-    
-    /**
-     * Loads a file that contains provider bindings.
+     * Bind constructor arguments to an instance name.
      * 
-     * In the file, you can use $dic variable to define provider class
-     * bindings:
+     * An instance name is an identification you can use to identify
+     * an object instantiation configuration. An instance name
+     * contains the fully qualified class name, a configuration name
+     * and a lifecycle setting. Example instance names:
      *
      * <code>
-     * $dic->bindProviderClass('App\Providers\ConfigProvider', 'Carrot\Helpers\Config');
+     * Carrot\Core\FrontController{Main:Transient}
+     * Carrot\Database\MySQLi{Backup:Singleton}
      * </code>
      *
-     * If you need to do some logic, don't forget that you can use the
-     * $dic to get an instance of the classes you need.
+     * Use this method to bind an instance name to a set of 
+     * constructor arguments. For example:
+     *
+     * <code>
+     * $dic->bind('Carrot\Database\MySQLi{Main:Singleton}', array(
+     *     'hostname',
+     *     'username',
+     *     'password',
+     *     'database',
+     * ));
+     * </code>
+     *
+     * Subsequent calls to getInstance() will trigger the
+     * instantiation of the class with the bound constructor
+     * arguments and if it is configured to have singleton lifecycle,
+     * the instance will be cached for future use.
      * 
-     * @throws \InvalidArgumentException
-     * @param string $providerFilePath Absolute file path to the provider configuration file.
-     * @param bool $mustExist If true, will throw exception if the file doesn't exist. Defaults to true.
+     * @param string $instanceName The instance name to bind.
+     * @param array $ctorArgs Array of constructor arguments.
+     * 
+     */
+    public function bind($instanceName, array $ctorArgs)
+    {
+        $objectReference = new ObjectReference($instanceName);
+        $className = $objectReference->getClassName();
+        $configName = $objectReference->getConfigurationName();
+        $lifecycle = $objectReference->getLifecycleSetting();
+        $this->bindings[$className][$configName][$lifecycle]['object'] = $objectReference;
+        $this->bindings[$className][$configName][$lifecycle]['args'] = $ctorArgs;
+    }
+    
+    /**
+     * Binds an instance name to a provider class.
+     * 
+     * The provider class must implement ProviderInterface. Any
+     * dependencies of the provider class will be injected via the
+     * constructor by reading @Inject annotation at the constructor's
+     * doc block.
+     * 
+     * Provider bindings have higher priority than regular bindings
+     * and will be used whenever it is available. 
+     * 
+     * @param string $instanceName The instance name to bind.
+     * @param string $providerClassName Fully qualified class name to the provider class.
      *
      */
-    public function loadProviderFile($providerFilePath, $mustExist = true)
+    public function bindProvider($instanceName, $providerInstanceName)
     {
-        if (!file_exists($providerFilePath) && $mustExist)
+        $objectReference = new ObjectReference($instanceName);
+        $providerObjectReference = new ObjectReference($providerInstanceName);
+        $className = $objectReference->getClassName();
+        $configName = $objectReference->getConfigurationName();
+        $lifecycle = $objectReference->getLifecycleSetting();
+        $this->providerBindings[$className][$configName][$lifecycle]['object'] = $objectReference;
+        $this->providerBindings[$className][$configName][$lifecycle]['provider'] = $providerObjectReference;
+    }
+    
+    /**
+     * Loads a configuration file.
+     *
+     * The loaded configuration file will have access to this DIC
+     * instance through the $dic variable. Uses anonymous function to
+     * load the file so that the file doesn't have access to this
+     * class's protected methods.
+     *
+     * Throws InvalidArgumentException if the file doesn't exist.
+     *
+     * @throws InvalidArgumentException
+     * @param string $filePath Absolute file path to the configuration file.
+     *
+     */
+    public function loadConfigurationFile($filePath)
+    {
+        if (!file_exists($filePath))
         {
-            throw new \InvalidArgumentException("DIC error, cannot load provider file '{$providerFilePath}', file does not exist.");
+            throw new InvalidArgumentException("DIC error in loading configuration file, file '{$filePath}' does not exist.");
         }
         
-        $require = function($providerFilePath, $dic)
+        $loadFile = function($dic, $filePath)
         {
-            require $providerFilePath;
+            require $filePath;
         };
         
-        $require($providerFilePath, $this);
+        $loadFile($this, $filePath);
     }
     
     /**
-     * Binds a provider class to a specific instance name.
+     * Gets an instance of an instance name.
      * 
-     * Binding provider class to an instance name means that no matter
-     * what, if the instance name is called, the provider class bound
-     * to it will be the one used.
-     *
-     * <code>
-     * $dic->bindProviderToInstanceName('App\Providers\ConfigProvider', 'Carrot\Helpers\Config@Main');
-     * </code>
-     *
-     * This supersedes everything, including provider to class
-     * bindings. You can't bind an instance name to more than one
-     * provider class.
-     *
-     * @param string $providerClassName Fully qualified class name for the provider class.
-     * @param string $instanceName The instance name to be bound to the provider class.
-     *
-     */
-    public function bindProviderToInstanceName($providerClassName, $instanceName)
-    {
-        $instanceName = ltrim($instanceName, '\\');
-        $providerClassName = ltrim($providerClassName, '\\');
-        $this->providerToInstanceNameBindings[$instanceName] = $providerClassName;
-    }
-    
-    /**
-     * Adds a provider to instance name bindings array.
-     *
-     * If you need to do a lot of binding, you can define them in an
-     * array first to reduce the total number of method calls.
-     *
-     * <code>
-     * $bindings = array
-     * (
-     *     'App\Providers\ConfigProvider' => 'Carrot\Helpers\Config@Main',
-     *     'App\Providers\MySQLiProvider' => 'Carrot\Database\MySQLi@BackupDB',
-     *     'App\Providers\FrontControllerProvider' => 'Carrot\Core\FrontController@Main',
-     *     ...
-     * );
-     *
-     * $this->addProviderToInstanceNameBindings($bindings);
-     * </code>
-     *
-     * @param array $bindings The bindings inside an array.
-     *
-     */
-    public function addProviderToInstanceNameBindings(array $bindings)
-    {
-        foreach ($bindings as $providerClassName => $instanceName)
-        {
-            $instanceName = ltrim($instanceName, '\\');
-            $providerClassName = ltrim($providerClassName, '\\');
-            $this->providerToInstanceNameBindings[$instanceName] = $providerClassName;
-        }
-    }
-    
-    /**
-     * Binds a provider class to a fully qualified class name.
      * 
-     * Direct provider class bindings overrides the default provider
-     * class searching behavior.
-     *
-     * <code>
-     * $dic->bindProviderToClass('App\Providers\ConfigProvider', 'Carrot\Helpers\Config');
-     * </code>
      * 
-     * @param string $providerClassName Fully qualified class name for the provider class.
-     * @param string $className Fully qualified class name for the class being provided.
-     *
-     */
-    public function bindProviderToClass($providerClassName, $className)
-    {
-        $className = ltrim($className, '\\');
-        $providerClassName = ltrim($providerClassName, '\\');        
-        $this->providerToClassBindings[$className] = $providerClassName;
-    }
-    
-    /**
-     * Adds a provider class binding array.
      * 
-     * If you need to do a lot of binding, using this method you can
-     * just pass an array to avoid having to call bindProviderClass()
-     * multiple times.
-     *
-     * <code>
-     * $bindings = array
-     * (
-     *     'App\Providers\ConfigProvider' => 'Carrot\Helpers\Config',
-     *     'App\Providers\MySQLiProvider' => 'Carrot\Database\MySQLi',
-     *     'App\Providers\FrontControllerProvider' => 'Carrot\Core\FrontController',
-     *     ...
-     * );
-     *
-     * $this->addProviderToClassBindings($bindings);
-     * </code>
-     *
-     * @param array $bindings Array containing the bindings.
-     *
-     */
-    public function addProviderToClassBindings(array $bindings)
-    {
-        foreach ($bindings as $providerClassName => $className)
-        {
-            $providerClassName = ltrim($providerClassName, '\\');
-            $className = ltrim($className, '\\');
-            $this->providerToClassBindings[$className] = $providerClassName;
-        }
-    }
-    
-    /**
-     * Gets an instance from the provider.
-     * 
-     * This method will find and instantiate the provider class. It
-     * will provide the dependencies to the provider recursively by
-     * calling ProviderInterface::getDependencies() and
-     * ProviderInterface::setDependencies(). The appropriate provider
-     * method is then called to return the instance needed.
-     *
-     * This method also calls ProviderInterface::isSingleton() to find
-     * out if the object being instantiated has a singleton lifecycle.
-     * It saves the object reference into a cache if it is indeed the
-     * case.
-     *
-     * <code>
-     * $mysqli = $dic->getInstance(new InstanceName('Carrot\Database\MySQLi@Main:Singleton'));
-     * </code>
      * 
      * @param string $instanceName The instance name.
      * @return mixed Object instance that was needed.
      * 
      */
-    public function getInstance(InstanceName $instanceName)
+    public function getInstance(ObjectReference $objectReference)
     {
-        $instanceNameString = $instanceName->getInstanceName();
-        $className = $instanceName->getClassName();
-        $providerMethodName = $instanceName->getProviderMethodName();
-        $configName = $instanceName->getConfigurationName();
+        $className = $objectReference->getClassName();
+        $configName = $objectReference->getConfigurationName();
+        $lifecycle = $objectReference->getLifecycleSetting();
         
         // Return cache if possible
-        if (isset($this->singletons[$instanceNameString]))
+        if (isset($this->cache[$className][$configName]))
         {
-            return $this->singletons[$instanceNameString];
+            return $this->cache[$className][$configName];
         }
         
-        if ($configName == 'NoProvider')
+        if (!class_exists($className))
         {
-            return $this->instantiateClassWithoutProvider('\\' . $className);
+            throw new RuntimeException("DIC error in getting instance '{$instanceName}'. Class '{$className}' does not exist.");
         }
         
-        $providerClassName = $this->getProviderClassName($className, $instanceNameString);
-        $provider = $this->getProviderObject($providerClassName, $providerMethodName);
-        $dependencies = $provider->getDependencies();
-        
-        // Get dependencies recursively
-        foreach ($dependencies as $index => $dependencyInstanceName)
+        if (isset($this->providerBindings[$className][$configName][$lifecycle]))
         {
-            $dependencies[$index] = $this->getInstance($dependencyInstanceName);
+            return $this->getInstanceFromProviderBindings($objectReference);
         }
         
-        $provider->setDependencies($dependencies);
-        $object = $provider->$providerMethodName();
-        
-        if (!is_object($object))
+        if (isset($this->bindings[$className][$configName][$lifecycle]))
         {
-            $providerClassName = ltrim($providerClassName, '\\');
-            throw new RuntimeException("DIC error in getting instance {$instanceName}, the provider method {$providerClassName}::{$providerMethodName}() does not return an object.");
+            return $this->getInstanceFromBindings($objectReference);
         }
         
-        if (get_class($object) !== $className)
+        $instanceName = $objectReference->getInstanceName();
+        return $this->tryToInstantiateWithoutParameters($className, $instanceName);
+    }
+    
+    /**
+     * 
+     *
+     */
+    protected function tryToInstantiateWithoutParameters($className, $instanceName)
+    {
+        try
         {
-            $providerClassName = ltrim($providerClassName, '\\');
-            throw new RuntimeException("DIC error in getting instance {$instanceName}, the provider method {$providerClassName}::{$providerMethodName}() does not return an instance of {$className}.");
+            $object = new $className;
+            return $object;
+        }
+        catch (Exception $e)
+        {
+            throw new RuntimeException("DIC error in getting instance. Instance '{$instanceName}' does not have bindings and the DIC fails to create the object without constructor parameters.");
+        }
+    }
+    
+    /**
+     * Gets the instance from regular bindings, i.e. constructor arguments bindings.
+     * 
+     * 
+     * 
+     * @param ObjectReference $objectReference The object reference to the instance to get.
+     * @return mixed Object instance that was needed.
+     *
+     */
+    protected function getInstanceFromBindings(ObjectReference $objectReference)
+    {
+        $className = $objectReference->getClassName();
+        $configName = $objectReference->getConfigurationName();
+        $lifecycle = $objectReference->getLifecycleSetting();
+        $ctorArgs = array();
+        
+        foreach ($this->bindings[$className][$configName][$lifecycle]['args'] as $argument)
+        {
+            if ($argument instanceof ObjectReference)
+            {
+                $ctorArgs[] = $this->getInstance($argument);
+            }
+            
+            $ctorArgs[] = $argument;
         }
         
-        // Save to cache if it has a singleton lifecycle
-        if ($provider->isSingleton($configName))
+        return $this->createObject($className, $ctorArgs);
+    }
+    
+    /**
+     * Gets the instance from the provider classes.
+     * 
+     * 
+     * 
+     * @param ObjectReference $objectReference The object reference to the instance to get.
+     * @return mixed Object instance that was needed.
+     *
+     */
+    protected function getInstanceFromProviderBindings(ObjectReference $objectReference)
+    {
+        $className = $objectReference->getClassName();
+        $configName = $objectReference->getConfigurationName();
+        $lifecycle = $objectReference->getLifecycleSetting();
+        $providerObjectReference = $this->bindings[$className][$configName][$lifecycle]['provider'];
+        $provider = $this->getInstance($providerObjectReference);
+        
+        if (!($provider instanceof ProviderInterface))
         {
-            $this->singletons[$instanceName] = $object;
+            $providerClassName = $providerObjectReference->getClassName();
+            throw new RuntimeException("DIC error in getting instance. Provider class '{$providerClassName}' does not implement the required interface (Carrot\Core\Interfaces\ProviderInterface).");
+        }
+        
+        $object = $provider->get();
+        
+        if (!($object instanceof $className))
+        {
+            $providerClassName = $providerObjectReference->getClassName();
+            throw new RuntimeException("DIC error in getting instance. Provider class '{$providerClassName}' does not return an instance of '{$className}'.");
         }
         
         return $object;
     }
     
     /**
-     * Instantiate the class without constructor arguments.
-     *
-     * Throws RuntimeException if the class does not exist.
-     *
-     * @throws RuntimeException
-     * @param string $className Fully qualified class name (with backslash prefix for safe instantiation).
-     * @return object The instantiated class.
-     *
-     */
-    protected function instantiateClassWithoutProvider($className)
-    {
-        if (!class_exists($className))
-        {
-            $className = ltrim($className, '\\');
-            throw new RuntimeException("DIC error in getting instance '{$className}@NoProvider', class does not exist.");
-        }
-        
-        return new $className;
-    }
-    
-    /**
-     * Returns the provider class name to be instantiated.
+     * Creates the object with dynamic number of constructor arguments.
      * 
-     * This method first searches provider to instance name bindings.
-     * If none found it searches the provider to class bindings. If
-     * none found, it then assumes that the provider class is in the
-     * same namespace, having the same class name only with 'Provider'
-     * suffix at the end. Example:
-     *
-     * <code>
-     * Carrot\Core\FrontController -> Carrot\Core\FrontControllerProvider
-     * Carrot\Database\MySQLi -> Carrot\Database\MySQLiProvider
-     * </code>
+     * We all know that reflection is slow, so this method tries to
+     * avoid it using the ugly switch statement. According to the
+     * the interwebs it's three times as fast as using reflection.
      * 
+     * @see http://blog.liip.ch/archive/2008/09/18/fotd-reflectionclass-newinstanceargs-args-is-slow.html
      * @param string $className Fully qualified class name without backslash prefix.
-     * @param string $instanceName The instance name of the class to be instantiated.
-     * @return string Fully qualified class name of the provider (with backslash prefix for safe instantiation).
+     * @param array $ctorArgs The constructor arguments array.
      *
      */
-    protected function getProviderClassName($className, $instanceNameString)
+    protected function createObject($className, array $args)
     {
-        if (array_key_exists($instanceNameString, $this->providerToInstanceNameBindings))
+        $count = count($args);
+        
+        switch ($count)
         {
-            return '\\' . $this->providerToInstanceNameBindings[$instanceNameString];
+            case 0:
+                return new $className;
+            break;
+            case 1:
+                return new $className($args[0]);
+            break;
+            case 2:
+                return new $className($args[0], $args[1]);
+            break;
+            case 3:
+                return new $className($args[0], $args[1], $args[2]);
+            break;
         }
         
-        if (array_key_exists($className, $this->providerToClassBindings))
-        {
-            return '\\' . $this->providerToClassBindings[$className];
-        }
-        
-        return '\\' . $className . $this->providerClassSuffix;
-    }
-    
-    /**
-     * Instantiates and return the provider class.
-     * 
-     * Also checks whether the provider method needed are present,
-     * throws a RuntimeException if it does not.
-     *
-     * @throws RuntimeException 
-     * @param string $providerClassName The provider class name (with backslash prefix for safe instantiation).
-     * @param string $providerMethodName The method name that must exist at the provider class.
-     * @return \Carrot\Core\Interfaces\ProviderInterface An implementation of ProviderInterface.
-     *
-     */
-    protected function getProviderObject($providerClassName, $providerMethodName)
-    {   
-        if (!class_exists($providerClassName))
-        {
-            $providerClassName = ltrim($providerClassName, '\\');
-            throw new RuntimeException("DIC error in getting provider, the provider class {$providerClassName} doesn't exist.");
-        }
-        
-        $provider = new $providerClassName;
-        
-        if (!($provider instanceof \Carrot\Core\Interfaces\ProviderInterface))
-        {
-            $providerClassName = ltrim($providerClassName, '\\');
-            throw new RuntimeException("DIC error in getting provider. Provider class {$providerClassName} does not implement Carrot\Core\Interfaces\ProviderInterface.");
-        }
-        
-        if (!method_exists($provider, $providerMethodName))
-        {
-            throw new RuntimeException("DIC error in getting provider configuration method. {$providerClassName}::{$providerMethodName}() doesn't exist.");
-        }
-        
-        return $provider;
+        $reflectionClass = new ReflectionClass($className);
+        return $reflectionClass->newInstanceArgs($args);
     }
 }

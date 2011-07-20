@@ -17,10 +17,13 @@
  * a small factory, wiring the dependencies and/or configuration
  * by injecting it.
  *
-// ---------------------------------------------------------------
- * Providers' constructors must not have any arguments or the DIC
- * will not be able to instantiate it. In an ideal situation, we
- * can use 
+ * Usually this wiring is done by using DIC's bind method, but if
+ * you need to have logic in wiring the dependencies you can use
+ * provider class to store that logic for you.
+ * 
+ * 
+ * 
+ * 
  * 
  * This interface defines the contract between your provider
  * classes with Carrot's dependency injection container. In order
@@ -42,26 +45,10 @@ namespace Carrot\Core\Interfaces;
 interface ProviderInterface
 {
     /**
-     * Must return a dependency list object.
+     * Defies imagination, extends boundaries and saves the world ...all before breakfast!
      * 
-     * Your provider class might have dependencies of their own. This
-     * method must return the said dependencies in an array form that
-     * contains the name of the dependency and an instance of
-     * Carrot\Core\InstanceName. For example:
-     *
-     * <code>
-     * return array
-     * (
-     *     'config' => new InstanceName('Carrot\Helper\Config@Database'),
-     *     'mysqli' => new InstanceName('Carrot\Database\MySQLi@Backup')
-     * );
-     * </code>
-     *
-     * Return an empty array if the provider class has no
-     * dependencies. 
-     * 
-     * @return array List of dependencies and their name.
+     * @return mixed The instance of 
      *
      */
-    public function getDependencies();
+    public function get();
 }

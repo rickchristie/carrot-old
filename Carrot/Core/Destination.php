@@ -24,12 +24,14 @@
 
 namespace Carrot\Core;
 
+use RuntimeException;
+
 class Destination
 {
     /**
-     * @var string Routine object's instance name, consists of fully qualified class name and a configuration name.
+     * @var string The object reference to the routine class.
      */
-    protected $instanceName;
+    protected $objectReference;
     
     /**
      * @var string Method name to be called.
@@ -40,11 +42,6 @@ class Destination
      * @var array Array of arguments to be passed to the routine method.
      */
     protected $arguments;
-    
-    /**
-     * @var string Fully qualified class name extracted from the instance name.
-     */
-    protected $routineClassName;
     
     /**
      * Creates a Destination object.
@@ -66,26 +63,24 @@ class Destination
      * @param array $params Array of parameters, to be passed in sequence.
      *
      */
-    public function __construct($instanceName, $routineMethodName, array $arguments = array())
+    public function __construct(ObjectReference $objectReference, $routineMethodName, array $arguments = array())
     {
-        $instanceName = $this->validateInstanceName($instanceName);
-        $this->instanceName = $instanceName;
+        $this->objectReference = $objectReference;
         $this->routineMethodName = $routineMethodName;
         $this->arguments = $arguments;
-        $this->routineClassName = $this->extractClassName($instanceName);
     }
     
     /**
-     * Returns the routine object's instance Name.
+     * Returns the routine object's DIC reference.
      *
-     * @return string Routine object's instance name.
+     * @return ObjectReference The routine object's DIC reference.
      *
      */
-    public function getInstanceName()
+    public function getObjectReference()
     {
-        return $this->instanceName;
+        return $this->objectReference;
     }
-    
+        
     /**
      * Returns the routine method name.
      *
@@ -106,67 +101,5 @@ class Destination
     public function getArguments()
     {
         return $this->arguments;
-    }
-    
-    /**
-     * Returns the routine object's fully qualified class name.
-     *
-     * @return string The routine object's fully qualified class name (with backslash prefix).
-     *
-     */
-    public function getRoutineClassName()
-    {
-        return '\\' . $this->routineClassName;
-    }
-    
-    /**
-     * Throws exception if instance name is invalid.
-     * 
-     * Trims the instance name for backslashes using ltrim() before
-     * validating. Checks the instance name against the pattern (in
-     * PHP preg_match()):
-     * 
-     * <code>
-     * /^([A-Za-z_\\\\]+)@([A-Za-z0-9_]+):(transient|singleton)$/D
-     * </code>
-     * 
-     * @throws RuntimeException
-     * @param string $instanceName Instance name to be validated.
-     * @return string Instance name (with any backslash prefix trimmed).
-     *
-     */
-    protected function validateInstanceName($instanceName)
-    {
-        $matches = array();
-        $instanceName = ltrim($instanceName, '\\');
-        $regexMatch = preg_match('/^([A-Za-z_\\\\]+)@([A-Za-z0-9_]+):(transient|singleton)$/D', $instanceName, $matches);
-        
-        if (!$regexMatch or count($matches) != 4 or
-            empty($matches[1]) or empty($matches[2]) or
-            empty($matches[3]))
-        {
-            throw new RuntimeException("DIC error in getting an instance, '{$instanceName}' is not a valid instance name.");
-        }
-        
-        return $instanceName;
-    }
-    
-    /**
-     * Extracts class name from an instance name.
-     *
-     * Example extractions:
-     *
-     * <code>
-     * Carrot\Core\FrontController@Main -> Carrot\Core\FrontController
-     * Carrot\Database\MySQLi@Backup -> Carrot\Database\MySQLi
-     * </code>
-     *
-     * @param string $instanceName
-     *
-     */
-    protected function extractClassName($instanceName)
-    {
-        $instanceNameExploded = explode('@', $instanceName);
-        return $instanceNameExploded[0];
     }
 }

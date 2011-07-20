@@ -9,6 +9,8 @@
  *
  */
 
+use Carrot\Core\ObjectReference;
+
 /**
  * Carrot works assuming certain conditions are met. It will quit
  * immediately if they are not. Although this seems like a
@@ -39,25 +41,48 @@ if (version_compare(PHP_VERSION, '5.3.0') < 0)
 error_reporting(E_ALL | E_STRICT);
 
 /**
- * Geting the autoloader up and running. Note that Carrot doesn't
- * care if you're using the default Autoloader class or not.
- * What's important is that after requiring this file, all classes
- * are autoloaded successfully.
+ * Geting the autoloader up and running. Loads user's autoload.php
+ * file.
  */
 
-require __DIR__ . DIRECTORY_SEPARATOR . 'Carrot' . DIRECTORY_SEPARATOR . 'Core' . DIRECTORY_SEPARATOR . 'Autoloader.php';
-$autoloader = new Carrot\Core\Autoloader();
 require __DIR__ . DIRECTORY_SEPARATOR . 'autoload.php';
-$autoloader->register();
 
 /**
- * Instantiates the dependency injection container and load the
- * providers.php file. In that file you can map providers
- * according to your liking.
+ * Instantiates Dependency Injection Container, the core part of
+ * Carrot that allows wiring of dependencies.
  */
 
 $dic = new Carrot\Core\DependencyInjectionContainer;
-$dic->loadProviderFile(__DIR__ . DIRECTORY_SEPARATOR . 'providers.php');
+
+/**
+// ---------------------------------------------------------------
+ * Registers the default bindings for the dependency injection
+ * container. You can override these settings later on
+ *
+ */
+
+$dic->bind('Carrot\Core\AppRequestURI{Main:Transient}', array(
+    $_SERVER['SCRIPT_NAME'],
+    $_SERVER['REQUEST_URI']
+));
+
+$dic->bind('Carrot\Core\ExceptionHandler{Main:Transient}', array(
+    $_SERVER['SERVER_PROTOCOL']
+));
+
+$dic->bind('Carrot\Core\Request{Main:Singleton}', array(
+    $_SERVER,
+    $_GET,
+    $_POST,
+    $_FILES,
+    $_COOKIE,
+    $_REQUEST,
+    $_ENV
+));
+
+$dic->bind('Carrot\Core\FrontController{Main:Transient}', array(
+    $_SERVER['SERVER_PROTOCOL']
+));
 
 /**
  * Change error messages into ErrorException, and set the
@@ -72,8 +97,32 @@ $errorHandler = function($errno, $errstr, $errfile, $errline)
 };
 
 set_error_handler($errorHandler);
-$exceptionHandler = $dic->getInstance('Carrot\Core\ExceptionHandler@Main');
+$exceptionHandler = $dic->getInstance(new Carrot\Core\ObjectReference('Carrot\Core\ExceptionHandler{Main:Transient}'));
 $exceptionHandler->set();
+
+/**
+// ---------------------------------------------------------------
+ * Loads the user configuration file 
+ *
+ */
+
+$dic->loadConfigurationFile(__DIR__ . DIRECTORY_SEPARATOR . 'config.php');
+
+/**
+ * Loads the router
+ *
+ */
+
+$router = $dic->getInstance(new ObjectReference('Carrot\Core\Router{Main:Singleton}'));
+$router->loadConfigurationFile(__DIR__ . DIRECTORY_SEPARATOR . 'routes.php');
+$router->instantiateRouteObjects($dic);
+$destination = $router->getDestination();
+
+$frontController = $dic->getInstance(new ObjectReference('Carrot\Core\FrontController{Main:Transient}'));
+$response = $frontController->dispatch($dic, $destination);
+$response->send();
+
+exit;
 
 /**
  * Instantiate the FrontController and dispatches the request. The
@@ -82,6 +131,6 @@ $exceptionHandler->set();
  * runs the appropriate method with it's arguments.
  */
 
-$frontController = $dic->getInstance('Carrot\Core\FrontController@Main');
+$frontController = $dic->getInstance(new Carrot\Core\ObjectReference('Carrot\Core\FrontController{Main:Transient}'));
 $response = $frontController->dispatch($dic);
 $response->send();

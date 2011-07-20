@@ -33,42 +33,25 @@
 namespace Carrot\Core\Interfaces;
 
 interface RouteInterface
-{
+{   
     /**
-     * Translates the current request into a destination.
+     * Routes the current request into a destination.
      * 
-     * Routing parameters are provided by \Carrot\Core\Router class.
-     * By default it should provide an instance of
-     * \Carrot\Core\Request and Carrot\Core\AppRequestURI. You can
-     * change routing parameters by injecting different variables in
-     * the router class's provider.
-     * 
-     * Carrot's default router class will call your method when
-     * routing a request (provided your route is registered with the
-     * appropriate regex string). Based on information in routing
-     * parameters, if the method logic an route the current request,
-     * return an instance of \Carrot\Core\Destination. If the method
-     * logic can't route the current request return null. 
+     *  
      * 
      * @see \Carrot\Core\Destination
-     * @param StdClass $params Routing parameters in a container object.
      * @return mixed Either an instance of \Carrot\Core\Destination or null.
-     *
+     * 
      */
-    public function translateToDestination($params);
+    public function getDestination();
     
     /**
-     * Translates the view parameters into a valid string URL.
+     * Translates arguments from view into a valid string URL.
      * 
-     * This method is called by the router class when your view or
-     * template intends to do two way routing. The arguments sent
-     * from view should the required information to construct a valid
-     * URL.
-     *
-     * @param StdClass $params Routing parameters in a container object.
-     * @param array $viewParams Parameters sent from view inside a container object
+     * 
+     * 
      * @return string Valid URL.
      *
      */
-    public function translateToURL($params, array $viewParams);
+    public function getURL(array $args);
 }

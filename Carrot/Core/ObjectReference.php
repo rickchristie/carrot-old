@@ -21,18 +21,17 @@
  * of the format:
  *
  * <code>
- * {Fully qualified class name}@{Configuration name}:{Singleton|Transient}
- * Carrot\Core\FrontController@Main:Transient
- * Carrot\Database\MySQLi@Backup:Singleton
+ * Carrot\Core\FrontController{Main:Transient}
+ * Carrot\Database\MySQLi{Backup:Singleton}
  * </code>
  *
- * The configuration name and the lifecycle setting will form the
- * method name to be called on the provider. This means for the
- * two examples above, the method called will be:
+ * The lifecycle setting is part of the instance name, so these
+ * two instance names may point to different instantiation
+ * configuration:
  *
  * <code>
- * FrontControllerProvider::getMainSingleton()
- * MySQLiProvider::getBackupSingleton()
+ * Carrot\Core\FrontController{Main:Transient}
+ * Carrot\Core\FrontController{Main:Singleton}
  * </code>
  *
  * @author      Ricky Christie <seven.rchristie@gmail.com>
@@ -41,6 +40,8 @@
  */
 
 namespace Carrot\Core;
+
+use InvalidArgumentException;
 
 class ObjectReference
 {
@@ -72,7 +73,7 @@ class ObjectReference
      * PHP preg_match()):
      * 
      * <code>
-     * /^([A-Za-z_\\\\]+)@([A-Za-z0-9_]+):(transient|singleton)$/D
+     * /^([A-Za-z_\\\\]+){([A-Za-z0-9_]+):(Transient|Singleton)}$/D
      * </code>
      * 
      * The first subexpression is the class name, the second
@@ -91,13 +92,13 @@ class ObjectReference
     {
         $matches = array();
         $instanceName = ltrim($instanceName, '\\');
-        $regexMatch = preg_match('/^([A-Za-z_\\\\]+)@([A-Za-z0-9_]+):(Transient|Singleton)$/D', $instanceName, $matches);
+        $regexMatch = preg_match('/^([A-Za-z_\\\\]+){([A-Za-z0-9_]+):(Transient|Singleton)}$/D', $instanceName, $matches);
         
         if (!$regexMatch or count($matches) != 4 or
             empty($matches[1]) or empty($matches[2]) or
             empty($matches[3]))
         {
-            throw new InvalidArgumentException("InstanceName instantiation error. '{$instanceName}' is not a valid instance name.");
+            throw new InvalidArgumentException("Object reference instantiation error. '{$instanceName}' is not a valid instance name.");
         }
         
         $this->instanceName = $instanceName;
@@ -115,26 +116,6 @@ class ObjectReference
     public function getInstanceName()
     {
         return $this->instanceName;
-    }
-    
-    /**
-     * Gets the method name to be called on the provider class.
-     *
-     * The method name is the configuration name and the lifecycle
-     * setting concatenated with the prefix 'get'. For example, with
-     * the configuration name 'Main' and the lifecycle setting
-     * 'Transient', the method name would be:
-     *
-     * <code>
-     * getMainTransient()
-     * </code>
-     *
-     * @return string The method name to be called on the provider class.
-     *
-     */
-    public function getProviderMethodName()
-    {
-        return 'get' . $this->configurationName . $this->lifecycleSetting;
     }
     
     /**

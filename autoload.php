@@ -11,15 +11,14 @@
  *
  */
 
-$autoloader->bindNamespaceToDirectory('Carrot', __DIR__ . DIRECTORY_SEPARATOR . 'Carrot');
+require __DIR__ . DIRECTORY_SEPARATOR . 'Carrot' . DIRECTORY_SEPARATOR . 'Core' . DIRECTORY_SEPARATOR . 'Autoloader.php';
+$autoloader = new Carrot\Core\Autoloader();
+$autoloader->register();
 
 /**
-// ---------------------------------------------------------------
- * Below this comment block are the autoloading behavior needed
- * to set the provide
+ * blah
  *
  */
 
-// Bind Carrot\SimpleDocs to the guide provider directory, since we are going to override the provider there.
-$autoloader->bindNamespaceToDirectory('Carrot\SimpleDocs', __DIR__ . DIRECTORY_SEPARATOR . 'Sample' . DIRECTORY_SEPARATOR . 'Providers');
+$autoloader->bindNamespaceToDirectory('Carrot', __DIR__ . DIRECTORY_SEPARATOR . 'Carrot');
 $autoloader->bindNamespaceToDirectory('Sample', __DIR__ . DIRECTORY_SEPARATOR . 'Sample');

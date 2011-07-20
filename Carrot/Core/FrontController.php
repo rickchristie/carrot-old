@@ -26,56 +26,50 @@
 namespace Carrot\Core;
 
 use RuntimeException;
-use Carrot\Core\Interfaces\ResponseInterface;
-use Carrot\Core\Interfaces\RouterInterface;
 
 class FrontController
 {
     /**
-     * @var RouterInterface Instance of an implementation of RouterInterface.
+     * @var string The server protocol currently used by the server.
      */
-    protected $router;
+    protected $serverProtocol;
     
     /**
-     * Constructs the FrontController.
-     *
-     * You can replace Carrot's default router class with your own
-     * class by implementing the RouterInterface and modifying
-     * FrontController's provider class to inject your router class
-     * instead.
+     * @var bool If true, front controller will override response object's server protocol with its own.
+     */
+    protected $overrideResponseProtocol;
+    
+    /**
+     * Constructs the front controller.
      * 
-     * @param RouterInterface $router Instance of an implementation of RouterInterface.
+     * 
+     * 
+     * @param string $serverProtocol The server protocol currently used by the server.
+     * @param bool $overrideResponseProtocol If true, front controller will override response object's server protocol with its own.
      *
      */
-    public function __construct(RouterInterface $router)
+    public function __construct($serverProtocol, $overrideResponseProtocol = true)
     {
-        $this->router = $router;
+        $this->serverProtocol = $serverProtocol;
+        $this->overrideResponseProtocol = $overrideResponseProtocol;
     }
     
     /**
-     * Dispatches the request by calling the routine object's method.
-     *
-     * This method first gets the destination from RouterInterface. It
-     * then uses the DIC to instantiate the routine object and calling
-     * the routine method using call_user_func_array().
-     *
-     * Throws RuntimeException if the return value from the routine
-     * method is not an implementation of ResponseInterface.
-     *
-     * @throws RuntimeException
+     * Dispatches the request based on the destination object provided.
+     * 
+     * 
+     * 
      * @param DependencyInjectionContainer $dic Used to instantiate the routine object.
-     * @return ResponseInterface
+     * @param Destination $destination The destination to dispatch.
+     * @return Response
      *
      */
-    public function dispatch(DependencyInjectionContainer $dic, Destination $destination = null)
+    public function dispatch(DependencyInjectionContainer $dic, Destination $destination)
     {
-        if (!$destination)
-        {
-            $destination = $this->router->getDestination();
-        }
-        
-        $this->checkDestination($destination);
-        $routineObject = $dic->getInstance($destination->getInstanceName());
+        $this->throwExceptionIfDestinationInvalid($destination);
+        $objectReference = $destination->getObjectReference();
+        $routineMethod = $destination->getRoutineMethodName();
+        $routineObject = $dic->getInstance($objectReference);
         $response = call_user_func_array(array($routineObject, $destination->getRoutineMethodName()), $destination->getArguments());
         
         // Run the dispatch method again if
@@ -85,11 +79,16 @@ class FrontController
             return $this->dispatch($dic, $response);
         }
         
-        if (!($response instanceof ResponseInterface))
+        if (!($response instanceof Response))
         {
-            $className = ltrim($destination->getRoutineClassName(), '\\');
+            $className = $objectReference->getClassName();
             $methodName = $destination->getRoutineMethodName();
-            throw new RuntimeException("Front controller error in dispatch, the routine method {$className}::{$methodName}() doesn't return an implementation of ResponseInterface.");
+            throw new RuntimeException("Front controller error in dispatch, the routine method {$className}::{$methodName}() doesn't return an instance of Carrot\Core\Response.");
+        }
+        
+        if ($this->overrideResponseProtocol)
+        {
+            $response->setProtocol($this->serverProtocol);
         }
         
         return $response;
@@ -98,33 +97,17 @@ class FrontController
     /**
      * Validate destination, throws exception if fails.
      * 
-     * Throws RuntimeException if the variable returned by
-     * RouterInterface::getDestination() is not an instance of
-     * Destination or the routine class or routine method does not
-     * exist.
+     * Throws RuntimeException if the routine class or routine method
+     * does not exist.
      *
      * @throws RuntimeException
      * @param Destination $destination Destination instance to be validated.
      *
      */
-    protected function checkDestination($destination)
+    protected function throwExceptionIfDestinationInvalid(Destination $destination)
     {
-        if (!($destination instanceof Destination))
-        {
-            if (is_object($destination))
-            {
-                $type = get_class($destination);
-            }
-            else
-            {
-                $type = gettype($destination);
-            }
-            
-            $routerClassName = get_class($this->router);
-            throw new RuntimeException("Front controller error, expected an instance of Carrot\Core\Destination from {$routerClassName}::getDestination(), got {$type} instead.");
-        }
-        
-        $className = $destination->getRoutineClassName();
+        $objectReference = $destination->getObjectReference();
+        $className = $objectReference->getClassName();
         $methodName = $destination->getRoutineMethodName();
         
         if (!class_exists($className))
@@ -137,4 +120,5 @@ class FrontController
             throw new RuntimeException("Front controller error, cannot run routine method {$className}::{$methodName}(). Method does not exist.");
         }
     }
+    
 }

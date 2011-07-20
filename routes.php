@@ -18,4 +18,6 @@
  * 
  */
 
-$router->registerRoute('Sample', 'Sample\Route');
+use Carrot\Core\ObjectReference;
+
+$router->registerRoute('Sample', new ObjectReference('Sample\Route{Main:Transient}'));

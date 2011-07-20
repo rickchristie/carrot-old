@@ -12,9 +12,10 @@
 /**
  * Response
  * 
- * Carrot's default ResponseInterface implementation. Can be used
- * by routine methods to built their response. Supports only
- * HTTP/1.0 and HTTP/1.1.
+ * Carrot's response object. Currently it supports only HTTP/1.0
+ * and HTTP/1.1. Server protocol defaults to HTTP/1.0. The
+ * response object is a value object. So feel free to create it
+ * anywhere you wish.
  *
  * @author      Ricky Christie <seven.rchristie@gmail.com>
  * @license     http://www.opensource.org/licenses/mit-license.php MIT License
@@ -23,9 +24,9 @@
 
 namespace Carrot\Core;
 
-use Carrot\Core\Interfaces\ResponseInterface;
+use InvalidArgumentException;
 
-class Response implements ResponseInterface
+class Response
 {
     /**
      * @var array List of headers set by the user.
@@ -33,19 +34,19 @@ class Response implements ResponseInterface
     protected $headers = array();
     
     /**
-     * @var array List of sent headers, grabbed using headers_list().
-     */
-    protected $headersList = array();
-    
-    /**
      * @var string A string containing the request body.
      */
-    protected $body = '';
+    protected $body;
     
     /**
-     * @var int Variable containing the status code. Defaults to 200 (OK).
+     * @var int Status code of the response.
      */
-    protected $status = 200;
+    protected $statusCode;
+    
+    /**
+     * @var string Status message of the response.
+     */
+    protected $statusMessage;
     
     /**
      * @var array The protocol to be written in header when returning status codes.
@@ -110,12 +111,30 @@ class Response implements ResponseInterface
     );
     
     /**
-     * Constructs a Response object.
+     * Constructs the response object.
      *
-     * @param string $serverProtocol Used when setting the response code, either 'HTTP/1.0' or 'HTTP/1.1'.
+     * This constructor creates the default response object, it
+     * automatically has 200 (OK) status code with HTTP/1.0 protocol.
+     *
+     * @param string $body The body of the response.
+     * @param string $serverProtocol Used when setting the response code, either 'HTTP/1.0' or 'HTTP/1.1'. Defaults to HTTP/1.0.
+     * @param int $code HTTP status code. Defaults to 200 (OK).
      *
      */
-    public function __construct($serverProtocol)
+    public function __construct($body = '', $serverProtocol = 'HTTP/1.0', $code = 200)
+    {
+        $this->body = $body;
+        $this->setProtocol($serverProtocol);
+        $this->setStatus($code);
+    }
+    
+    /**
+     * Sets the server protocol.
+     * 
+     * @param string $serverProtocol Used when setting the response code, either 'HTTP/1.0' or 'HTTP/1.1'.
+     * 
+     */
+    public function setProtocol($serverProtocol)
     {
         if (!in_array($serverProtocol, array('HTTP/1.0', 'HTTP/1.1')))
         {
@@ -126,141 +145,125 @@ class Response implements ResponseInterface
     }
     
     /**
-     * Sets the header.
+     * Add a header to be sent later on.
+     * 
+     * Adds a header to the header records. This doesn't immediately
+     * send the header, it will be sent when send() is called. You
+     * can't set the status code with this method.
      *
-     * Sets the header using header() and writes a record of it in
-     * $this->headers. You cannot set the status code using this method.
-     * Only regular headers can be set with this method. It automatically
-     * adds the colon (:) for you.
-     *
-     * <code>$response->setHeader('Content-Type', 'text/html');</code>
-     *
-     * Will result in:
-     *
-     * <code>header('Content-Type: text/html');</code>
+     * <code>
+     * $response->setHeader('Content-Type', 'text/html');
+     * </code>
      *
      * @param string $headerName
      * @param string $contents
-     * @return bool True if successful, false if otherwise.
      *
      */
-    public function setHeader($headerName, $contents)
-    {   
-        if (!headers_sent())
-        {
-            $this->headers[$headerName] = $contents;
-            header("{$headerName}: {$contents}");
-            return true;
-        }
-        
-        return false;
+    public function addHeader($headerName, $contents)
+    {
+        $this->headers[$headerName] = $contents;
     }
     
     /**
-     * Removes a header or all previously set headers.
+     * Removes a previously added header in header records.
      *
-     * This is a wrapper for header_remove(). Other than also removing
-     * the actual header, it also removes the record in $this->headers.
+     * It unsets the appropriate array in $headers class property.
      *
-     * @param string $headerName If not specified, all previously set headers will be removed.
-     * @return bool True if headers are not sent yet, false if otherwise.
+     * @param string $headerName Name of the header to be removed.
      *
      */
-    public function removeHeader($headerName = '')
+    public function removeHeader($headerName)
+    {   
+        unset($this->headers[$headerName]);
+    }
+    
+    /**
+     * Removes all previously added headers.
+     *
+     * This resets the header records into an empty array.
+     *
+     */
+    public function removeAllHeaders()
     {
-        if (!headers_sent())
-        {
-            // Remove all headers
-            if (empty($headerName))
-            {
-                header_remove();
-                $this->headers = array();
-                return true;
-            }
-            
-            // Remove one particular header
-            header_remove($headerName);
-            unset($this->headers[$headerName]);
-            return true;
-        }
-        
-        return false;
+        $this->headers = array();
     }
     
     /**
      * Sets the status code.
      *
-     * If custom message is not set, default message will be used instead.
-     * If the status code is invalid it will simply return false. This method
-     * also records the status code set in $this->status_code.
+     * If custom message is not set, default message will be used
+     * instead. Please note that this method does not send the status
+     * code immediately, it will be sent when send() method is called.
      *
+     * Will throw InvalidArgumentException if the status code is not
+     * in the status code list.
+     *
+     * @throws InvalidArgumentException
      * @param int $code HTTP status code.
      * @param string $message Message to accompany the status code.
-     * @return bool True if successful, false if not.
      *
      */
     public function setStatus($code, $message = '')
     {
-        if (!headers_sent())
+        if (!array_key_exists($code, $this->statusCodeMessages))
         {
-            if (!array_key_exists($code, $this->statusCodeMessages))
-            {
-                return false;
-            }
-            
-            if (empty($message) && isset($this->statusCodeMessages[$code]))
-            {
-                $message = $this->statusCodeMessages[$code];
-            }
-            
-            $code = intval($code);
-            $this->status_code = $code;
-            header("{$this->serverProtocol} {$code} {$message}");
-            
-            return true;
+            throw new InvalidArgumentException("Response error in setting status code. Status code '{$code}' is not recognized.");
         }
         
-        return false;
+        if (empty($message) && isset($this->statusCodeMessages[$code]))
+        {
+            $message = $this->statusCodeMessages[$code];
+        }
+        
+        $code = intval($code);
+        $this->statusCode = $code;
+        $this->statusMessage = $message;
     }
     
     /**
-     * Changes the response into a quick redirection response.
+     * Adds the redirection header.
      * 
-     * This method automatically clears all the headers. If headers are sent
-     * already, it simply returns false (and does not attempt to redirect). It
-     * doesn't exit the PHP processing for you, so you can still do some processing
-     * after we sent the redirection header.
+     * This method will automatically clear all previously set
+     * headers. It will then add the 'Location' header to the
+     * response. Please note that this doesn't redirect immediately,
+     * as you still have to return this object to the front controller
+     * where the send() method will be called.
      *
      * @param string $location The URL.
-     * @return bool True on success, false of failure.
      *
      */
     public function redirect($location)
     {
-        if (!headers_sent())
-        {
-            $this->removeHeader();
-            $this->setHeader('Location', $location);
-            return true;
-        }
-        
-        return false;
+        $this->removeAllHeaders();
+        $this->setHeader('Location', $location);
     }
     
     /**
      * Sends the response to the client.
      *
-     * Echoes out the body of the response, which also automatically sends the headers.
-     * Although this class already records each headers set by Response::setHeader(), it
-     * doesn't record headers that are set directly by the user using PHP header() function -
-     * so it uses headers_list() to get the actual headers sent and stores them in
-     * $headersList class property.
+     * Sends the header and echoes out the body of the response.
      *
      */
     public function send()
     {
-        $this->headersList = headers_list();
+        $this->sendHeaders();
         echo $this->body;
+    }
+    
+    /**
+     * Sends the headers, including the status code.
+     *
+     * Loops through the added headers and sends them using header().
+     *
+     */
+    protected function sendHeaders()
+    {
+        header("{$this->serverProtocol} {$this->statusCode} {$this->statusMessage}");
+        
+        foreach ($this->headers as $headerName => $contents)
+        {
+            header("{$headerName}: {$contents}");
+        }
     }
     
     /**
@@ -277,12 +280,12 @@ class Response implements ResponseInterface
     /**
      * Appends string to the response body.
      *
-     * @param string $body_append String to be appended in the response body.
+     * @param string $bodyAppend String to be appended in the response body.
      *
      */
-    public function appendBody($body_append)
+    public function appendBody($bodyAppend)
     {   
-        $this->body .= $body_append;
+        $this->body .= $bodyAppend;
     }
     
     /**
@@ -302,22 +305,8 @@ class Response implements ResponseInterface
      * @return array 
      *
      */
-    public function getHeaderRecords()
+    public function getHeaders()
     {
         return $this->headers;
-    }
-    
-    /**
-     * Returns the actual headers sent, obtained via headers_list().
-     *
-     * This function will return an empty array if the method Response::send()
-     * is not called yet.
-     *
-     * @return array 
-     *
-     */
-    public function getHeaderList()
-    {
-        return $this->headersList;
     }
 }
