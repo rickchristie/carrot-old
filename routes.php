@@ -21,4 +21,3 @@
 use Carrot\Core\ObjectReference;
 
 $router->registerRoute('Sample', new ObjectReference('Sample\Route{Main:Transient}'));
-$router->registerRoute('CarrotDocs', new ObjectReference('Carrot\Docs\Route{Main:Transient}'));
