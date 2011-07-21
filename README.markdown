@@ -37,11 +37,8 @@ Framework design goals
   injection container, instantiating the user's routine object
   and getting a response from it. It does not know, much less
   dictate how the routine method is getting the response.
-- Allow the user to replace some of the core classes of Carrot
-  using their own class only by implementing an interface as a
-  contract to the core classes.
 - Continue the development by adding libraries, which are
-  essentially just decoupled classes that are properly namespaced.
+  essentially just decoupled classes with proper namespace.
   Each library must not know that it is being used inside a
   framework.
 

@@ -1,0 +1,161 @@
+<h1>Quick Introduction to Carrot</h1>
+
+<p>
+    The very first thing you need to know is that Carrot
+    is an experimental framework built by someone who is
+    in junior level programming, so don't expect too much.
+    Another thing is that I am developing Carrot for my
+    personal use (and as a learning project), so some of
+    the design decisions might not suit you. Since Carrot
+    is still in its early stages, I would advice against
+    using it in production unless you really wanted to dig
+    in to Carrot and understand all the core classes.
+</p>
+
+<h2>Routine class</h2>
+
+<blockquote>
+    <p>
+        rou&bull;tine, noun. a sequence of actions
+        regularly followed; a fixed program. -
+        <cite>New Oxford American Dictionary</cite>
+    </p>
+</blockquote>
+
+<p>
+    When you write a web application, you want a routine
+    to be run when a particular request is sent to your
+    server. This routine code can be written inside a
+    function, a method, or an anonymous function.
+    For example, <a href="http://silex-project.org/">Silex</a>
+    uses anonymous functions to store these routines,
+    <a href="http://www.limonade-php.net/">Limonade</a>
+    uses regular functions, and
+    <a href="http://kohanaframework.org/">Kohana</a> uses
+    a controller class (object method).
+</p>
+
+<p>
+    Carrot is an object oriented framework, so your routine
+    codes must be written inside a method. In Carrot, the term
+    for the methods that contain these routines is <em>routine
+    methods</em>. The classes/objects that contains these routine
+    methods are termed <em>routine classes/objects</em>.
+</p>
+
+<p>
+    Unlike other frameworks, the routine class does not need
+    to be your controller. It can be your view, or any random
+    types of class. Carrot is not an MVC framework and doesn't
+    pretend to be one. You can implement MVC in top of Carrot,
+    but it is not the only way you can use it. The only
+    responsibility that your routine method has to the framework
+    is to return an instance of <code>Carrot\Core\Response</code>
+    (a value object) when called by the front controller, how
+    exactly you do that is up to you.
+</p>
+
+<h2>Dependency injection container</h2>
+
+<blockquote>
+    <p>
+        &ldquo;So the core problem is how do we assemble these
+        plugins into an application? This is one of the main
+        problems that this new breed of lightweight containers
+        face, and universally they all do it using Inversion of
+        Control.&rdquo; -
+        <cite><a href="http://martinfowler.com/articles/injection.html">
+        Inversion of Control Containers and Dependency Injection
+        Pattern, Martin Fowler</a></cite>
+    </p>
+</blockquote>
+
+<p>
+    You can freely organize routine methods into routine classes,
+    and you can have as many routine classes as you like, but your
+    routine class need other objects to work, it has dependencies.
+    How do we wire the dependencies of your routine class? There
+    are lots of ways to do this in PHP, however I'm looking for
+    a way that:
+</p>
+
+<ul>
+    <li>
+        Doesn't involve a God object or a global registry.
+    </li>
+    <li>
+        Doesn't force users to extend a base class.
+    </li>
+    <li>
+        Uses dependency injection, specifically constructor injection,
+        therefore exposing the dependencies of the class in the public
+        API, so we have no surprises.
+    </li>
+</ul>
+
+<p>
+    After a lot of mucking around, I found out about <a href="http://martinfowler.com/articles/injection.html">
+    dependency injection containers</a>. It is defined as a 
+    &lsquo;lightweight containers that help to assemble components from
+    different project into a cohesive application&rsquo;, in other
+    words, it's the class that assembles your dependencies and injects
+    them to you. For example, let's say your controller has a dependency
+    to a 
+</p>
+
+<p>
+    
+</p>
+
+<p>
+    Using dependency injection container gives me several benefits:
+</p>
+
+<ul>
+    <li>
+        The routine class having no dependency whatsoever to the
+        framework, it can be a plain old PHP object. It doesn't know
+        that it is being attached to Carrot. This should make it
+        easier
+    </li>
+    <li>
+        Well designed API, at least
+    </li>
+</ul>
+
+<p>
+    The most frequent ways to solve this problem is using a
+    configuration file. This almost certainly requires you to
+    extend
+</p>
+
+<h2>Routing</h2>
+
+<p>
+    So you have your routine class and you have wired its
+    dependencies using dependency injection containers. How do
+    you determine which routine method is run when a request
+    arrives? This is the responsibility of the <code>Router</code>.
+</p>
+
+<h2>Class autoloading and PSR-0 compliance</h2>
+
+<p>
+    asdf
+</p>
+
+<h2>Directory structure</h2>
+
+<p>
+    Carrot doesn't have a rigid directory structure. You are free
+    to place your classes anywhere you wish, as long as you configure
+    Carrot's <code>Autoloader</code> correctly so it can load your
+    files. There are, however, several main files whose location can't
+    be changed without editing Carrot's code.
+</p>
+
+<h2>Exception handling</h2>
+
+<p>
+    Exception handling
+</p>

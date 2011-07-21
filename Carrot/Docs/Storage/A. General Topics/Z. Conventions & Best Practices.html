@@ -1,0 +1,209 @@
+<h1>Conventions &amp; Best Practices</h1>
+
+<h2>Styling and Structure</h2>
+<p>
+    Below is the list of code writing rules that the author follows when developing
+    Carrot. The author encourages you to adopt these practices, but bear in mind that
+    most of them are based on personal choice rather than a logical decision. A lot
+    of these are adapted from <a href="http://symfony.com/doc/2.0/contributing/code/standards.html">Symfony's Coding Standards</a>.
+</p>
+<ul>
+    <li>
+        Class names are <code>PascalCased</code>, that is, like <code>camelCase</code>
+        but with uppercase first character. However, acronyms should remain
+        uppercase. Example: <code>AppRequestURI</code>.
+    </li>
+    <li>
+        Method names and variable names are <code>camelCased</code>. Like class
+        names, acronyms remain in their uppercase form. Example: <code>generateURI()</code>.
+    </li>
+    <li>
+        Class files does not end with <code>?&gt;</code> PHP closing tag. This is so that
+        accidental whitespace doesn't get sent to the client.
+    </li>
+    <li>
+        Indent with four spaces, do not use tabs. You should be able to set this in
+        your editor.
+    </li>
+    <li>
+        Put a space after control statements like <code>if</code>, <code>switch</code>,
+        <code>else</code>, <code>while</code>, <code>foreach</code> and <code>for</code>.
+    </li>
+    <li>
+        Add space after comparison operators (<code>==</code>, <code>!=</code>, etc). Use
+        the <code>or</code> keyword instead of <code>||</code>, but you may use the
+        <code>&&</code> symbol instead of <code>and</code>.
+    </li>
+    <li>
+        Always use curly brackets <code>{}</code> after control statements even
+        though the block consists of only one statement. This makes it easier to
+        spot and read the conditionals.
+    </li>
+    <li>
+        Do not put spaces after opening round bracket or before closing <code>()</code>.
+    </li>
+    <li>
+        Curly brackets <code>{}</code> always have their own line. This means <code>if</code>,
+        <code>else</code>, <code>switch</code>, <code>do</code>, <code>while</code>,
+        <code>function</code>, <code>class</code>, <code>namespace</code>, and anything else
+        I might have forgotten. For example:
+        <pre>class AllmanStyle
+{
+    public function getAdvantage()
+    {
+        if (true)
+        {
+            return true;
+        }
+        else
+        {
+            return false;
+        }
+    }
+}</pre>
+    </li>
+    <li>
+        When declaring an array or instantiating a new class, you may put the
+        opening round bracket at the first line and contents of the brackets
+        each in a new line. Example:
+        <pre>$groceries = array(
+    'apple',
+    'banana',
+    'bread',
+    'butter',
+    'noodles',
+    'fetucini'
+);
+
+$groceries = new GroceryList(
+    'apple',
+    'banana',
+    'bread',
+    'butter'
+);
+</pre>
+    </li>
+    <li>
+        The usage of <code>var</code> is not allowed. Declare the object property's
+        visibility explicitly.
+    </li>
+    <li>
+        Use lowercase for PHP native constants, e.g. <code>true</code>, <code>false</code>,
+        <code>null</code>.
+    </li>
+    <li>
+        Class properties are declared before methods. Public methods are declared before
+        protected methods. Private methods are declared after protected methods.
+    </li>
+    <li>
+        Interface names should be suffixed with <code>Interface</code>. Example:
+        <code>RouteInterface</code>.
+    </li>
+    <li>
+        Use single quotes <code>'string'</code> whenever it is possible, however, don't be
+        afraid to use double quotes <code>"string {$var}"</code> to display variables. The most
+        important thing is readability, not performance.
+    </li>
+    <li>
+        When using double quotes to mix strings with variables, always wrap the variable with
+        curly brackets. Example: <code>"This is a {$variable}"</code>.
+    </li>
+    <li>
+        When you have to write an inline comment in your class, use <code>//</code>
+        rather than <code>#</code>. The <code>/**/</code> comment block should be
+        reserved for doc blocks.
+    </li>
+</ul>
+
+<h2>Directory Structure &amp; File Name</h2>
+<p>
+    Carrot follows the <a href="http://groups.google.com/group/php-standards/web/psr-0-final-proposal">
+    PSR-0 group final proposal on universal autoloader</a> for its classes. It is highly recommended that
+    you also follow the specification. If not, you can configure Carrot's <code>Autoloader</code> so that
+    it will be able to load your class files. Here is the list of rules to follow:
+</p>
+<ul>
+    <li>
+        Use <code>.php</code> extension for every PHP file.
+    </li>
+    <li>
+        Store one class per file, don't do things like slipping custom exception
+        classes after a class definition. This will confuse the autoloader.
+    </li>
+    <li>
+        Class file name must be the same as your class name. Example: <code>FrontController</code>
+        class should be saved in <code>FrontController.php</code>.
+    </li>
+    <li>
+        Classes should have a proper namespace. PSR-0 requires you to have <code>Vendor\Namespace</code>
+        structure, but this is not necessary. The important thing is that you follow PSR-0 rules
+        regarding class file name and class file placement. Examples:
+        <ul>
+            <li>
+                <code>Carrot\Core\FrontController</code> is located at <code>/path/to/Carrot/Core/FrontController.php</code>.
+            </li>
+            <li>
+                <code>Zend_Mail_Message</code> is located at <code>/path/to/Zend/Mail/Message.php</code>.
+            </li>
+            <li>
+                More information at <a href="http://groups.google.com/group/php-standards/web/psr-0-final-proposal">PSR-0 website</a>.
+            </li>
+        </ul>
+    </li>
+    <li>
+        
+    </li>
+</ul>
+
+<h2>Best Practices in Carrot</h2>
+<p>
+    The following rules are to be honored at all times when using Carrot because
+    they are part of the framework design decisions. Using Carrot while not 
+    adhering to these rules will be counter productive.
+</p>
+<ul>
+    <li>
+        The <code>global</code>, <code>static</code>, and <code>self</code>
+        keyword must not be avoided like a plague.
+    </li>
+    <li>
+        Do not use constants. You can use interface constants instead if you
+        really need them.
+    </li>
+    <li>
+        Do not access the <code>DependencyInjectionContainer</code> directly,
+        <em>ever</em>. The point of having a DIC is to let it wire your
+        dependencies for you. If your class accesses the DIC directly, it
+        breaks the encapsulation and tightly couples your class with the
+        state of the entire application. So this action is explicitly forbidden:
+        <pre>// Injecting the DIC instance to the class is forbidden
+$dic->bind('Breaking\Encapsulation{Main:Transient}', array(
+    $dic
+));</pre>
+        If you feel the need to have the DIC in your class, most of the times
+        you don't actually need it. You need a specialized factory instead.
+    </li>
+    <li>
+        Use dependency injection, constructor injection specifically. It will
+        expose your dependencies in your public API and forces you to design
+        a better object graph.
+    </li>
+    <li>
+        Use inheritance sparingly, <a href="http://en.wikipedia.org/wiki/Composition_over_inheritance">favor composition over inheritance</a>.
+    </li>
+    <li>
+        Your classes must not know that it is instantiated and wired by
+        Carrot's core classes. In other words, code your classes to be
+        as loosely coupled to the framework as possible.
+    </li>
+    <li>
+        Properly comment your class (especially the public APIs) with doc blocks
+        explaining at least how to properly use the class.
+    </li>
+    <li>
+        Do not access PHP superglobals directly from your class. Use Carrot's
+        <code>Request</code> instance instead. As a rule of a thumb, superglobals
+        should only be accessed in files like <code>config.php</code>, as it is
+        not a part of any class.
+    </li>
+</ul>

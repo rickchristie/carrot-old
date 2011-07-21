@@ -1,6 +1,11 @@
 TRUNK
 -----
 
+
+
+VERSION 0.2.5
+-------------
+
 - Dependency Injection Container
     - Created ObjectReference to refer to instance names.
     - Instance names now in this form: Carrot\Core\FrontController{Main:Transient}

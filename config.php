@@ -19,3 +19,14 @@ use Carrot\Core\ObjectReference;
 $dic->bind('Sample\Route{Main:Transient}', array(
     new ObjectReference('Carrot\Core\AppRequestURI{Main:Transient}')
 ));
+
+$dic->bind('Sample\Welcome{Main:Transient}', array(
+    new ObjectReference('MySQLi{Main:Singleton}')
+));
+
+$dic->bind('MySQLi{Main:Singleton}', array(
+    'localhost',
+    'root',
+    'root',
+    'test'
+));

@@ -54,6 +54,8 @@ class Controller
             $pageID = $this->model->getDefaultPageID($topicID);
         }
         
+        $response = new Response();
+        
         try
         {
             $page = $this->model->getPage($topicID, $pageID);
@@ -62,9 +64,10 @@ class Controller
         catch (PageNotFoundException $exception)
         {
             $responseBody = $this->view->renderPageNotFound();
-            $this->response->setStatus(404);
+            $response->setStatus(404);
         }
         
-        return new Response($responseBody);
+        $response->setBody($responseBody);
+        return $response;
     }
 }
