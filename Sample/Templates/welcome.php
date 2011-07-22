@@ -297,19 +297,19 @@
         
     </div>
     <div class="section">
-        <h2>Creating your first routine object</h2>
+        <h3>Creating your first routine object</h3>
         <p>
             asdf
         </p>
     </div>
     <div class="section">
-        <h2>Binding dependencies of your routine object</h2>
+        <h3>Binding dependencies of your routine object</h3>
         <p>
             asdfsdf
         </p>
     </div>
     <div class="section">
-        <h2>Creating a route that points to your routine method</h2>
+        <h3>Creating a route that points to your routine method</h3>
         <p>
             adasfd
         </p>
@@ -323,7 +323,9 @@
             object reference at your <code>routes.php</code> file to access it.
             Here is the route registration snippet:
         </p>
-        <pre>$router->registerRoute('CarrotDocs', new ObjectReference('Carrot\Docs\Route{Main:Transient}'));</pre>
+        <pre>$router->registerRoute('CarrotDocs', new ObjectReference(
+    'Carrot\Docs\Route{Main:Transient}'
+));</pre>
         <p>
             After you register the route, you should be able to access the guide
             using the <code>/guides/</code> path after your base path. For example,

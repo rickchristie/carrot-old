@@ -1,7 +1,7 @@
 <!DOCTYPE HTML PUBLIC "-//W3C//DTD HTML 4.01//EN" "http://www.w3.org/TR/html4/strict.dtd">
 <html>
 <head>
-	<title><?php echo $pageTitle ?></title>
+	<title><?php echo htmlspecialchars($pageTitle, ENT_QUOTES) ?></title>
 	<style type="text/css">
 	body { font-family: 'Helvetica', 'Arial', sans-serif; font-size: 13px; color: #333; line-height: 1.5 }
 	#wrapper { width: 800px; margin: 100px auto 100px auto; }

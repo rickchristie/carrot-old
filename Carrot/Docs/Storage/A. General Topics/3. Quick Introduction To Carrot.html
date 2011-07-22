@@ -97,18 +97,49 @@
     After a lot of mucking around, I found out about <a href="http://martinfowler.com/articles/injection.html">
     dependency injection containers</a>. It is defined as a 
     &lsquo;lightweight containers that help to assemble components from
-    different project into a cohesive application&rsquo;, in other
-    words, it's the class that assembles your dependencies and injects
-    them to you. For example, let's say your controller has a dependency
-    to a 
+    different project into a cohesive application&rsquo;. It is basically
+    the class that assembles your dependencies and injects them to you.
 </p>
 
 <p>
+    As an example, let's pretend your <code>BlogController</code> class
+    has a dependency to a <code>BlogModel</code> class. Using dependency
+    injection, you code <code>BlogController</code>'s constructor to
+    expose this dependency:
+</p>
+
+<pre>class BlogController
+{
+    private $blogModel; 
     
-</p>
+    public function __construct(BlogModel $blogModel)
+    {
+        $this->blogModel = $blogModel;
+    }
+}</pre>
 
 <p>
-    Using dependency injection container gives me several benefits:
+    Then you tell the DIC to inject <code>BlogModel</code> each time
+    <code>BlogController</code> is needed:
+</p>
+
+<pre>$dic->bind('BlogController{Main:Transient}', array(
+    new ObjectReference('BlogModel{Main:Singleton}')
+));</pre>
+
+<p>
+    Finally, when an instance of <code>BlogController</code> is needed,
+    it is instantiated by the DIC, all bound dependencies are also
+    instantiated recursively, as easy as:
+</p>
+
+<pre>$blogController = $dic->getInstance(
+    new ObjectReference('BlogController{Main:Transient}')
+);</pre>
+
+<p>
+    By utilizing the dependency injection container concept, Carrot
+    has the following benefits:
 </p>
 
 <ul>

@@ -31,13 +31,7 @@ namespace Sample;
 use Carrot\Core\Response;
 
 class Welcome
-{
-    public function __construct($mysqli)
-    {
-        $this->mysqli = $mysqli;
-        echo '<pre>', var_dump($mysqli), '</pre>';
-    }
-    
+{   
     /**
      * Returns the 'welcome' response object.
      *

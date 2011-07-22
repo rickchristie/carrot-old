@@ -3,18 +3,20 @@
 /**
  * Carrot route registration file.
  *
- * This file is called by the default Router provider so that you
- * can register your routes without editing the provider files.
- * In this file you can access the router object using $router.
- *
- * To register a route:
+ * Register your route classes here. Access Carrot's Router via
+ * $router variable. Your route classes are registered by their
+ * object reference (instance name) since the Router gets your
+ * routes via DIC. This means you can tell the DIC to wire
+ * dependencies for your route class.
  *
  * <code>
- * $router->registerRoute('routeID', 'Namespace\RouteClassName');
+ * $router->registerRoute('routeID', new ObjectReference(
+ *     'Namespace\RouteClassName'
+ * ));
  * </code>
  * 
  * @see Carrot\Core\Router::registerRoute()
- * @see Carrot\Core\Router::loadRouteRegistrationFile()
+ * @see Carrot\Core\Router::loadConfigurationFile()
  * 
  */
 
