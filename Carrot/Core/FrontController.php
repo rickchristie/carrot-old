@@ -37,35 +37,23 @@ class FrontController
     protected $serverProtocol;
     
     /**
-     * @var bool If true, front controller will override response object's server protocol with its own.
-     */
-    protected $overrideResponseProtocol;
-    
-    /**
      * Constructs the front controller.
      *
      * Since Response is a value object, it may be created anywhere
      * in the code. However, the response class defaults to HTTP/1.0
-     * protocol which the server may not actually use. The front
-     * controller by default overrides the server protocol of response
-     * objects by replacing it with its own. You can disable this
-     * behavior by injecting false for the second constructor
-     * argument.
-     *
-     * Example object construction: 
+     * protocol which the server may not actually use. Example object
+     * construction: 
      *
      * <code>
-     * $frontController = new FrontController($_SERVER['SERVER_PROTOCOL'], true);
+     * $frontController = new FrontController($_SERVER['SERVER_PROTOCOL']);
      * </code>
      * 
      * @param string $serverProtocol The server protocol currently used by the server.
-     * @param bool $overrideResponseProtocol If true, front controller will override response object's server protocol with its own.
      *
      */
-    public function __construct($serverProtocol, $overrideResponseProtocol = true)
+    public function __construct($serverProtocol)
     {
         $this->serverProtocol = $serverProtocol;
-        $this->overrideResponseProtocol = $overrideResponseProtocol;
     }
     
     /**
@@ -102,11 +90,7 @@ class FrontController
             throw new RuntimeException("Front controller error in dispatch, the routine method {$className}::{$methodName}() doesn't return an instance of Carrot\Core\Response.");
         }
         
-        if ($this->overrideResponseProtocol)
-        {
-            $response->setProtocol($this->serverProtocol);
-        }
-        
+        $response->setDefaultServerProtocol($this->serverProtocol);
         return $response;
     }
     

@@ -192,39 +192,6 @@ class DependencyInjectionContainer
     }
     
     /**
-     * Loads a configuration file.
-     *
-     * The loaded configuration file will have access to this DIC
-     * instance through the $dic variable. Uses anonymous function to
-     * load the file so that the file doesn't have access to this
-     * class's protected methods.
-     *
-     * <code>
-     * $dic->loadConfigurationFile('/absolute/path/to/file.php');
-     * </code>
-     *
-     * Throws InvalidArgumentException if the file doesn't exist.
-     *
-     * @throws InvalidArgumentException
-     * @param string $filePath Absolute file path to the configuration file.
-     *
-     */
-    public function loadConfigurationFile($filePath)
-    {
-        if (!file_exists($filePath))
-        {
-            throw new InvalidArgumentException("DIC error in loading configuration file, file '{$filePath}' does not exist.");
-        }
-        
-        $loadFile = function($dic, $filePath)
-        {
-            require $filePath;
-        };
-        
-        $loadFile($this, $filePath);
-    }
-    
-    /**
      * Gets an instance of an instance name.
      * 
      * If a provider binding exists, it will be used. Otherwise it

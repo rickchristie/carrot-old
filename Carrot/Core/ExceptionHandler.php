@@ -12,11 +12,14 @@
 /**
  * Exception Handler
  * 
- * Carrot's exception handler aims to display adequate information
- * when an exception occurs, you can modify the exception page
- * template by implementing ExceptionPageInterface on your own and
- * injecting your implementation at this class's provider class
- * code.
+ * This is Carrot's default exception handler. It doesn't do
+ * anything other than gathering debugging information and
+ * constructs an appropriate page for displaying them. This is
+ * useful when developing, however it is recommended that you
+ * create your own exception handler when your code goes to
+ * production. In your custom exception handler, you might want
+ * to do things like emailing relevant information to the
+ * administrator.
  *
  * @author      Ricky Christie <seven.rchristie@gmail.com>
  * @license     http://www.opensource.org/licenses/mit-license.php MIT License
@@ -25,139 +28,285 @@
 
 namespace Carrot\Core;
 
-use Carrot\Core\Interfaces\ExceptionPageInterface;
-use Carrot\Core\DevelopmentExceptionPage;
-use InvalidArgumentException;
 use Exception;
+use InvalidArgumentException;
+use SplFileObject;
+use Carrot\Core\Interfaces\ExceptionHandlerInterface;
 
-class ExceptionHandler
+class ExceptionHandler implements ExceptionHandlerInterface
 {
     /**
-     * @var bool True if exception handler is set, false otherwise.
+     * @var string Exception template file path.
      */
-    protected $set = false;
+    protected $templateFilePath;
     
     /**
-     * @var ExceptionPageInterface The object responsible to displaying the exception page.
-     */
-    protected $exceptionPage;
-    
-    /**
-     * Constructs the ExceptionHandler object.
+     * Constructs the exception handler object.
+     * 
+     * You don't need to specify the template file path if you didn't
+     * change the default file structure of Carrot after you
+     * downloaded it.
      *
-     * Carrot uses DevelopmentExceptionPage class as the default
-     * exception page class. You can change the template being
-     * displayed by implementing ExceptionPageInterface and injecting
-     * your implementation at this class's provider.
+     * You can inject your own template file to this class:
      *
-     * @throws InvalidArgumentException
-     * @param string $serverProtocol The server protocol of this request, e.g. 'HTTP/1.0'.
-     * @param ExceptionPageInterface $exceptionPage The exception page template to be displayed on production.
+     * <code>
+     * $handler = new ExceptionHandler('/path/to/templates/exception.php');
+     * </code>
+     * 
+     * @param string $templateFilePath Absolute path to the template file. Optional.
      *
      */
-    public function __construct($serverProtocol, ExceptionPageInterface $exceptionPage = null)
+    public function __construct($templateFilePath = '')
     {
-        $this->serverProtocol = $serverProtocol;
+        if (!$templateFilePath)
+        {
+            $templateFilePath = __DIR__ . DIRECTORY_SEPARATOR . 'Templates' . DIRECTORY_SEPARATOR . 'exception_debug.php';
+        }
         
-        if ($exceptionPage)
+        if (!file_exists($templateFilePath))
         {
-            $this->exceptionPage = $exceptionPage;
+            throw new InvalidArgumentException("Carrot's exception handler error in instantiation. The template file path does not exist ({$templateFilePath}).");
         }
-        else
-        {
-            $this->exceptionPage = new DevelopmentExceptionPage;
-        }
+        
+        $this->templateFilePath = $templateFilePath;
     }
     
     /**
-     * Carrot's exception handler.
+     * Returns a response instance containing debugging information.
      * 
-     * Gets and clean the output buffer before handling the exception.
-     * It tries to log the exception if log_errors is on. It also tries
-     * to send 500 Internal Server Error header if header is not sent
-     * already.
+     * As this is the default Carrot's exception handler, it doesn't
+     * do anything other than presenting you with debugging
+     * information to make your development time easier.
      * 
-     * @param Exception $exception The exception that was thrown.
-     * 
+     * @param Exception $exception The exception to be handled.
+     * @return Response Instance of response with debugging information as its body.
+     *
      */
-    public function exceptionHandler(Exception $exception)
+    public function handle(Exception $exception)
     {
-        // We wrap everything in this exception handler in a try catch
-        // block so that if an exception occurs when we are handling
-        // an exception, we still get an error message instead of a
-        // debugging nightmare.
-        try
-        {        
-            $outputBuffer = $this->getAndCleanOutputBuffer();
+        $pageTitle = $this->generatePageTitle($exception);
+        $summaryCode = $this->getSummaryCode($exception->getFile(), $exception->getLine());
+        $stackTrace = $this->getFormattedStackTrace($exception);
+        $body = $this->getResponseBody($pageTitle, $summaryCode, $stackTrace);
+        return new Response($body, 500);
+    }
+    
+    /**
+     * Loads the template file and returns it in string.
+     * 
+     * Uses output buffering to return it as a string.
+     *
+     * @param string $pageTitle Formatted page title for display.
+     * @param array $summaryCode Array containing summary of the code where the exception originated.
+     * @param array $stackTrace Formatted stack trace information.
+     *
+     */
+    protected function getResponseBody($pageTitle, array $summaryCode, array $stackTrace)
+    {
+        ob_start();
+        require $this->templateFilePath;
+        return ob_get_clean();
+    }
+    
+    /**
+     * Gets the summary code information in an array.
+     * 
+     * This method takes 5 lines before the center line number and 5
+     * lines after the center line number and puts them into an array.
+     * The resulting array example:
+     *
+     * <code>
+     * $summaryCode = array(
+     *     0 => array(
+     *         'class' => 'odd',
+     *         'lineNumber' => '123',
+     *         'contents' => 'public function __construct()'
+     *     ),
+     *     1 => array(
+     *         'class' => 'even',
+     *         'lineNumber' => '124',
+     *         'contents' => '{'
+     *     ),
+     *     ...
+     * );
+     * </code>
+     *
+     * This 'class' attribute will be 'odd' or 'even' according to the
+     * index number. For the center line number, it will be appended
+     * with 'current'. The first and last line class will be appended
+     * with 'first' and 'last' correspondingly.
+     * 
+     * @param string $filePath Absolute path to the file.
+     * @param int $centerLineNumber The center line number.
+     * @return array The summary code array.
+     *
+     */
+    protected function getSummaryCode($filePath, $centerLineNumber)
+    {
+        $file = new SplFileObject($filePath);
+        $startingLine = ($centerLineNumber - 6 <= 0) ? 0 : $centerLineNumber - 6;
+        $file->seek($startingLine);
+        $summaryCode = array();
+        
+        while (!$file->eof())
+        {
+            $lineDisplayed = count($summaryCode);
+               
+            if ($lineDisplayed >= 11)
+			{
+				break;
+			}
+			
+			$class = ($lineDisplayed % 2 == 0) ? 'even' : 'odd';
+			$currentLine = $file->key() + 1;
+			
+			if ($currentLine == $centerLineNumber)
+			{
+			    $class .= ' current';
+			}
+			
+			$contents = htmlspecialchars($file->current(), ENT_QUOTES);
+			$summaryCode[] = array
+			(
+                'class' => $class,
+                'lineNumber' => $currentLine,
+                'contents' => $contents
+			);
+			$file->next();
+        }
+        
+        $summaryCode[0]['class'] .= ' first';
+        $summaryCode[count($summaryCode) - 1]['class'] .= ' last';
+        return $summaryCode;
+    }
+    
+    /**
+     * Returns a formatted array of stack trace information.
+     *
+     * Constructs and return an array containing file, function,
+     * function arguments, and summary code information, all are
+     * formatted and ready to be displayed in the template. Example
+     * return:
+     *
+     * <code>
+     * $stackTrace = array(
+     *     0 => array(
+     *         'fileInfo' => '0. /path/to/file.php on line 13',
+     *         'functionInfo' => 'App\Class->methodName',
+     *         'functionArgs' => '<pre class="grey">No arguments</pre>',
+     *         'summaryCode' => array(
+     *             ...
+     *         )
+     *     ),
+     *     ...
+     * );
+     * </code>
+     *
+     * For the array structure of the summary code,
+     * {@see getSummaryCode()}.
+     *
+     * @param Exception $exception
+     * @return array Formatted array of stack trace information.
+     *
+     */
+    protected function getFormattedStackTrace(Exception $exception)
+    {
+        $formattedStackTrace = array();
+        $rawStackTrace = $exception->getTrace();
+        
+        foreach ($rawStackTrace as $index => $rawTrace)
+        {
+            $formattedStackTrace[$index]['fileInfo'] = $this->generateStackTraceFileInfo($index, $rawTrace);
+            $formattedStackTrace[$index]['functionInfo'] = $this->generateStackTraceFunctionInfo($rawTrace);
+            $formattedStackTrace[$index]['functionArgs'] = $this->generateFunctionArgsInfo($rawTrace);
+            $formattedStackTrace[$index]['summaryCode'] = array();
             
-            // PHP doesn't log the errors when we have custom exception
-            // handler set, so we have to call error_log manually.
-            if (ini_get('log_errors'))
+            if (isset($rawTrace['file'], $rawTrace['line']))
             {
-                error_log($exception->__toString());
+                $formattedStackTrace[$index]['summaryCode'] = $this->getSummaryCode($rawTrace['file'], $rawTrace['line']);
             }
-            
-            if (!headers_sent())
-            {
-                header($this->serverProtocol . ' 500 Internal Server Error');
-            }
-            
-            $this->exceptionPage->setException($exception);
-            $this->exceptionPage->display();
-        }
-        catch (Exception $exceptionWithinException)
-        {
-            echo get_class($exceptionWithinException) . ' thrown within the exception handler. Message: ' . $exceptionWithinException->getMessage() . ' on line ' . $exceptionWithinException->getLine();
         }
         
-        exit;
+        return $formattedStackTrace;
     }
     
     /**
-     * Sets the exception handler.
+     * Returns formatted exception page title in HTML string.
      *
-     * Checks first so that we don't accidentally set the exception
-     * handler twice.
+     * @param Exception $exception
      *
      */
-    public function set()
+    protected function generatePageTitle(Exception $exception)
     {
-        if (!$this->set)
-        {
-            set_exception_handler(array($this, 'exceptionHandler'));
-        }
+        $class = get_class($exception);
+        $errorMessage = htmlspecialchars($exception->getMessage(), ENT_QUOTES);
+        $errorCode = htmlspecialchars($exception->getCode(), ENT_QUOTES);
+        $filePath = htmlspecialchars($exception->getFile(), ENT_QUOTES);
+        $lineNumber = htmlspecialchars($exception->getLine(), ENT_QUOTES);
+        return "{$errorMessage} <span>{$class} ({$errorCode}) in file {$filePath} on line {$lineNumber}.</span>";
     }
     
     /**
-     * Restores the exception handler.
+     * Returns the formatted file information string for the given trace.
      *
-     * Checks first so that we don't accidentally restore the
-     * exception handler even though we haven't set it.
+     * @param int $index The stack trace level.
+     * @param array $rawTrace The raw trace array for the given level.
      *
      */
-    public function restore()
+    protected function generateStackTraceFileInfo($index, array $rawTrace)
     {
-        if ($this->set)
+        if (isset($rawTrace['file'], $rawTrace['line']))
         {
-            restore_exception_handler();
+            $filePath = htmlspecialchars($rawTrace['file'], ENT_QUOTES);
+            $lineNumber = htmlspecialchars($rawTrace['line'], ENT_QUOTES);
+            return "{$index}. {$filePath} on line {$lineNumber}.";
         }
+        
+        return 'No file used, most likely internal PHP call.';
     }
     
     /**
-     * Gets the complete output buffer and cleans it.
+     * Returns the formatted function information string for the given trace.
      *
-     * @return string The complete output buffer (if any).
-     *
+     * @param array $rawTrace The raw trace array to be extracted.
+     * 
      */
-    protected function getAndCleanOutputBuffer()
+    protected function generateStackTraceFunctionInfo(array $rawTrace)
     {
-        $outputBuffer = '';
-        
-        while (ob_get_level())
+        if (!isset($rawTrace['function']))
         {
-            $outputBuffer .= ob_get_clean();
+            return 'No function were used.';
         }
         
-        return $outputBuffer;
+        $functionInfo = htmlspecialchars($rawTrace['function'], ENT_QUOTES);
+        
+        if (isset($rawTrace['class'], $rawTrace['type']))
+        {
+            $classInfo = htmlspecialchars($rawTrace['class'] . $rawTrace['type'], ENT_QUOTES);
+            $functionInfo = $classInfo . $functionInfo;
+        }
+        
+        return $functionInfo;
+    }
+    
+    /**
+     * Returns formatted function argument variable dump.
+     *
+     * The string returned is wrapped in <pre> tags.
+     *
+     * @param array $rawTrace The raw trace array to be extracted.
+     *
+     */
+    protected function generateFunctionArgsInfo(array $rawTrace)
+    {
+        if (isset($rawTrace['args']) && !empty($rawTrace['args']))
+        {
+            ob_start();
+            var_dump($rawTrace['args']);
+            $varDump = htmlspecialchars(ob_get_clean(), ENT_QUOTES);
+            return "<pre>{$varDump}</pre>";
+        }
+        
+        return '<pre class="grey">No arguments</pre>';
     }
 }

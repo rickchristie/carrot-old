@@ -23,6 +23,8 @@
 
 namespace Carrot\Core;
 
+use ErrorException;
+
 class System
 {
     /**
@@ -214,7 +216,7 @@ class System
     
     /**
      * Set up the error handler.
-     *
+     * 
      * Uses set_error_handler to register an anonymous function that
      * converts regular PHP errors to ErrorException instances.
      * 
@@ -226,23 +228,25 @@ class System
     
     /**
      * Set up the exception handler.
-     *
+     * 
      * Gets Carrot\Core\ExceptionHandler{Main:Transient} instance from
      * the DIC and sets the exception handler. 
      *
      */
     public function initializeExceptionHandler()
     {
-        $this->exceptionHandler = $this->dic->getInstance(
-            new ObjectReference('Carrot\Core\ExceptionHandler{Main:Transient}')
+        $this->exceptionHandlerManager = $this->dic->getInstance(
+            new ObjectReference('Carrot\Core\ExceptionHandlerManager{Main:Transient}')
         );
         
-        $this->exceptionHandler->set();
+        $this->exceptionHandlerManager->setDIC($this->dic);
+        $this->exceptionHandlerManager->setDefaultServerProtocol($_SERVER['SERVER_PROTOCOL']);
+        $this->exceptionHandlerManager->set();
     }
     
     /**
      * Set up the router.
-     *
+     * 
      * Gets Carrot\Core\Router{Main:Singleton} instance from the DIC,
      * loads user's router configuration file, and initializes the
      * router object.
@@ -309,8 +313,8 @@ class System
             $_SERVER['REQUEST_URI']
         ));
         
-        $this->dic->bind('Carrot\Core\ExceptionHandler{Main:Transient}', array(
-            $_SERVER['SERVER_PROTOCOL']
+        $this->dic->bind('Carrot\Core\ExceptionHandlerManager{Main:Transient}', array(
+            array('Exception' => new ObjectReference('Carrot\Core\ExceptionHandler{Main:Transient}'))
         ));
         
         $this->dic->bind('Carrot\Core\Request{Main:Transient}', array(

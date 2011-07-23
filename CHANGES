@@ -1,7 +1,12 @@
 TRUNK
 -----
 
-
+- Refactored index.php to Carrot\Core\System
+- Exception handling
+    - Carrot\Core\ExceptionHandlerManager is the primary exception handler
+    - The manager dispatches the exception to appropriate exception handler classes
+    - Exception handler classes implement Carrot\Core\Interfaces\ExceptionHandlerInterface
+    - Exception handlers are registered to the manager and bound to a specific exception class
 
 VERSION 0.2.5
 -------------

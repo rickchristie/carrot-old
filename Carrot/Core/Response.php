@@ -12,9 +12,41 @@
 /**
  * Response
  * 
- * Value object, Carrot's response object. Currently it supports
- * only HTTP/1.0 and HTTP/1.1. Server protocol defaults to
- * HTTP/1.0.
+ * This is a value object that represents server's response to a
+ * request. It encapsulates the response headers and body to be
+ * sent back to the client. Headers and body are saved first and
+ * not sent until the send() method is called. To properly make
+ * use of this object you must not print or echo content to the
+ * client directly, save the content into a string and inject
+ * it to this object.
+ *
+ * <code>
+ * $response = new Response('<h1>This is the content!</h1>');
+ * </code>
+ *
+ * You can then append the response body:
+ *
+ * <code>
+ * $response->appendBody('<p>This is the paragraph!</p>');
+ * </code>
+ *
+ * You can also reset the response body:
+ *
+ * <code>
+ * $response->setBody('<p>Starting from scratch!</p>');
+ * </code>
+ * 
+ * Server protocol defaults to 'HTTP/1.0'. You can set server
+ * protocol directly:
+ * 
+ * <code>
+ * $response->setServerProtocol('HTTP/1.1');
+ * </code>
+ * 
+ * When you use Carrot, you don't have to set server protocol
+ * manually since the front controller or the exception handler
+ * manager will set the default server protocol to match the
+ * protocol in $_SERVER['SERVER_PROTOCOL'].
  *
  * @author      Ricky Christie <seven.rchristie@gmail.com>
  * @license     http://www.opensource.org/licenses/mit-license.php MIT License
@@ -48,9 +80,14 @@ class Response
     protected $statusMessage;
     
     /**
-     * @var array The protocol to be written in header when returning status codes.
+     * @var string The protocol to be written in header when returning status codes.
      */
     protected $serverProtocol;
+    
+    /**
+     * @var string The default server protocol to be used in case server protocol was not set.
+     */
+    protected $defaultServerProtocol = 'HTTP/1.0';
     
     /**
      * @var array Array containing the list of status codes and their default message.
@@ -116,15 +153,12 @@ class Response
      * automatically has 200 (OK) status code with HTTP/1.0 protocol.
      *
      * @param string $body The body of the response.
-     * @param string $serverProtocol Used when setting the response code, either 'HTTP/1.0' or 'HTTP/1.1'. Defaults to HTTP/1.0.
-     * @param int $code HTTP status code. Defaults to 200 (OK).
      *
      */
-    public function __construct($body = '', $serverProtocol = 'HTTP/1.0', $code = 200)
+    public function __construct($body = '', $statusCode = 200)
     {
         $this->body = $body;
-        $this->setProtocol($serverProtocol);
-        $this->setStatus($code);
+        $this->setStatus($statusCode);
     }
     
     /**
@@ -133,14 +167,26 @@ class Response
      * @param string $serverProtocol Used when setting the response code, either 'HTTP/1.0' or 'HTTP/1.1'.
      * 
      */
-    public function setProtocol($serverProtocol)
-    {
-        if (!in_array($serverProtocol, array('HTTP/1.0', 'HTTP/1.1')))
-        {
-            throw new InvalidArgumentException('Error in instantiating Response. Server protocol must be HTTP/1.0 or HTTP/1.1.');
-        }
-        
+    public function setServerProtocol($serverProtocol)
+    {   
         $this->serverProtocol = $serverProtocol;
+    }
+    
+    /**
+     * Sets the default server protocol.
+     * 
+     * The default server protocol will only be used if the server
+     * protocol is not set. This method exists so that the front
+     * controller can set the default server protocol of the returned
+     * response without changing the server protocol if it has already
+     * been set by the user.
+     * 
+     * @param string $defaultServerProtocol Used when setting the response code, either 'HTTP/1.0' or 'HTTP/1.1'.
+     *
+     */
+    public function setDefaultServerProtocol($defaultServerProtocol)
+    {   
+        $this->defaultServerProtocol = $defaultServerProtocol;
     }
     
     /**
@@ -241,33 +287,14 @@ class Response
      * Sends the response to the client.
      *
      * Sends the header and echoes out the body of the response.
+     * Please note that if the headers are already sent, this method
+     * will not try to send the headers.
      *
      */
     public function send()
     {
         $this->sendHeaders();
         echo $this->body;
-    }
-    
-    /**
-     * Sends the headers, including the status code.
-     *
-     * Loops through the added headers and sends them using header().
-     * This method will not send the header if headers are already
-     * sent.
-     *
-     */
-    protected function sendHeaders()
-    {
-        if (!headers_sent())
-        {
-            header("{$this->serverProtocol} {$this->statusCode} {$this->statusMessage}");
-        
-            foreach ($this->headers as $headerName => $contents)
-            {
-                header("{$headerName}: {$contents}");
-            }
-        }
     }
     
     /**
@@ -312,5 +339,46 @@ class Response
     public function getHeaders()
     {
         return $this->headers;
+    }
+    
+    /**
+     * Sends the headers, including the status code.
+     *
+     * Loops through the added headers and sends them using header().
+     * This method will not send the header if headers are already
+     * sent.
+     *
+     */
+    protected function sendHeaders()
+    {
+        if (!headers_sent())
+        {
+            $serverProtocol = $this->getServerProtocol();
+            header("{$serverProtocol} {$this->statusCode} {$this->statusMessage}");
+        
+            foreach ($this->headers as $headerName => $contents)
+            {
+                header("{$headerName}: {$contents}");
+            }
+        }
+    }
+    
+    /**
+     * Gets the server protocol.
+     *
+     * If the server protocol is not set, will return the default
+     * server protocol.
+     *
+     * @return string The server protocol.
+     *
+     */
+    protected function getServerProtocol()
+    {
+        if (!empty($this->serverProtocol))
+        {
+            return $this->serverProtocol;
+        }
+        
+        return $this->defaultServerProtocol;
     }
 }

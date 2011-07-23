@@ -76,38 +76,6 @@ class Router
     protected $routes = array();
     
     /**
-     * Loads a route configuration file.
-     *
-     * The file path given will have access to this object through
-     * the $router variable. The file will be loaded from an anonymous
-     * function, so the file will only have access to public methods.
-     *
-     * Use this method to load a file registering all your needed
-     * routes. Example usage:
-     *
-     * <code>
-     * $router->loadConfigurationFile('/absolute/path/to/file.php');
-     * </code>
-     *
-     * @param string $filePath Absolute file path to the route configuration file.
-     *
-     */
-    public function loadConfigurationFile($filePath)
-    {
-        if (!file_exists($filePath))
-        {
-            throw new InvalidArgumentException("Router error in loading configuration file. The file '{$filePath}' does not exist.");
-        }
-        
-        $loadFile = function($filePath, $router)
-        {
-            require $filePath;
-        };
-        
-        $loadFile($filePath, $this);
-    }
-    
-    /**
      * Sets the destination to go to when there is no matching route.
      *
      * @param Destination $destination

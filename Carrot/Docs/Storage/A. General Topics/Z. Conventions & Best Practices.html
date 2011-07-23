@@ -197,13 +197,12 @@ $dic->bind('Breaking\Encapsulation{Main:Transient}', array(
         as loosely coupled to the framework as possible.
     </li>
     <li>
-        Properly comment your class (especially the public APIs) with doc blocks
-        explaining at least how to properly use the class.
+        Properly comment your class (especially the public APIs) with doc
+        blocks explaining at least how to properly use the class.
     </li>
     <li>
-        Do not access PHP superglobals directly from your class. Use Carrot's
-        <code>Request</code> instance instead. As a rule of a thumb, superglobals
-        should only be accessed in files like <code>config.php</code>, as it is
-        not a part of any class.
+        Avoid accessing PHP superglobals directly from your class. Either
+        inject the variables or inject a <code>Carrot\Core\Request</code>
+        instance to your class instead.
     </li>
 </ul>

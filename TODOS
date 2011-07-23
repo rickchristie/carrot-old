@@ -7,7 +7,6 @@ CORE FEATURES/CHANGES
 ---------------------
 
 TODO: Refactor index.php to use Bootstrap class using BootstrapInterface? Then you can inject ExceptionHandler to it? Or create an event system, see Symfony's event manager. Example use case include handling exceptions, redirecting links like '/blog/title' to '/blog/title/' for canonical version, etc.
-TODO: ExceptionHandler is still not flexible. Users cannot run custom callbacks or handle unhandled exception by themselves. Maybe use event manager? Maybe instead of exception handler you can have ExceptionHandlerManager class, you can do $exceptionHandlerManager->setExceptionHandler('NoMatchingRouteException', $this->noMatchingRouteExceptionHandler) - instead of ExceptionPageInterface, you have ExceptionHandlerInterface.
 TODO: Inject DIC and Autoloader to exception handler, for debugging purposes. Have the DIC log which provider class/method is used, which instance name is instantiated and how many times it has been instantiated. The autoloader: which file is loaded, what class is expected on that file, the time of the load, which file gets loaded first, etc.
 TODO: Consider EventManager class to hook into core events, or a specialized interface containing event methods that the user can implement. This would help in use cases like filtering the final response body, request/response logging, etc.
 TODO: Take a look at Symfony's HTTPKernel for hints to improve your request and response objects.
