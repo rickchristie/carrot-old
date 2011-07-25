@@ -84,9 +84,16 @@ class System
      * @param string $routesFilePath Absolute file path to router configuration file.
      * @param string $autoloadFilePath Absolute file path to autoloader configuration file.
      * @param string $autoloaderClassFilePath Absolute file path to Autoloader class file.
+     * @param array $server The $_SERVER superglobal.
+     * @param array $get The $_GET superglobal.
+     * @param array $post The $_POST superglobal.
+     * @param array $files The $_FILES superglobal.
+     * @param array $cookie The $_COOKIE superglobal.
+     * @param array $request The $_REQUEST superglobal.
+     * @param array $env The $_ENV superglobal.
      *
      */
-    public function __construct($configFilePath, $routesFilePath, $autoloadFilePath, $autoloaderClassFilePath)
+    public function __construct($configFilePath, $routesFilePath, $autoloadFilePath, $autoloaderClassFilePath, array $server, array $get, array $post, array $files, array $cookie, array $request, array $env)
     {
         $this->loadFileFunction = function($filePath, array $params)
         {
@@ -103,6 +110,13 @@ class System
         $this->routesFilePath = $routesFilePath;
         $this->autoloadFilePath = $autoloadFilePath;
         $this->autoloaderClassFilePath = $autoloaderClassFilePath;
+        $this->server = $server;
+        $this->get = $get;
+        $this->post = $post;
+        $this->files = $files;
+        $this->cookie = $cookie;
+        $this->request = $request;
+        $this->env = $env;
     }
     
     /**
@@ -240,7 +254,7 @@ class System
         );
         
         $this->exceptionHandlerManager->setDIC($this->dic);
-        $this->exceptionHandlerManager->setDefaultServerProtocol($_SERVER['SERVER_PROTOCOL']);
+        $this->exceptionHandlerManager->setDefaultServerProtocol($this->server['SERVER_PROTOCOL']);
         $this->exceptionHandlerManager->set();
     }
     
@@ -309,8 +323,8 @@ class System
     protected function registerDefaultDICBindings()
     {
         $this->dic->bind('Carrot\Core\AppRequestURI{Main:Transient}', array(
-            $_SERVER['SCRIPT_NAME'],
-            $_SERVER['REQUEST_URI']
+            $this->server['SCRIPT_NAME'],
+            $this->server['REQUEST_URI']
         ));
         
         $this->dic->bind('Carrot\Core\ExceptionHandlerManager{Main:Transient}', array(
@@ -318,17 +332,17 @@ class System
         ));
         
         $this->dic->bind('Carrot\Core\Request{Main:Transient}', array(
-            $_SERVER,
-            $_GET,
-            $_POST,
-            $_FILES,
-            $_COOKIE,
-            $_REQUEST,
-            $_ENV
+            $this->server,
+            $this->get,
+            $this->post,
+            $this->files,
+            $this->cookie,
+            $this->request,
+            $this->env
         ));
         
         $this->dic->bind('Carrot\Core\FrontController{Main:Transient}', array(
-            $_SERVER['SERVER_PROTOCOL']
+            $this->server['SERVER_PROTOCOL']
         ));
         
         $this->dic->bind('Carrot\Docs\Route{Main:Transient}', array(

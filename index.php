@@ -25,7 +25,14 @@ $system = new Carrot\Core\System(
     $configFilePath,
     $routesFilePath,
     $autoloadFilePath,
-    $autoloaderClassFilePath
+    $autoloaderClassFilePath,
+    $_SERVER,
+    $_GET,
+    $_POST,
+    $_FILES,
+    $_COOKIE,
+    $_REQUEST,
+    $_ENV
 );
 
 $system->reportAllErrors();
