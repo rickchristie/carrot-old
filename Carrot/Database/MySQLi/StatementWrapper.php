@@ -12,6 +12,7 @@
 /**
  * Wrapper for \MySQLi_STMT
  * 
+// ---------------------------------------------------------------
  * Creates a \MySQLi_STMT object and acts as its wrapper, allowing you to use
  * prepared statements without dealing with parameter and result row binding.
  * It also allows you to use named placeholder, which makes reading and editing
@@ -529,8 +530,6 @@ class StatementWrapper
         $this->statement_object->close();
     }
     
-    // ---------------------------------------------------------------
-    
     /**
      * Wrapper for \MySQLi_STMT->affected_rows.
      * 
@@ -718,8 +717,6 @@ class StatementWrapper
         $this->result_is_buffered = $this->statement_object->store_result();
         return $this->result_is_buffered;
     }
-    
-    // ---------------------------------------------------------------
     
     /**
      * Extracts placeholder names from original statement string.

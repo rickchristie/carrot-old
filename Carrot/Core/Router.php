@@ -14,19 +14,18 @@
  * 
  * Routing is the process of determining which routine object to
  * instantiate, which routine method to call, and what arguments
- * should be passed to the routine method. These information are
- * what we call 'Destination' and are represented by an instance
- * of Destination.
+ * should be passed to the routine method. These informations are
+ * represented by an instance of Dispatch.
  *
  * This class manages routes. Routes are classes that contains
  * the logic and data to translate the current request into an
- * instance of Destination. Route classes must implement
+ * instance of Dispatch. Route classes must implement
  * RouteInterface.
  *
- * The routing process is simple. When getDestination() is called,
- * this class will loop through all registered route classes and
- * calls RouteInterface::getDestination() until one of them
- * returns an instance of Destination.
+ * The routing process is simple. When doRouting() is called, this
+ * class will loop through all registered route classes and calls
+ * RouteInterface::route() until one of them returns an
+ * instance of Dispatch.
  *
  * Register the route class's object reference into a specific ID:
  *
@@ -34,11 +33,11 @@
  * $router->register('RouteID', new ObjectReference('Sample\Route{Main:Transient}'));
  * </code>
  *
- * Don't forget to set the destination to go to when there is no
- * matching route:
+ * Don't forget to set the default dispatch object to be returned
+ * if there is no matching route:
  *
  * <code>
- * $router->setDestinationForNoMatchingRoute(new Destination(
+ * $router->setDispatchForNoMatchingRoute(new Dispatch(
  *     new ObjectReference('App\Controllers\Default404Controller{Main:Transient}'),
  *     'get404Response'
  * ));
@@ -61,9 +60,9 @@ use RuntimeException;
 class Router
 {   
     /**
-     * @var Destination Destination to go to when there is no matching route.
+     * @var Dispatch The dispatch object to be returned there is no matching route.
      */
-    protected $destinationForNoMatchingRoute = null;
+    protected $dispatchForNoMatchingRoute = null;
     
     /**
      * @var array List of registered route classes.
@@ -76,14 +75,14 @@ class Router
     protected $routes = array();
     
     /**
-     * Sets the destination to go to when there is no matching route.
+     * Sets the dispatch object to be returned when there is no matching route.
      *
-     * @param Destination $destination
+     * @param Dispatch $dispatch
      *
      */
-    public function setDestinationForNoMatchingRoute(Destination $destination)
+    public function setDispatchForNoMatchingRoute(Dispatch $dispatch)
     {
-        $this->destinationForNoMatchingRoute = $destination;
+        $this->dispatchForNoMatchingRoute = $dispatch;
     }
     
     /**
@@ -108,9 +107,9 @@ class Router
     /**
      * Instantiates all the registered route into real object instances.
      *
-     * This method must be called before getDestination() is called.
-     * Will loop through all route registrations and gets the route
-     * object instances.
+     * This method must be called before doRouting() is called. Will
+     * loop through all route registrations and instantiate the route
+     * objects via the DIC.
      *
      * @param DependencyInjectionContainer $dic Used to instantiating all the route object references.
      *
@@ -132,28 +131,28 @@ class Router
     }
     
     /**
-     * Gets the destination.
+     * Routes the request into a dispatch instance.
      *
      * The actual routing method. Make sure route objects are already
      * instantiated using instantiateRouteObjects() before calling
      * this method.
      * 
-     * @return Destination The destination.
+     * @return Dispatch The dispatch instance.
      *
      */
-    public function getDestination()
+    public function doRouting()
     {
         foreach ($this->routes as $routeID => $route)
         {
-            $destination = $route->getDestination();
+            $dispatch = $route->route();
             
-            if ($this->validDestination($destination))
+            if ($this->validDispatch($dispatch))
             {
-                return $destination;
+                return $dispatch;
             }
         }
         
-        return $this->getDestinationForNoMatchingRoute();
+        return $this->getDispatchForNoMatchingRoute();
     }
     
     /**
@@ -181,35 +180,35 @@ class Router
     }
     
     /**
-     * Gets the destination for no matching route.
+     * Returns the default dispatch instance for no matching route.
      *
-     * Throws RuntimeException if the destination for no matching
-     * route is not set.
+     * Throws RuntimeException if the default dispatch instance for no
+     * matching route is not set.
      *
-     * @see getDestination()
+     * @see doRouting()
      * @throws RuntimeException
-     * @return Destination
+     * @return Dispatch
      *
      */
-    protected function getDestinationForNoMatchingRoute()
+    protected function getDispatchForNoMatchingRoute()
     {
-        if ($this->validDestination($this->destinationForNoMatchingRoute))
+        if ($this->validDispatch($this->dispatchForNoMatchingRoute))
         {
-            return $this->destinationForNoMatchingRoute;
+            return $this->dispatchForNoMatchingRoute;
         }
         
-        throw new RuntimeException("Router error in getting destination. No matching route was found and there is no destination for no matching route.");
+        throw new RuntimeException("Router error in routing request. No matching route was found and there is no default dispatch instance set to be returned for no matching route.");
     }
     
     /**
-     * Checks if the destination is an object and an instance of Destination.
+     * Checks if the variable is an object and an instance of Dispatch.
      *
-     * @param mixed $destination
+     * @param mixed $dispatch
      * @return bool
      *
      */
-    protected function validDestination($destination)
+    protected function validDispatch($dispatch)
     {
-        return (is_object($destination) && $destination instanceof Destination);
+        return (is_object($dispatch) && $dispatch instanceof Dispatch);
     }
 }

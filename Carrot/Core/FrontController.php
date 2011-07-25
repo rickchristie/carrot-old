@@ -17,8 +17,8 @@
  * method must return an instance of Response.
  *
  * Supports internal redirection. If routine method returns an
- * instance of Destination instead of Response, the front
- * controller will re-dispatch to the returned destination.
+ * instance of Dispatch instead of Response, the front controller
+ * will re-dispatch based on the returned dispatch instance.
  * 
  * @author      Ricky Christie <seven.rchristie@gmail.com>
  * @license     http://www.opensource.org/licenses/mit-license.php MIT License
@@ -57,28 +57,28 @@ class FrontController
     }
     
     /**
-     * Dispatches the request based on the destination object provided.
+     * Dispatches the request based on the dispatch object provided.
      * 
      * Supports internal redirection. If routine method returns an
-     * instance of Destination instead of Response, the front
-     * controller will re-dispatch to the returned destination.
+     * instance of Dispatch instead of Response, the front controller
+     * will re-dispatch based on the returned dispatch object.
      * 
      * @param DependencyInjectionContainer $dic Used to instantiate the routine object.
-     * @param Destination $destination The destination to dispatch.
+     * @param Dispatch $dispatch The dispatch object.
      * @return Response
      *
      */
-    public function dispatch(DependencyInjectionContainer $dic, Destination $destination)
+    public function dispatch(Dispatch $dispatch, DependencyInjectionContainer $dic)
     {
-        $this->throwExceptionIfDestinationInvalid($destination);
-        $objectReference = $destination->getObjectReference();
-        $routineMethod = $destination->getRoutineMethodName();
+        $this->throwExceptionIfDispatchInvalid($dispatch);
+        $objectReference = $dispatch->getObjectReference();
+        $routineMethod = $dispatch->getMethodName();
         $routineObject = $dic->getInstance($objectReference);
-        $response = call_user_func_array(array($routineObject, $destination->getRoutineMethodName()), $destination->getArguments());
+        $response = call_user_func_array(array($routineObject, $routineMethod), $dispatch->getArguments());
         
         // Run the dispatch method again if
         // internal redirection is called
-        if ($response instanceof Destination)
+        if ($response instanceof Dispatch)
         {
             return $this->dispatch($dic, $response);
         }
@@ -86,7 +86,7 @@ class FrontController
         if (!($response instanceof Response))
         {
             $className = $objectReference->getClassName();
-            $methodName = $destination->getRoutineMethodName();
+            $methodName = $dispatch->getMethodName();
             throw new RuntimeException("Front controller error in dispatch, the routine method {$className}::{$methodName}() doesn't return an instance of Carrot\Core\Response.");
         }
         
@@ -95,20 +95,20 @@ class FrontController
     }
     
     /**
-     * Validate destination, throws exception if fails.
+     * Validate dispatch instance, throws exception if fails.
      * 
-     * Throws RuntimeException if the routine class or routine method
-     * does not exist.
+     * Throws RuntimeException if the class or method from the
+     * dispatch instance does not exist.
      *
      * @throws RuntimeException
-     * @param Destination $destination Destination instance to be validated.
+     * @param Dispatch $dispatch Dispatch instance to be validated.
      *
      */
-    protected function throwExceptionIfDestinationInvalid(Destination $destination)
+    protected function throwExceptionIfDispatchInvalid(Dispatch $dispatch)
     {
-        $objectReference = $destination->getObjectReference();
+        $objectReference = $dispatch->getObjectReference();
         $className = $objectReference->getClassName();
-        $methodName = $destination->getRoutineMethodName();
+        $methodName = $dispatch->getMethodName();
         
         if (!class_exists($className))
         {

@@ -73,7 +73,7 @@ class System
     protected $exceptionHandler;
     
     /**
-     * @var Router Object used to route requests to a specific Destination.
+     * @var Router Object used to route requests to a dispatch instance.
      */
     protected $router;
     
@@ -266,9 +266,9 @@ class System
     /**
      * Dispatches the request and send the response to client.
      *
-     * Instantiates the front controller, gets the destination from
-     * router, tells the front controller to get the response, and
-     * then sends the response to the client.
+     * Instantiates the front controller, gets the dispatch instance
+     * from router, tells the front controller to get the response,
+     * and then sends the response to the client.
      *
      */
     public function run()
@@ -277,8 +277,8 @@ class System
             new ObjectReference('Carrot\Core\FrontController{Main:Transient}')
         );
         
-        $destination = $this->router->getDestination();
-        $response = $frontController->dispatch($this->dic, $destination);
+        $dispatch = $this->router->doRouting();
+        $response = $frontController->dispatch($dispatch, $this->dic);
         $response->send();
     }
     

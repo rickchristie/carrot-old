@@ -7,6 +7,12 @@ TRUNK
     - The manager dispatches the exception to appropriate exception handler classes
     - Exception handler classes implement Carrot\Core\Interfaces\ExceptionHandlerInterface
     - Exception handlers are registered to the manager and bound to a specific exception class
+- Changed Carrot\Core\Destination to Carrot\Core\Dispatch
+    - Changed Carrot\Core\Destination::getRoutineMethodName() to Carrot\Core\Dispatch::getMethodName()
+- Router
+    - Changed Carrot\Core\Router::getDestination() to Carrot\Core\Router::doRouting()
+    - Changed Carrot\Core\Interfaces\RouteInterface::getDestination() to Carrot\Core\Interfaces\RouteInterface::route()
+
 
 VERSION 0.2.5
 -------------

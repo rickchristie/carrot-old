@@ -1,44 +1,43 @@
 <h1>Quick Introduction to Carrot</h1>
 
 <p>
-    The very first thing you need to know is that Carrot
-    is an experimental framework built by someone who is
-    in junior level programming, so don't expect too much.
-    Another thing is that I am developing Carrot for my
-    personal use (and as a learning project), so some of
-    the design decisions might not suit you. Since Carrot
-    is still in its early stages, I would advice against
-    using it in production unless you really wanted to dig
-    in to Carrot and understand all the core classes.
+    The very first thing you need to know is that Carrot is an
+    experimental framework built by someone who is in junior
+    level programming, so don't expect too much. Another thing
+    is that I am developing Carrot for my personal use, so you
+    might disagree with some of the design decisions. Since
+    Carrot is still in its early stages, I would advice against
+    using it in production unless you are willing to dig deep in
+    Carrot and understand all the core classes.
 </p>
 
 <h2>Routine class</h2>
 
 <blockquote>
     <p>
-        rou&bull;tine, noun. a sequence of actions
-        regularly followed; a fixed program. -
-        <cite>New Oxford American Dictionary</cite>
+        rou&bull;tine, noun. a sequence of actions regularly
+        followed; a fixed program. - <cite>New Oxford American
+        Dictionary</cite>
     </p>
 </blockquote>
 
 <p>
-    When you write a web application, you want a routine
-    to be run when a particular request is sent to your
-    server. This routine code can be written inside a
-    function, a method, or an anonymous function.
-    For example, <a href="http://silex-project.org/">Silex</a>
-    uses anonymous functions to store these routines,
-    <a href="http://www.limonade-php.net/">Limonade</a>
-    uses regular functions, and
-    <a href="http://kohanaframework.org/">Kohana</a> uses
-    a controller class (object method).
+    When you write a web application, you want a subroutine to be
+    run when a particular request is sent to your server. This
+    routine code can be written inside a function, a method, or
+    an anonymous function. For example, in
+    <a href="http://silex-project.org/">Silex</a> we write the
+    routines inside anonymous functions, in
+    <a href="http://www.limonade-php.net/">Limonade</a> we write
+    them in regular functions, and in
+    <a href="http://kohanaframework.org/">Kohana</a> we write
+    them in a controller class method.
 </p>
 
 <p>
     Carrot is an object oriented framework, so your routine
     codes must be written inside a method. In Carrot, the term
-    for the methods that contain these routines is <em>routine
+    for methods that contain these routines is <em>routine
     methods</em>. The classes/objects that contains these routine
     methods are termed <em>routine classes/objects</em>.
 </p>
@@ -72,95 +71,220 @@
 
 <p>
     You can freely organize routine methods into routine classes,
-    and you can have as many routine classes as you like, but your
-    routine class need other objects to work, it has dependencies.
-    How do we wire the dependencies of your routine class? There
-    are lots of ways to do this in PHP, however I'm looking for
-    a way that:
-</p>
-
-<ul>
-    <li>
-        Doesn't involve a God object or a global registry.
-    </li>
-    <li>
-        Doesn't force users to extend a base class.
-    </li>
-    <li>
-        Uses dependency injection, specifically constructor injection,
-        therefore exposing the dependencies of the class in the public
-        API, so we have no surprises.
-    </li>
-</ul>
-
-<p>
-    After a lot of mucking around, I found out about <a href="http://martinfowler.com/articles/injection.html">
-    dependency injection containers</a>. It is defined as a 
-    &lsquo;lightweight containers that help to assemble components from
-    different project into a cohesive application&rsquo;. It is basically
-    the class that assembles your dependencies and injects them to you.
+    and you can have as many routine classes as you like, but
+    your routine class need other objects to work, that is, it
+    has dependencies. Making sure that your routine class has all
+    the dependencies it needs is the responsibility of the
+    framework. Usually in PHP this is done by requiring your
+    class to extend a base class from the framework or by having
+    your framework access a global registry or factory. Carrot
+    does this by using dependency injection containers.
 </p>
 
 <p>
-    As an example, let's pretend your <code>BlogController</code> class
-    has a dependency to a <code>BlogModel</code> class. Using dependency
-    injection, you code <code>BlogController</code>'s constructor to
-    expose this dependency:
+    <a href="http://martinfowler.com/articles/injection.html">
+    Dependency injection container (DIC)</a> is defined as a 
+    &lsquo;lightweight containers that help to assemble
+    components from different project into a cohesive
+    application&rsquo;. In other words, it's the class that
+    assembles your dependencies and injects them to your class.
+    In Carrot, this works by binding constructor arguments to a
+    specific instance name, which is then used to instantiate the
+    class when it is requested.
 </p>
 
-<pre>class BlogController
-{
-    private $blogModel; 
-    
-    public function __construct(BlogModel $blogModel)
-    {
-        $this->blogModel = $blogModel;
-    }
-}</pre>
+<h3>Using the container in Carrot</h3>
 
 <p>
-    Then you tell the DIC to inject <code>BlogModel</code> each time
-    <code>BlogController</code> is needed:
+    As an example, we can tell the container to inject specific
+    configuration arguments when the instance
+    <code>MySQLi{Main:Singleton}</code> is requested:
 </p>
 
-<pre>$dic->bind('BlogController{Main:Transient}', array(
-    new ObjectReference('BlogModel{Main:Singleton}')
+<pre>$dic->bind('MySQLi{Main:Singleton}', array(
+    'localhost',
+    'db_username',
+    'the_password',
+    'database_name'
 ));</pre>
 
 <p>
-    Finally, when an instance of <code>BlogController</code> is needed,
-    it is instantiated by the DIC, all bound dependencies are also
-    instantiated recursively, as easy as:
+    The above code is effectively telling the container to
+    instantiate <code>MySQLi</code> class with the given
+    configuration each time the instance name
+    <code>MySQLi{Main:Singleton}</code> is requested, as such:
 </p>
 
-<pre>$blogController = $dic->getInstance(
-    new ObjectReference('BlogController{Main:Transient}')
+<pre>return new MySQLi(
+    'localhost',
+    'db_username',
+    'the_password',
+    'database_name'
 );</pre>
 
 <p>
-    By utilizing the dependency injection container concept, Carrot
-    has the following benefits:
+    Next, let's say our <code>App\DataAccess</code> class needs
+    the <code>MySQLi{Main:Singleton}</code> instance. We bind the
+    dependency again, but this time we need to tell the container
+    that the dependency is to another object instead of simple
+    strings. We do this by passing an object reference as the
+    constructor argument:
+</p>
+
+<pre>$dic->bind('App\DataAccess{Main:Transient}', array(
+    new ObjectReference('MySQLi{Main:Singleton}')
+));</pre>
+
+<p>
+    Dependencies will be resolved recursively. This means
+    dependencies of dependencies will also be handled by the
+    container. In the context of our example, when the container
+    is asked to get an instance of
+    <code>DataAccess{Main:Transient}</code>, it will convert the
+    command to the following instantiation code:
+</p>
+
+<pre>return new App\DataAccess(
+    new MySQLi(
+        'localhost',
+        'db_username',
+        'the_password',
+        'database_name'
+    )
+);
+</pre>
+
+<p>
+    The dependencies are injected through the constructor, so we
+    must code our <code>App\DataAccess</code> constructor as to
+    accept it, as such:
+</p>
+
+<pre>namespace App;
+
+class DataAccess
+{
+    private $mysqli;
+    
+    public function __construct(\MySQLi $mysqli)
+    {
+        $this->mysqli = $mysqli;
+    }
+
+    ...
+}</pre>
+
+<p>
+    Thus instead of your class requesting for dependencies, they
+    are given (injected) to your class. That is using Carrot's
+    dependency injection in a nutshell. For a more detailed
+    information, you can view the dependency injection container
+    section of this guide.
+</p>
+
+<h3>Benefits and drawbacks</h3>
+
+<p>
+    In Carrot, using dependency injection container results in
+    the following characteristics (depending on how you code,
+    these may be desirable or annoying):
 </p>
 
 <ul>
     <li>
-        The routine class having no dependency whatsoever to the
-        framework, it can be a plain old PHP object. It doesn't know
-        that it is being attached to Carrot. This should make it
-        easier
+        Your routine class are not required to extend a framework
+        base class, it can be just a plain old PHP object. This
+        makes coding with Carrot very similar to coding in PHP
+        from scratch.
     </li>
     <li>
-        Well designed API, at least
+        You are forced to use dependency injection, specifically
+        constructor injection, which in turn forces you to expose
+        dependencies of your class at your public API.
+    </li>
+    <li>
+        You have to wire the dependencies of all of your classes
+        manually, most likely in a centralized configuration
+        file.
+    </li>
+    <li>
+        When unit testing your classes, you don't have to
+        interact with the framework at all, since your routine
+        class does not need to be aware of the framewqork.
     </li>
 </ul>
 
 <p>
-    The most frequent ways to solve this problem is using a
-    configuration file. This almost certainly requires you to
-    extend
+    Proponents to dependency injection often point out that using
+    dependency injection, whether with a container class or
+    manually, results in these benefits:
+</p>
+
+<ul>
+    <li>
+        Reduction of boilerplate code in the application objects
+        since all work to initialize and set up dependencies is
+        handled by a provider component.
+    </li>
+    <li>
+        Separation of configuration and class behavior results in
+        loose coupling and easier code reuse.
+    </li>
+    <li>
+        Enables you to easily change or switch implementations.
+        With dependency injection, you only need to inject a
+        different class.
+    </li>
+    <li>
+        Classes that use dependency injection are easier to be
+        unit tested.
+    </li>
+    <li>
+        Dependency injection forces you to create well designed
+        APIs.
+    </li>
+</ul>
+
+<p>
+    Detractors often say that:
+</p>
+
+<ul>
+    <li>
+        The usage of dependency injection containers adds
+        complexity to the code.
+    </li>
+    <li>
+        Dependency injection incurs overhead cost of
+        learning and performance.
+    </li>
+    <li>
+        Since the instantiation process is abstracted away, the
+        code may seem &lsquo;magical&rsquo; to some developers.
+    </li>
+    <li>
+        IDEs might not be able to accurately analyze or refactor
+        code when it doesn't understand the configuration.
+    </li>
+</ul>
+
+<p>
+    These are all valid reasons not to use dependency injection
+    containers. It all bottoms down to whether or no you think
+    the benefits are worth the hassle. For me, APIs that don't
+    lie, loose coupling, easier code reuse, elimination of
+    boilerplate factory codes, and easy switching of
+    implementations are very much worth the cost. If you doesn't
+    think dependency injection is great, then Carrot most
+    definitely will not suit your needs.
 </p>
 
 <h2>Routing</h2>
+
+<p>
+    We have our routine class and we have wired our dependency.
+    
+</p>
 
 <p>
     So you have your routine class and you have wired its
