@@ -3,33 +3,93 @@ GENERAL
 
 TODO: Start making unit tests!
 
+
 CORE FEATURES/CHANGES
 ---------------------
 
-TODO: Refactor index.php to use Bootstrap class using BootstrapInterface? Then you can inject ExceptionHandler to it? Or create an event system, see Symfony's event manager. Example use case include handling exceptions, redirecting links like '/blog/title' to '/blog/title/' for canonical version, etc.
-TODO: Inject DIC and Autoloader to exception handler, for debugging purposes. Have the DIC log which provider class/method is used, which instance name is instantiated and how many times it has been instantiated. The autoloader: which file is loaded, what class is expected on that file, the time of the load, which file gets loaded first, etc.
-TODO: Consider EventManager class to hook into core events, or a specialized interface containing event methods that the user can implement. This would help in use cases like filtering the final response body, request/response logging, etc.
-TODO: Take a look at Symfony's HTTPKernel for hints to improve your request and response objects.
-TODO: The docs -> make the tone of the voice less aggressive, acknowledge that global state in PHP cannot be avoided (i.e. the use of superglobals at least when constructing the Request instance, )
+TODO: Create an core event manager to handle callbacks (see
+      Symfony's event handler for inspiration). There would be
+      events like 'Carrot\Core\System!Bootstrap',
+      'Carrot\Core\System!ResponseReturned', or
+      'Carrot\Core\System!RouteDiscovered'. Example use cases
+      include redirecting links like '/blog/title' to
+      '/blog/title/' for canonical version, filtering the final
+      response body, request/response logging, etc.
+
+TODO: Inject the DIC and Autoloader to the exception handler for
+      debugging purposes. Have the DIC log which instance names
+      are instantiated (how many times) and providers used
+      (if any). Have the Autoloader load which file is loaded and
+      what class is expected on that file, the time of the load,
+      which file gets loaded first, etc.
+
+TODO: Also for debugging purposes, inject the Router to the
+      ExceptionHandler so that it can read some information from
+      it, like what is the active route ID and which callback was
+      returned from the routing.
+
+TODO: Take a look at Symfony's HTTPKernel for hints to improve
+      your request and response objects.
+
+TODO: Finish the guide pages.
+
+TODO: Make the ErrorHandler class throws appropriate exceptions?
+
+TODO: Fatal error handler in register_shutdown_function?
+
+TODO: Decouple Router from DIC, use System as the builder for the
+      Router.
+
+TODO: Fix the router class to be flexible, to accept quick regex
+      or special syntax routes and also accept binding of route
+      classes. Kind of like the DIC accepts quick bindings to
+      eliminate the need to code simple factories but also provide
+      the ability to use provider classes for complex instances.
+      Figure out the syntax to be used in quick syntax and API
+      for regex mode.
+
+TODO: Fix Autoloader's paranoid handling of class names. No matter
+      if the class is called by \Foo\Bar or Foo\Bar, the argument
+      to the spl autoloader callback is always without a backslash
+      prefix.
+
 
 NEW MODULES/CLASSES
 -------------------
 
-TODO: Carrot\Helper\Template, to be used by view classes. Make the dependency as loose as possible.
-TODO: Carrot\Database\MySQLi, extend the original MySQLi class, add factory method to create the StatementWrapper.
-TODO: Carrot\Session package, get hints from Symfony, add flash variable, different storage mechanism support, consider SessionStorageInterface.
+TODO: Carrot\Helper\Template, to be used by view classes. Make the
+      dependency as loose as possible.
+
+TODO: Carrot\Database\MySQLi, extend the original MySQLi class,
+      add factory method to create the StatementWrapper.
+      
+TODO: Carrot\Session package, get hints from Symfony, add flash
+      variable, different storage mechanism support, consider
+      SessionStorageInterface.
+
 TODO: Carrot\Helper\Config, for immutable configuration files.
+
 TODO: Carrot\Helper\URL, with autodetection for base URL and stuff.
-TODO: Carrot\Validation package, make it easier to use! Use lambda function for on the spot validation function, or callbacks. Take hints from Zend_Validation.
+
+TODO: Carrot\Validation package, make it easier to use! Use lambda
+      function for on the spot validation function, or callbacks.
+      Take hints from Zend_Validation.
+
 
 DOCUMENTATION
 -------------
 
-TODO: Fix comments on all classes, add @throws to denote exception thrown, and why it is thrown.
-TODO: Fix comments on all classes, add @see to denote protected class caller.
+TODO: Fix comments on all classes, add @throws to denote exception
+      thrown, and why it is thrown.
+
+TODO: Fix comments on all classes, add @see to denote protected
+      class caller.
+
 TODO: Use the 'use' keyword for all classes.
-TODO: Fix comments on all classes to use full namespaces, for every @param and @return, use full namespace for object type, so @param \MySQLi_STMT $stmt comments.
-TODO: Fix comments on Database library (you changed namespaces, wait for it to stabilize).
+
+TODO: Fix comments on Database library (you changed namespaces,
+      wait for it to stabilize).
+
 
 NOTES
 -----

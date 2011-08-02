@@ -1,0 +1,69 @@
+<h1>Your Routine Class</h1>
+
+<blockquote>
+    <p>
+        rou&bull;tine, noun. a sequence of actions regularly
+        followed; a fixed program. - <cite>New Oxford American
+        Dictionary</cite>
+    </p>
+</blockquote>
+
+<p>
+    When you write a web application, you want a subroutine to be
+    run when a particular request is sent to your server. This
+    routine code can be written inside a function, a method, or
+    an anonymous function. For example, in
+    <a href="http://silex-project.org/">Silex</a> we write the
+    routines inside anonymous functions, in
+    <a href="http://www.limonade-php.net/">Limonade</a> we write
+    them in regular functions, and in
+    <a href="http://kohanaframework.org/">Kohana</a> we write
+    them in a controller class method.
+</p>
+
+<p>
+    Carrot is an object oriented framework, so your routine
+    codes must be written inside a method. In Carrot, the methods
+    that contain these routines is called <em>routine methods
+    </em>. The classes/objects that contains these routine
+    methods are called <em>routine classes/objects</em>.
+</p>
+
+<p>
+    The name <em>routine class</em> is chosen to be pattern
+    independent. Unlike other frameworks, this class doesn't have
+    to be your controller. Carrot is not an MVC framework and
+    doesn't pretend to be one. You can implement MVC on top of
+    Carrot, but it's not the only way you can use it. The only
+    responsibility that you have to the framework is that your
+    routine method returns an instance of
+    <code>Carrot\Core\Response</code> (a value object) when called
+    by the front controller. How exactly you plan on doing that is
+    up to you.
+</p>
+
+<p>
+    You write your routine class as plain old PHP object, courtesy
+    of the dependency injection container. Here's an example of
+    a routine class:
+</p>
+
+<pre>namespace Sample;
+
+use Carrot\Core\Response;
+
+class Welcome
+{
+    public function helloWorld()
+    {
+        return new Response("&lt;h1&gt;Hello World!&lt;h1&gt;");
+    }
+}
+</pre>
+
+<h2>The <code>Callback</code></h2>
+
+<p>
+// ---------------------------------------------------------------
+    <code>Carrot\Core\Callback</code> is a class that 
+</p>

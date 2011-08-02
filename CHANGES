@@ -1,6 +1,14 @@
 TRUNK
 -----
 
+- Renamed Carrot\Core\Dispatch to Carrot\Core\Callback.
+    - Moved call_user_func_array() logic to the Callback class itself, adhering to tell, don't ask principle.
+- Removed FrontController, simplified Carrot\Core\System::run() method.
+
+
+VERSION 0.2.6
+-------------
+
 - Refactored index.php to Carrot\Core\System
 - Exception handling
     - Carrot\Core\ExceptionHandlerManager is the primary exception handler

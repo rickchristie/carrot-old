@@ -26,4 +26,3 @@ use Carrot\Core\ObjectReference;
 $dic->bind('Sample\Route{Main:Transient}', array(
     new ObjectReference('Carrot\Core\AppRequestURI{Main:Transient}')
 ));
-

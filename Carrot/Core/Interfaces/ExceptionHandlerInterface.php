@@ -10,10 +10,10 @@
  */
 
 /**
- * Exception Page Interface
+ * Exception Handler Interface.
  *
 // ---------------------------------------------------------------
- * 
+ * This interface defines the contract between 
  * 
  * @author      Ricky Christie <seven.rchristie@gmail.com>
  * @license     http://www.opensource.org/licenses/mit-license.php MIT License

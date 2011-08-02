@@ -10,19 +10,23 @@
  */
 
 /**
- * Dispatch
- * 
- * Value object, represents a dispatch message, namely, the object
- * reference (used by the DIC for instantiation), the method to
- * call and the arguments to pass to the method. This object
- * gives the core classes enough information to determine which
- * user code it should invoke.
+ * Callback
  *
- * Main usage of this class is to determine which routine object
- * gets initialized, which routine method gets called, and what
- * arguments to be passed to the method. Hence this object is to
- * be returned by the Router class when routing and used by the
- * front controller for dispatching.
+ * Value object, represents a reference to an executable piece
+ * of code inside an object method. This is not a usual callback,
+ * however, since it uses DependencyInjectionContainer to get the
+ * instance of the object beforehand.
+ *
+ * As a callback object, it containes an ObjectReference instance
+ * that refer to the object instance that houses the method, the
+ * method name, and arguments to pass when calling the method.
+ * Core classes use this object to run a subroutine defined in a
+ * higher-level layer, which is the layer that contains your
+ * classes.
+ *
+ * This object is used by Carrot to run your routine method,
+ * hence why your route objects must return an instance of this
+ * class if it chooses to do the routing.
  *
  * @author      Ricky Christie <seven.rchristie@gmail.com>
  * @license     http://www.opensource.org/licenses/mit-license.php MIT License
@@ -33,7 +37,7 @@ namespace Carrot\Core;
 
 use RuntimeException;
 
-class Dispatch
+class Callback
 {
     /**
      * @var string The object reference to be instantiated.
@@ -51,12 +55,12 @@ class Dispatch
     protected $arguments;
     
     /**
-     * Creates a dispatch object.
+     * Constructor.
      *
      * Example usage:
      *
      * <code>
-     * $dispatch = new Dispatch(
+     * $callback = new Callback(
      *     new ObjectReference('Sample\Welcome{Main:Transient}'),
      *     'welcome',
      *     array(5, 'Foo', 'Bar')
@@ -73,6 +77,33 @@ class Dispatch
         $this->objectReference = $objectReference;
         $this->methodName = $methodName;
         $this->arguments = $arguments;
+    }
+    
+    /**
+     * Run the callback.
+     * 
+     * Uses the DIC to get an instance of the object that contained
+     * the callback method, and after checking if the object and
+     * method is callable, proceeds to call the method with 
+     * call_user_func_array().
+     *
+     * Throws RuntimeException if the object method is not callable.
+     *
+     * @throws RuntimeException
+     * @param DependencyInjectionContainer $dic Used to get the instance of the callback object.
+     *
+     */
+    public function run(DependencyInjectionContainer $dic)
+    {
+        $object = $dic->getInstance($this->objectReference);
+        
+        if (!is_callable(array($object, $this->methodName)))
+        {
+            $className = $this->objectReference->getClassName();
+            throw new RuntimeException("Callback error in trying to call method. {$className}::{$this->methodName} is not callable.");
+        }
+        
+        return call_user_func_array(array($object, $this->methodName), $this->arguments);
     }
     
     /**

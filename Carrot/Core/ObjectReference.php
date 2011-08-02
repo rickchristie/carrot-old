@@ -21,7 +21,7 @@
  * of the format:
  *
  * <code>
- * Carrot\Core\FrontController{Main:Transient}
+ * Carrot\Core\Request{Main:Transient}
  * Carrot\Database\MySQLi{Backup:Singleton}
  * </code>
  *
@@ -30,8 +30,8 @@
  * configuration:
  *
  * <code>
- * Carrot\Core\FrontController{Main:Transient}
- * Carrot\Core\FrontController{Main:Singleton}
+ * App\DataAccess\PersonMapper{Main:Transient}
+ * App\DataAccess\PersonMapper{Main:Singleton}
  * </code>
  *
  * @author      Ricky Christie <seven.rchristie@gmail.com>

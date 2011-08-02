@@ -3,24 +3,21 @@
 /**
  * Carrot route registration file.
  *
- * Register your route classes here. Access Carrot's Router via
- * $router variable. Your route classes are registered by their
- * object reference (instance name) since the Router gets your
- * routes via DIC. This means you can tell the DIC to wire
- * dependencies for your route class.
+ * Register your route by accessing Carrot\Core\RouteRegistrations
+ * instance through $routes variable.
  *
  * <code>
- * $router->registerRoute('routeID', new ObjectReference(
- *     'Namespace\RouteClassName'
- * ));
+ * $routes->registerRouteObjectReference(
+ *     'App.Login',
+ *     new ObjectReference('App\Route\LoginRoute{Main:Transient}')
+ * );
  * </code>
  * 
- * @see Carrot\Core\Router::registerRoute()
- * @see Carrot\Core\Router::loadConfigurationFile()
+ * @see Carrot\Core\RouteRegistrations
  * 
  */
 
 use Carrot\Core\ObjectReference;
 
-$router->registerRoute('Sample', new ObjectReference('Sample\Route{Main:Transient}'));
-$router->registerRoute('CarrotDocs', new ObjectReference('Carrot\Docs\Route{Main:Transient}'));
+$routes->registerRouteObjectReference('Sample', new ObjectReference('Sample\Route{Main:Transient}'));
+$routes->registerRouteObjectReference('CarrotDocs', new ObjectReference('Carrot\Docs\Route{Main:Transient}'));

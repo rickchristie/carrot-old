@@ -23,7 +23,7 @@ namespace Carrot\Docs;
 
 use Carrot\Core\Interfaces\RouteInterface;
 use Carrot\Core\AppRequestURI;
-use Carrot\Core\Dispatch;
+use Carrot\Core\Callback;
 use Carrot\Core\ObjectReference;
 use RuntimeException;
 
@@ -46,7 +46,7 @@ class Route implements RouteInterface
             $topicID = (isset($this->segments[1])) ? $this->segments[1] : '';
             $pageID = (isset($this->segments[2])) ? $this->segments[2] : '';
             
-            return new Dispatch(
+            return new Callback(
                 new ObjectReference('Carrot\Docs\Controller{Main:Transient}'),
                 'getResponse',
                 array($topicID, $pageID)

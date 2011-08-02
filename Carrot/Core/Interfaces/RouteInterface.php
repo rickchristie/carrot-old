@@ -15,7 +15,7 @@
  * This interface defines a contract between your route class and
  * the Router. You will have to provide two methods for two-way
  * routing: one for translating requests to an instance of
- * Dispatch, the other for translating arguments from view into
+ * Callback, the other for translating arguments from view into
  * a URL.
  *
  * Please note that a Route class is defined as a class that
@@ -34,15 +34,15 @@ namespace Carrot\Core\Interfaces;
 interface RouteInterface
 {   
     /**
-     * Routes the current request into a dispatch instance.
+     * Routes the current request into a Callback instance.
      * 
      * The Router will loop through registered route objects and call
      * this method when routing. If your route object cannot route
      * the current request, simply return nothing and the Router will
      * move on to the next route object.
      * 
-     * @see \Carrot\Core\Dispatch
-     * @return mixed Either an instance of \Carrot\Core\Dispatch or null.
+     * @see \Carrot\Core\Callback
+     * @return mixed Either an instance of \Carrot\Core\Callback or null.
      * 
      */
     public function route();

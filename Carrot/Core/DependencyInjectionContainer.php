@@ -33,7 +33,7 @@
  *
  * <code>
  * Carrot\Database\MySQL{Logging:Singleton}
- * Carrot\Core\FrontController{Main:Transient}
+ * Carrot\Core\Request{Main:Transient}
  * </code>
  *
  * Object references in the constructor arguments will be
@@ -127,7 +127,7 @@ class DependencyInjectionContainer
      * and a lifecycle setting. Example instance names:
      *
      * <code>
-     * Carrot\Core\FrontController{Main:Transient}
+     * Carrot\Core\Request{Main:Transient}
      * Carrot\Database\MySQLi{Backup:Singleton}
      * </code>
      *
@@ -221,6 +221,7 @@ class DependencyInjectionContainer
         
         if (!class_exists($className))
         {
+            $instanceName = $objectReference->getInstanceName();
             throw new RuntimeException("DIC error in getting instance '{$instanceName}'. Class '{$className}' does not exist.");
         }
         

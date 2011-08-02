@@ -14,7 +14,7 @@
  * 
  * This is a sample route class, it extends the RouteInterface and
  * provides two main methods for two-way routing, one for
- * translating requests to an instance of Dispatch and another to
+ * translating requests to an instance of Callback and another to
  * translate arguments from view into URL.
  *
  * @author      Ricky Christie <seven.rchristie@gmail.com>
@@ -24,7 +24,7 @@
 
 namespace Sample;
 
-use Carrot\Core\Dispatch;
+use Carrot\Core\Callback;
 use Carrot\Core\ObjectReference;
 use Carrot\Core\AppRequestURI;
 use Carrot\Core\Interfaces\RouteInterface;
@@ -43,7 +43,7 @@ class Route implements RouteInterface
     
     /**
      * Constructs the route.
-     *
+     * 
      * @param AppRequestURI $appRequestURI
      *
      */
@@ -54,19 +54,19 @@ class Route implements RouteInterface
     }
     
     /**
-     * Routes the request into a dispatch instance.
+     * Routes the request into a callback instance.
      *
-     * Will not return the dispatch unless the application request URI
+     * Will not return the callback unless the application request URI
      * segments are empty.
      *
-     * @return mixed Either Dispatch or null, depending on the request.
+     * @return mixed Either callback or null, depending on the request.
      *
      */
     public function route()
     {
         if (empty($this->segments))
         {
-            return new Dispatch(new ObjectReference('Sample\Welcome{Main:Transient}'), 'getWelcomeResponse');
+            return new Callback(new ObjectReference('Sample\Welcome{Main:Transient}'), 'getWelcomeResponse');
         }
     }
     

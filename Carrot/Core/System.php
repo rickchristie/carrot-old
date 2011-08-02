@@ -73,9 +73,44 @@ class System
     protected $exceptionHandler;
     
     /**
-     * @var Router Object used to route requests to a dispatch instance.
+     * @var Router Object used to route requests to a Callback instance.
      */
     protected $router;
+    
+    /**
+     * @var array $_SERVER
+     */
+    protected $server;
+    
+    /**
+     * @var array $_GET
+     */
+    protected $get;
+    
+    /**
+     * @var array $_POST
+     */
+    protected $post;
+    
+    /**
+     * @var array $_FILES
+     */
+    protected $files;
+    
+    /**
+     * @var array $_COOKIE
+     */
+    protected $cookie;
+    
+    /**
+     * @var array $_REQUEST
+     */
+    protected $request;
+    
+    /**
+     * @var array $_ENV
+     */
+    protected $env;
     
     /**
      * Constructs the Carrot Sytem object.
@@ -268,32 +303,77 @@ class System
      */
     public function initializeRouter()
     {
+        $routeRegistrations = new RouteRegistrations;
+        $loadFile = $this->loadFileFunction;
+        $loadFile($this->routesFilePath, array('routes' => $routeRegistrations));
+        $routeRegistrationArray = $routeRegistrations->get();
+        
+        // We instantiate the router with the DIC even though the Router
+        // class doesn't have any dependency because the Router class's
+        // scope is Singleton.
         $this->router = $this->dic->getInstance(
             new ObjectReference('Carrot\Core\Router{Main:Singleton}')
         );
         
-        $loadFile = $this->loadFileFunction;
-        $loadFile($this->routesFilePath, array('router' => $this->router));
-        $this->router->instantiateRouteObjects($this->dic);
+        foreach ($routeRegistrationArray as $routeID => $routeInfo)
+        {
+            if ($routeInfo['type'] == 'ObjectReference')
+            {
+                $route = $this->dic->getInstance($routeInfo['reference']);
+                $this->router->registerRouteObject($routeID, $route);
+                continue;
+            }
+        }
     }
     
     /**
-     * Dispatches the request and send the response to client.
+     * Routes the request and gets the response from the routine method.
      *
-     * Instantiates the front controller, gets the dispatch instance
-     * from router, tells the front controller to get the response,
-     * and then sends the response to the client.
+     * After getting the response, this method will immediately send
+     * the response to the client.
      *
      */
     public function run()
-    {
-        $frontController = $this->dic->getInstance(
-            new ObjectReference('Carrot\Core\FrontController{Main:Transient}')
-        );
-        
-        $dispatch = $this->router->doRouting();
-        $response = $frontController->dispatch($dispatch, $this->dic);
+    {   
+        $callback = $this->router->doRouting();
+        $response = $this->getResponse($callback);
         $response->send();
+    }
+    
+    /**
+     * Gets the response by running the callback.
+     *
+     * Will do internal redirection by recursion if the callback
+     * returns another instance of Callback. Otherwise will check if
+     * return value is an instance of Response or not.
+     *
+     * Will throw RuntimeException if the callback (essentially your
+     * routine method) doesn't return an instance of Response.
+     *
+     * @throws RuntimeException
+     * @param Callback $callback The callback to run.
+     * @return Response The response instance from the routine method.
+     *
+     */
+    protected function getResponse(Callback $callback)
+    {
+        $response = $callback->run($this->dic);
+        
+        // Do internal redirection
+        if ($response instanceof Callback)
+        {
+            return $this->getResponse($response);
+        }
+        
+        if (!($response instanceof Response))
+        {
+            $className = $this->objectReference->getClassName();
+            $methodName = $callback->getMethodName();
+            throw new RuntimeException("System error in running callback, the routine method {$className}::{$methodName}() doesn't return an instance of Carrot\Core\Response.");
+        }
+        
+        $response->setDefaultServerProtocol($this->server['SERVER_PROTOCOL']);
+        return $response;
     }
     
     /**
@@ -305,7 +385,6 @@ class System
      * Carrot\Core\AppRequestURI{Main:Transient}
      * Carrot\Core\ExceptionHandler{Main:Transient}
      * Carrot\Core\Request{Main:Transient}
-     * Carrot\Core\FrontController{Main:Transient}
      * </code>
      *
      * Besides that there are also default bindings for Carrot\Docs:
@@ -341,9 +420,7 @@ class System
             $this->env
         ));
         
-        $this->dic->bind('Carrot\Core\FrontController{Main:Transient}', array(
-            $this->server['SERVER_PROTOCOL']
-        ));
+        // Documentation bindings
         
         $this->dic->bind('Carrot\Docs\Route{Main:Transient}', array(
             new ObjectReference('Carrot\Core\AppRequestURI{Main:Transient}')

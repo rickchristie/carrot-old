@@ -28,7 +28,7 @@
  * in that directory:
  *
  * <code>
- * $autoloader->bindNamespaceToDirectory('\', '/vendors');
+ * $autoloader->bindNamespaceToDirectory('\\', '/vendors');
  * </code>
  *
  * If more than one directory is bound to the same namespace, the
@@ -37,8 +37,8 @@
  * binding to the last.
  *
  * <code>
- * $autoloader->bindNamespaceToDirectory('\', '/vendors');
- * $autoloader->bindNamespaceToDirectory('\', '/providers');
+ * $autoloader->bindNamespaceToDirectory('\\', '/vendors');
+ * $autoloader->bindNamespaceToDirectory('\\', '/providers');
  * </code>
  *
  * For the example code above, the Autoloader will first look for
