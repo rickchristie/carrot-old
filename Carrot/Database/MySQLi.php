@@ -10,9 +10,37 @@
  */
 
 /**
- * Carrot's MySQLi
+ * MySQLi
  * 
- * asdf
+ * This class extends the original MySQLi class and adds the
+ * buildStatement() method, which acts as the factory method to
+ * create Statement objects. Other than that, this class doesn't
+ * alter the original MySQLi's behavior at all.
+ *
+ * <code>
+ * $statement = $mysqli->buildStatement(
+ *     'SELECT
+ *         id, name, balance
+ *     FROM
+ *         accounts
+ *     WHERE
+ *         id LIKE :id,
+ *         name LIKE :name,
+ *         balance > :balance'
+ * );
+ * </code>
+ *
+// ---------------------------------------------------------------
+ * You can then execute the statement:
+ *
+ * <code>
+ * $statement->execute(array(
+ *     ':id' => $id,
+ *     ':balance' => $balance
+ * ));
+ * </code>
+ *
+// ---------------------------------------------------------------
  * 
  * 
  * @author      Ricky Christie <seven.rchristie@gmail.com>
@@ -22,7 +50,121 @@
 
 namespace Carrot\Database;
 
-class MySQLi extends \MySQLi
-{
+use MySQLi as MySQLi_Parent;
+
+class MySQLi extends MySQLi_Parent
+{   
+    /**
+     * Creates an instance of Statement.
+     *
+     * Statement string sent must use placeholders. Placeholders are
+     * marked by the colon character (:).
+     * 
+     * <code>
+     * $statement = $mysqli->buildStatement(
+     *     'SELECT
+     *         id, name, balance
+     *     FROM
+     *         accounts
+     *     WHERE
+     *         id LIKE :id,
+     *         name LIKE :name,
+     *         balance > :balance'
+     * );
+     * </code>
+     *
+     * The statement string from above code will be converted to this
+     * query:
+     *
+     * <code>
+     * SELECT
+     *     id, name, balance
+     * FROM
+     *     accounts
+     * WHERE
+     *     id LIKE ?,
+     *     name LIKE ?,
+     *     balance > ?
+     * </code>
+     *
+     * with the following placeholders:
+     *
+     * <code>
+     * :id
+     * :name
+     * :balance
+     * </code>
+     * 
+     * @param string $statementStringWithPlaceholders Statement string with placeholders.
+     * @return Statement
+     * 
+     */
+    public function buildStatement($statementStringWithPlaceholders)
+    {
+        $placeholders = $this->extractPlaceholders($statementStringWithPlaceholders);
+        $statementString = $this->replacePlaceholdersWithQuestionMarks($statementStringWithPlaceholders);
+        
+        
+        
+    }
     
+    /**
+     * Extracts placeholder names from original statement string.
+     *
+     * Placeholder is defined with this regular expression:
+     *
+     * <code>
+     * :[a-zA-Z0-9_:]+
+     * </code>
+     *
+     * We use the colon character to follow PDO's placeholder behavior.
+     * This should make usage of this class familiar enough for most
+     * people.
+     *
+     * <code>
+     * :placeholder
+     * :123placeholder
+     * :_place_holder
+     * ::placeholder
+     * :place:holder
+     * </code>
+     *
+     * @param string $statement_string_with_placeholders
+     * @return array Array that contains placeholder names.
+     *
+     */
+    protected function extractPlaceholders($statement_string_with_placeholders)
+    {
+        preg_match_all('/:[a-zA-Z0-9_:]+/', $statement_string_with_placeholders, $matches);
+        
+        if (isset($matches[0]) && is_array($matches[0]))
+        {
+            return $matches[0];
+        }
+        
+        return array();
+    }
+    
+    /**
+     * Replaces placeholders (:string) with '?'.
+     *
+     * This in effect creates a statement string that we can use it
+     * to instantiate a MySQLi statement object. It replaces this
+     * pattern:
+     *
+     * <code>
+     * :[a-zA-Z0-9_:]+
+     * </code>
+     *
+     * with question mark ('?'). Returns empty array if no placeholder
+     * is found.
+     *
+     * @param string $statement_string_with_placeholders
+     * @return string Statement string safe to use as \MySQLi_STMT instantiation argument.
+     *
+     */
+    protected function replacePlaceholdersWithQuestionMarks($statement_string_with_placeholders)
+    {
+        return preg_replace('/:[a-zA-Z0-9_:]+/', '?', $statement_string_with_placeholders);
+    }
 }
