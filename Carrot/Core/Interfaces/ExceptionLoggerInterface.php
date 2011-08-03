@@ -35,8 +35,10 @@ use Exception;
 interface ExceptionLoggerInterface
 {
     /**
-     * asfd
-     *
+     * Logs the error.
+     * 
+     * @param Exception $exception The exception to be logged.
+     * 
      */
     public function log(Exception $exception);
 }

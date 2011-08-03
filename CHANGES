@@ -4,7 +4,12 @@ TRUNK
 - Renamed Carrot\Core\Dispatch to Carrot\Core\Callback.
     - Moved call_user_func_array() logic to the Callback class itself, adhering to tell, don't ask principle.
 - Removed FrontController, simplified Carrot\Core\System::run() method.
-
+- Router
+    - Added Carrot\Core\RouteRegistrations to handle route registrations.
+    - Router and DIC are now decoupled.
+- Session
+    - Carrot\Session is going to be another package.
+    - Added Carrot\Core\Session.
 
 VERSION 0.2.6
 -------------
