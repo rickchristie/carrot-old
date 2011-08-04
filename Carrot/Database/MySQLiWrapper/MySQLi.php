@@ -10,7 +10,7 @@
  */
 
 /**
- * MySQLi
+ * MySQLi Wrapper
  * 
  * This class extends the original MySQLi class and adds the
  * buildStatement() method, which acts as the factory method to
@@ -48,9 +48,10 @@
  *
  */
 
-namespace Carrot\Database;
+namespace Carrot\Database\MySQLiWrapper;
 
 use MySQLi as MySQLi_Parent;
+use RuntimeException;
 
 class MySQLi extends MySQLi_Parent
 {   
@@ -94,22 +95,27 @@ class MySQLi extends MySQLi_Parent
      * :name
      * :balance
      * </code>
+     *
+    // ---------------------------------------------------------------
+     * So you can execute the statement like this:
+     *
+     * <code>
      * 
-     * @param string $statementStringWithPlaceholders Statement string with placeholders.
+     * </code>
+     * 
+     * @param string $queryWithPlaceholders Statement string with placeholders.
      * @return Statement
      * 
      */
-    public function buildStatement($statementStringWithPlaceholders)
+    public function buildStatement($queryWithPlaceholders)
     {
-        $placeholders = $this->extractPlaceholders($statementStringWithPlaceholders);
-        $statementString = $this->replacePlaceholdersWithQuestionMarks($statementStringWithPlaceholders);
-        
-        
-        
+        $placeholders = $this->extractPlaceholders($queryWithPlaceholders);
+        $query = $this->replacePlaceholdersWithQuestionMarks($queryWithPlaceholders);
+        return new Statement($this, $query, $placeholders);
     }
     
     /**
-     * Extracts placeholder names from original statement string.
+     * Extracts placeholder names from original query.
      *
      * Placeholder is defined with this regular expression:
      *
@@ -129,13 +135,13 @@ class MySQLi extends MySQLi_Parent
      * :place:holder
      * </code>
      *
-     * @param string $statement_string_with_placeholders
+     * @param string $queryWithPlaceholders The query string with placeholders.
      * @return array Array that contains placeholder names.
      *
      */
-    protected function extractPlaceholders($statement_string_with_placeholders)
+    protected function extractPlaceholders($queryWithPlaceholders)
     {
-        preg_match_all('/:[a-zA-Z0-9_:]+/', $statement_string_with_placeholders, $matches);
+        preg_match_all('/:[a-zA-Z0-9_:]+/', $queryWithPlaceholders, $matches);
         
         if (isset($matches[0]) && is_array($matches[0]))
         {
@@ -148,23 +154,22 @@ class MySQLi extends MySQLi_Parent
     /**
      * Replaces placeholders (:string) with '?'.
      *
-     * This in effect creates a statement string that we can use it
-     * to instantiate a MySQLi statement object. It replaces this
+     * This in effect creates a query string that we can use to
+     * instantiate a MySQLi statement object. It replaces this
      * pattern:
      *
      * <code>
      * :[a-zA-Z0-9_:]+
      * </code>
      *
-     * with question mark ('?'). Returns empty array if no placeholder
-     * is found.
+     * with question mark ('?').
      *
-     * @param string $statement_string_with_placeholders
+     * @param string $queryWithPlaceholders
      * @return string Statement string safe to use as \MySQLi_STMT instantiation argument.
      *
      */
-    protected function replacePlaceholdersWithQuestionMarks($statement_string_with_placeholders)
+    protected function replacePlaceholdersWithQuestionMarks($queryWithPlaceholders)
     {
-        return preg_replace('/:[a-zA-Z0-9_:]+/', '?', $statement_string_with_placeholders);
+        return preg_replace('/:[a-zA-Z0-9_:]+/', '?', $queryWithPlaceholders);
     }
 }
