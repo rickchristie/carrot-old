@@ -225,6 +225,28 @@ class Router
     }
     
     /**
+     * Return an array containing all the registered route IDs.
+     *
+     * Useful when you are building a sitemap or navigation object.
+     * Example return:
+     *
+     * <code>
+     * $routeIDs = array(
+     *     'App.Login',
+     *     'App.Blog.Show',
+     *     'App.Blog.Comment'
+     * );
+     * </code>
+     *
+     * @return array All the registered route IDs.
+     *
+     */
+    public function getAllRegisteredRouteIDs()
+    {
+        return array_keys($this->routes);
+    }
+    
+    /**
      * Returns the default callback instance for no matching route.
      *
      * Throws RuntimeException if the default callback instance for no

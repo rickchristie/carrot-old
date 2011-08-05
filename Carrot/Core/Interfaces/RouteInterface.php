@@ -50,9 +50,12 @@ interface RouteInterface
     /**
      * Translates arguments from view into a valid string URL.
      * 
-     * When your view or template calls \Carrot\Core\Router::getURL(),
-     * the Router will relay the arguments to this method. Make sure
-     * you return a valid URL.
+     * When your view or template calls
+     * \Carrot\Core\Router::getURL(), the Router will relay the
+     * arguments to this method. Make sure you return a valid URL,
+     * as a matter of convention, do NOT place the URL string in any
+     * formatting function, like urlencode() or htmlspecialchars(),
+     * simply return the URL string as it is.
      * 
      * @return string Valid URL.
      *

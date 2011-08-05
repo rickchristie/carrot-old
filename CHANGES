@@ -7,9 +7,14 @@ TRUNK
 - Router
     - Added Carrot\Core\RouteRegistrations to handle route registrations.
     - Router and DIC are now decoupled.
+    - Added getActiveRouteID()
+    - Added getActiveCallback()
+    - Added getRouteIDForThisRoute()
+    - 
 - Session
     - Carrot\Session is going to be another package.
     - Added Carrot\Core\Session.
+- Carrot\Core\Database\MySQLiWrapper now ready to use.
 
 VERSION 0.2.6
 -------------
