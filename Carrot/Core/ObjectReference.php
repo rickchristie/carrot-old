@@ -21,7 +21,7 @@
  * of the format:
  *
  * <code>
- * Carrot\Core\Request{Main:Transient}
+ * Carrot\Core\Request{Main:Singleton}
  * Carrot\Database\MySQLi{Backup:Singleton}
  * </code>
  *

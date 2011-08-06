@@ -286,7 +286,7 @@ class System
     public function initializeExceptionHandler()
     {
         $this->exceptionHandlerManager = $this->dic->getInstance(
-            new ObjectReference('Carrot\Core\ExceptionHandlerManager{Main:Transient}')
+            new ObjectReference('Carrot\Core\ExceptionHandlerManager{Main:Singleton}')
         );
         
         $this->exceptionHandlerManager->setDIC($this->dic);
@@ -383,9 +383,9 @@ class System
      * List of registered default DIC bindings for core classes:
      *
      * <code>
-     * Carrot\Core\AppRequestURI{Main:Transient}
+     * Carrot\Core\AppRequestURI{Main:Singleton}
      * Carrot\Core\ExceptionHandler{Main:Transient}
-     * Carrot\Core\Request{Main:Transient}
+     * Carrot\Core\Request{Main:Singleton}
      * </code>
      *
      * Besides that there are also default bindings for Carrot\Docs:
@@ -402,16 +402,16 @@ class System
      */
     protected function registerDefaultDICBindings()
     {
-        $this->dic->bind('Carrot\Core\AppRequestURI{Main:Transient}', array(
+        $this->dic->bind('Carrot\Core\AppRequestURI{Main:Singleton}', array(
             $this->server['SCRIPT_NAME'],
             $this->server['REQUEST_URI']
         ));
         
-        $this->dic->bind('Carrot\Core\ExceptionHandlerManager{Main:Transient}', array(
+        $this->dic->bind('Carrot\Core\ExceptionHandlerManager{Main:Singleton}', array(
             array('Exception' => new ObjectReference('Carrot\Core\ExceptionHandler{Main:Transient}'))
         ));
         
-        $this->dic->bind('Carrot\Core\Request{Main:Transient}', array(
+        $this->dic->bind('Carrot\Core\Request{Main:Singleton}', array(
             $this->server,
             $this->get,
             $this->post,
@@ -424,7 +424,7 @@ class System
         // Documentation bindings
         
         $this->dic->bind('Carrot\Docs\Route{Main:Transient}', array(
-            new ObjectReference('Carrot\Core\AppRequestURI{Main:Transient}')
+            new ObjectReference('Carrot\Core\AppRequestURI{Main:Singleton}')
         ));
         
         $this->dic->bind('Carrot\Docs\Controller{Main:Transient}', array(

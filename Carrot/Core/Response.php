@@ -197,7 +197,7 @@ class Response
      * can't set the status code with this method.
      *
      * <code>
-     * $response->setHeader('Content-Type', 'text/html');
+     * $response->addHeader('Content-Type', 'text/html');
      * </code>
      *
      * @param string $headerName
@@ -280,7 +280,7 @@ class Response
     public function redirect($location)
     {
         $this->removeAllHeaders();
-        $this->setHeader('Location', $location);
+        $this->addHeader('Location', $location);
     }
     
     /**

@@ -96,6 +96,23 @@ class AppRequestURI
     }
     
     /**
+     * Returns true if the array give equals the segments array.
+     *
+     * Comparison is done using the identity comparison operator (the
+     * triple equal sign '==='). This means both must have the same
+     * key/value pairs, in the same order, and in the same type.
+     * 
+     * @see http://www.php.net/manual/en/language.operators.array.php
+     * @param array $array The array to be compared.
+     * @return bool True or false.
+     *
+     */
+    public function segmentMatches(array $array)
+    {
+        return ($this->segments === $array);
+    }
+    
+    /**
      * Returns a segment from the application request URI.
      *
      * @param int $index The segment index.

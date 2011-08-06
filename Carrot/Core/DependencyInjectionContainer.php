@@ -33,7 +33,7 @@
  *
  * <code>
  * Carrot\Database\MySQL{Logging:Singleton}
- * Carrot\Core\Request{Main:Transient}
+ * Carrot\Core\Request{Main:Singleton}
  * </code>
  *
  * Object references in the constructor arguments will be
@@ -127,7 +127,7 @@ class DependencyInjectionContainer
      * and a lifecycle setting. Example instance names:
      *
      * <code>
-     * Carrot\Core\Request{Main:Transient}
+     * Carrot\Core\Request{Main:Singleton}
      * Carrot\Database\MySQLi{Backup:Singleton}
      * </code>
      *
