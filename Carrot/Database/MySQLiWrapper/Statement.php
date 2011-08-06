@@ -398,7 +398,7 @@ class Statement extends MySQLi_STMT
      * method body.
      *
      */
-    public function bind_param()
+    public function bind_param($args)
     {
         
     }

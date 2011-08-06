@@ -24,6 +24,7 @@
 namespace Carrot\Core;
 
 use ErrorException;
+use RuntimeException;
 
 class System
 {
@@ -367,7 +368,7 @@ class System
         
         if (!($response instanceof Response))
         {
-            $className = $this->objectReference->getClassName();
+            $className = $callback->getObjectReference()->getClassName();
             $methodName = $callback->getMethodName();
             throw new RuntimeException("System error in running callback, the routine method {$className}::{$methodName}() doesn't return an instance of Carrot\Core\Response.");
         }

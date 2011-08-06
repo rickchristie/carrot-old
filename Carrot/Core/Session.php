@@ -25,9 +25,9 @@
  *
  */
 
-namespace Carrot\Session;
+namespace Carrot\Core;
 
-class NativeSession
+class Session
 {
     /**
      * @var bool True if session_start() has been called at least once, false otherwise.
