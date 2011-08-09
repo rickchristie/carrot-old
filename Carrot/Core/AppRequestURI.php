@@ -34,19 +34,19 @@ namespace Carrot\Core;
 class AppRequestURI
 {
     /**
-     * @var string The contents of $_SERVER['SCRIPT_NAME'], injected at construction.
+     * @var array The contents of $_SERVER variable, gotten through a Request instance.
      */
-    protected $serverScriptName;
+    protected $server;
     
     /**
-     * @var string The contents of $_SERVER['REQUEST_URI'], injected at construction.
-     */
-    protected $serverRequestURI;
-    
-    /**
-     * @var string Relative path from the root to the folder where Carrot's index.php file resides, with trailing directory separator.
+     * @var string Relative path from the root to the folder where Carrot's index.php file resides, with trailing slash.
      */
     protected $basePath;
+    
+    /**
+     * @var string The HTTP/HTTPS URL to the root, where Carrot's index.php file resides.
+     */
+    protected $baseURL;
     
     /**
      * @var array Segments of application request URI.
@@ -74,22 +74,28 @@ class AppRequestURI
      * $appRequestURI = new AppRequestURI($request, '/base/path/to/framework/');
      * </code>
      *
-     * @param string $serverScriptName The contents of $_SERVER['SCRIPT_NAME'].
-     * @param string $serverRequestURI The contents of $_SERVER['REQUEST_URI'].
-     * @param string $basePath Relative path from the root to the folder where Carrot's index.php file resides, with trailing directory separator.
+     * @param Request $request The request instance, used to get the $_SERVER variable.
+     * @param string $basePath Relative path from the root to the folder where Carrot's index.php file resides, with trailing slash.
+     * @param string $baseURL 
      *
      */
-    public function __construct($serverScriptName, $serverRequestURI, $basePath = null)
+    public function __construct(Request $request, $basePath = null, $baseURL = null)
     {
-        $this->serverScriptName = $serverScriptName;
-        $this->serverRequestURI = $serverRequestURI;
-                
+        $this->server = $request->getServer();
+        
         if (empty($basePath))
         {
             $basePath = $this->guessBasePath();
         }
         
         $this->basePath = $basePath;
+        
+        if (empty($baseURL))
+        {
+            $baseURL = $this->guessBaseURL($basePath);
+        }
+        
+        $this->baseURL = $baseURL;
         $this->segments = $this->generateSegments();
         $this->segmentCount = count($this->segments);
         $this->string = $this->generateString();
@@ -188,15 +194,14 @@ class AppRequestURI
      * /carrot-dev/index.php -> /carrot-dev/
      * </code>
      * 
-     * Base path returned will always have a trailing directory
-     * separator.
+     * Base path returned will always have a trailing slash.
      *
      * @return string Base path (with trailing slash).
      *
      */
     protected function guessBasePath()
     {
-        $path = str_ireplace('/index.php', '', $this->serverScriptName);
+        $path = str_ireplace('/index.php', '', $this->server['SCRIPT_NAME']);
         
         if (empty($path) or substr($path, -1) != '/')
         {
@@ -204,6 +209,61 @@ class AppRequestURI
         }
         
         return $path;
+    }
+    
+    /**
+     * Guesses the base URL.
+     * 
+     * The base path is already provided (or guessed). This method
+     * guess the protocol used in {@see requestIsHTTPS()}, use
+     * SERVER_NAME as the host name, and appends the base path.
+     * 
+     * @return string Base URL (with trailing slash).
+     * 
+     */
+    protected function guessBaseURL()
+    {
+        $protocol = 'http';
+        
+        if ($this->requestIsHTTPS())
+        {
+            $protocol = 'https';
+        }
+        
+        return "{$protocol}://{$this->server['SERVER_NAME']}{$this->basePath}";
+    }
+    
+    /**
+     * Checks if the request is using SSL or not.
+     * 
+     * This method checks the $_SERVER['HTTPS'] array key and value.
+     * As read in PHP documentation and user comments:
+     *
+     * <ul>
+     *     <li>
+     *         Set to a non-empty value if the script was queried
+     *         through the HTTPS protocol.
+     *     </li>
+     *     <li>
+     *         Note that when using ISAPI with IIS, the value will be
+     *         "off" if the request was not made through the HTTPS
+     *         protocol. (same behaviour has been reported for IIS7
+     *         running PHP as a Fast-CGI application).
+     *     </li>
+     * </ul>
+     * 
+     * @see http://stackoverflow.com/questions/1175096/how-to-find-out-if-you-are-using-https-without-serverhttps
+     * @see http://www.php.net/manual/en/reserved.variables.server.php
+     * @return bool True if the request is using https, false otherwise.
+     *
+     */
+    protected function requestIsHTTPS()
+    {
+        return (
+            isset($this->server['HTTPS']) AND
+            !empty($this->server['HTTPS']) AND
+            strtolower($this->server['HTTPS']) != 'off'
+        );
     }
     
     /**
@@ -229,7 +289,7 @@ class AppRequestURI
      */
     protected function generateSegments()
     {
-        $appURIString = $this->serverRequestURI;
+        $appURIString = $this->server['REQUEST_URI'];
         
         // Remove base path if it exists
         if (strrpos($appURIString, $this->basePath) === 0)
@@ -274,7 +334,7 @@ class AppRequestURI
      */
     protected function generateString()
     {
-        $appRequestURIString = $this->serverRequestURI;
+        $appRequestURIString = $this->server['REQUEST_URI'];
         
         // Removes base path if it exists
         if (strrpos($appRequestURIString, $this->basePath) === 0)

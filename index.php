@@ -43,4 +43,5 @@ $system->initializeDependencyInjectionContainer();
 $system->initializeErrorHandler();
 $system->initializeExceptionHandler();
 $system->initializeRouter();
-$system->run();
+$response = $system->run();
+$response->send();

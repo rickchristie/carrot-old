@@ -74,6 +74,11 @@ class System
     protected $exceptionHandler;
     
     /**
+     * @var RouteRegistrations Object used to represent route registrations.
+     */
+    protected $routeRegistrations;
+    
+    /**
      * @var Router Object used to route requests to a Callback instance.
      */
     protected $router;
@@ -304,27 +309,19 @@ class System
      */
     public function initializeRouter()
     {
-        $routeRegistrations = new RouteRegistrations;
+        $this->routeRegistrations = new RouteRegistrations($this->dic);
         $loadFile = $this->loadFileFunction;
-        $loadFile($this->routesFilePath, array('routes' => $routeRegistrations));
-        $routeRegistrationArray = $routeRegistrations->get();
+        $loadFile($this->routesFilePath, array('routes' => $this->routeRegistrations));
         
-        // We instantiate the router with the DIC even though the Router
-        // class doesn't have any dependency because the Router class's
-        // scope is Singleton.
+        // We can only bind this now because RouteRegistrations is not
+        // available before, only after now.
+        $this->dic->bind('Carrot\Core\Router{Main:Singleton}', array(
+            $this->routeRegistrations
+        ));
+        
         $this->router = $this->dic->getInstance(
             new ObjectReference('Carrot\Core\Router{Main:Singleton}')
         );
-        
-        foreach ($routeRegistrationArray as $routeID => $routeInfo)
-        {
-            if ($routeInfo['type'] == 'ObjectReference')
-            {
-                $route = $this->dic->getInstance($routeInfo['reference']);
-                $this->router->registerRouteObject($routeID, $route);
-                continue;
-            }
-        }
     }
     
     /**
@@ -338,7 +335,7 @@ class System
     {   
         $callback = $this->router->doRouting();
         $response = $this->getResponse($callback);
-        $response->send();
+        return $response;
     }
     
     /**
@@ -403,8 +400,7 @@ class System
     protected function registerDefaultDICBindings()
     {
         $this->dic->bind('Carrot\Core\AppRequestURI{Main:Singleton}', array(
-            $this->server['SCRIPT_NAME'],
-            $this->server['REQUEST_URI']
+            new ObjectReference('Carrot\Core\Request{Main:Singleton}')
         ));
         
         $this->dic->bind('Carrot\Core\ExceptionHandlerManager{Main:Singleton}', array(

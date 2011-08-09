@@ -27,21 +27,7 @@
  * RouteInterface::route() until one of them returns an
  * instance of Callback.
  *
- * Register the route class's object reference into a specific ID:
- *
- * <code>
- * $router->registerRouteObject('RouteID', $route);
- * </code>
- *
- * Don't forget to set the default callback object to be returned
- * if there is no matching route:
- *
- * <code>
- * $router->setCallbackForNoMatchingRoute(new Callback(
- *     new ObjectReference('App\Controllers\Default404Controller{Main:Transient}'),
- *     'get404Response'
- * ));
- * </code>
+ * TODO: Explain usage!
  * 
  * For more information on the route class please see the docs on
  * {@see RouteInterface}.
@@ -60,9 +46,14 @@ use RuntimeException;
 class Router
 {
     /**
-     * @var Callback The callback object to be returned there is no matching route.
+     * @var RouteRegistrations The object representing registered routes.
      */
-    protected $callbackForNoMatchingRoute = null;
+    protected $routeRegistrations;
+    
+    /**
+     * @var array The list of registered route IDs.
+     */
+    protected $registeredRouteIDs;
     
     /**
      * @var array Contains the list of registered routes and its instantiated route objects.
@@ -80,33 +71,23 @@ class Router
     protected $activeCallback;
     
     /**
-     * Registers route object.
+     * Constructor.
      *
-     * Route classes must implement RouteInterface. Example
-     * registration:
+     * RouteRegistrations represents the route registrations and is
+     * used by this class to retrieve the route objects. Pass an
+     * instance of this object when constructing:
      *
      * <code>
-     * $router->registerRouteObject('App.Login', $loginRoute);
+     * $router = new Router($routeRegistrations);
      * </code>
      *
-     * @param string $routeID The route's ID, used to refer to the route.
-     * @param RouteInterface $routeObject The implementation of RouteInterface.
+     * @param RouteRegistrations $routeRegistrations The RouteRegistration instance.
      *
      */
-    public function registerRouteObject($routeID, RouteInterface $routeObject)
+    public function __construct(RouteRegistrations $routeRegistrations)
     {
-        $this->routes[$routeID] = $routeObject;
-    }
-    
-    /**
-     * Sets the callback object to be returned when there is no matching route.
-     *
-     * @param Callback $callback
-     *
-     */
-    public function setCallbackForNoMatchingRoute(Callback $callback)
-    {
-        $this->callbackForNoMatchingRoute = $callback;
+        $this->routeRegistrations = $routeRegistrations;
+        $this->initializeRoutes();
     }
     
     /**
@@ -121,9 +102,14 @@ class Router
      */
     public function doRouting()
     {
-        foreach ($this->routes as $routeID => $routeObject)
+        foreach ($this->registeredRouteIDs as $routeID)
         {
-            $callback = $routeObject->route();
+            if (!isset($this->routes[$routeID]))
+            {
+                $this->routes[$routeID] = $this->routeRegistrations->getRouteObject($routeID);
+            }
+            
+            $callback = $this->routes[$routeID]->route();
             
             if ($this->validCallback($callback))
             {
@@ -202,29 +188,6 @@ class Router
     }
     
     /**
-     * Find out the route ID attached to the given RouteInterface instance.
-     *
-     * Loops through all the registered routes and see if the given
-     * object instance is in it. If a match is found, this method
-     * returns the route ID for the given RouteInterface instance.
-     * Returns null if the route instance given was not registered in
-     * the Router.
-     *
-     * @param RouteInterface $route The route to be checked.
-     *
-     */
-    public function getRouteIDForThisRoute(RouteInterface $routeToMatch)
-    {
-        foreach ($this->routes as $routeID => $routeObject)
-        {
-            if ($routeObject === $routeToMatch)
-            {
-                return $routeID;
-            }
-        }
-    }
-    
-    /**
      * Return an array containing all the registered route IDs.
      *
      * Useful when you are building a sitemap or navigation object.
@@ -243,7 +206,21 @@ class Router
      */
     public function getAllRegisteredRouteIDs()
     {
-        return array_keys($this->routes);
+        return $this->registeredRouteIDs;
+    }
+    
+    /**
+     * Initialize the routes array.
+     * 
+     * Initializes $registeredRouteIDs class property by calling the
+     * appropriate method at RouteRegistrations instance.
+     * 
+     * @see __construct()
+     *
+     */
+    protected function initializeRoutes()
+    {
+        $this->registeredRouteIDs = $this->routeRegistrations->getRegisteredRouteIDs();
     }
     
     /**
@@ -258,10 +235,12 @@ class Router
      *
      */
     protected function getCallbackForNoMatchingRoute()
-    {
-        if ($this->validCallback($this->callbackForNoMatchingRoute))
+    {   
+        $callback = $this->routeRegistrations->getCallbackForNoMatchingRoute();
+        
+        if ($this->validCallback($callback))
         {
-            return $this->callbackForNoMatchingRoute;
+            return $callback;
         }
         
         throw new RuntimeException("Router error in routing request. No matching route was found and there is no default callback instance set to be returned for no matching route.");
