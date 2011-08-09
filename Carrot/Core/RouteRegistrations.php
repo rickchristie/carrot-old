@@ -159,6 +159,7 @@ class RouteRegistrations
             throw new RuntimeException("RouteRegistrations error in retrieving route. Either route '{$routeID}' is not an object or it doesn not implement Carrot\Core\Interfaces\RouteInterface.");
         }
         
+        $routeObject->setID($routeID);
         return $routeObject;
     }
     

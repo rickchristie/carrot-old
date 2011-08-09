@@ -82,4 +82,15 @@ class Route implements RouteInterface
     {
         return '/';
     }
+    
+    /**
+     * Set this route's ID.
+     * 
+     * @param string $id This route's ID.
+     *
+     */
+    public function setID($id)
+    {
+        $this->id = $id;
+    }
 }

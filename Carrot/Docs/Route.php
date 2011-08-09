@@ -64,4 +64,15 @@ class Route implements RouteInterface
         // TODO: This shouldn't be urlencoded, it should be urlencoded in the view
         return 'guides/' . urlencode($args['topicID']) . '/' . urlencode($args['pageID']) . '/';
     }
+    
+    /**
+     * Set this route's ID.
+     * 
+     * @param string $id This route's ID.
+     *
+     */
+    public function setID($id)
+    {
+        $this->id = $id;
+    }
 }

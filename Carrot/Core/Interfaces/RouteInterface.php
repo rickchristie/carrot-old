@@ -81,4 +81,17 @@ interface RouteInterface
      *
      */
     public function getRelativePath(array $args);
+    
+    /**
+     * Set the route ID.
+     * 
+     * After route registration is done, when the route object is
+     * instantiated, this method will be called by
+     * \Carrot\Core\RouteRegistrations. This method was added so that
+     * routes can become aware of their own route ID.
+     *
+     * @param string $id The route object's route registration ID.
+     * 
+     */
+    public function setID($id);
 }

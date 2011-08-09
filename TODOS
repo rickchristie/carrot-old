@@ -16,7 +16,8 @@ TODO: Create an core event manager to handle callbacks (see
       '/blog/title/' for canonical version, filtering the final
       response body, request/response logging, for initializing
       PHP session and setting session save settings/handlers
-      before the script is started, etc.
+      before the script is started, for privilege checking after
+      routing is done, etc.
 
 TODO: Inject the DIC and Autoloader to the exception handler for
       debugging purposes. Have the DIC log which instance names

@@ -119,6 +119,23 @@ class AppRequestURI
     }
     
     /**
+     * Returns true if the segment array starts with the given array.
+     * 
+     * Useful if you want have a custom route and wants to exit as
+     * soon as possible.
+     *
+     * TODO: Example case
+     * 
+     * @return bool True or false.
+     * 
+     */
+    public function segmentStartsWith(array $array)
+    {
+        $sliced = array_slice($this->segments, 0, count($array));
+        return ($sliced === $array);
+    }
+    
+    /**
      * Returns a segment from the application request URI.
      *
      * @param int $index The segment index.
@@ -172,12 +189,23 @@ class AppRequestURI
     /**
      * Returns the base path in string.
      *
-     * @return string The base path.
+     * @return string The base path (with trailing slash).
      *
      */
     public function getBasePath()
     {
         return $this->basePath;
+    }
+    
+    /**
+     * Returns the base URL in string.
+     *
+     * @return string The base URL (with trailing slash).
+     *
+     */
+    public function getBaseURL()
+    {
+        return $this->baseURL;
     }
     
     /**
