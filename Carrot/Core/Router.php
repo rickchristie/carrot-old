@@ -51,6 +51,11 @@ class Router
     protected $routeRegistrations;
     
     /**
+     * @var AppRequestURI Used to get the base path and base URL value.
+     */
+    protected $appRequestURI;
+    
+    /**
      * @var array The list of registered route IDs.
      */
     protected $registeredRouteIDs;
@@ -82,10 +87,12 @@ class Router
      * </code>
      *
      * @param RouteRegistrations $routeRegistrations The RouteRegistration instance.
+     * @param AppRequestURI $appRequestURI Used to get the base path and base URL value.
      *
      */
-    public function __construct(RouteRegistrations $routeRegistrations)
+    public function __construct(RouteRegistrations $routeRegistrations, AppRequestURI $appRequestURI)
     {
+        $this->appRequestURI = $appRequestURI;
         $this->routeRegistrations = $routeRegistrations;
         $this->initializeRoutes();
     }
@@ -139,14 +146,29 @@ class Router
      * @param array $args The arguments to send to the route.
      *
      */
-    public function getURL($routeID, array $args = array())
+    public function getURL($routeID, array $args = array(), $absoluteURL = false)
     {   
-        if (!isset($this->routes[$routeID]))
+        if (!in_array($routeID, $this->registeredRouteIDs))
         {
             throw new InvalidArgumentException("Router error in getting URL. The route with ID '{$routeID}' is not registered.");
         }
         
-        return $this->routes[$routeID]->getURL($args);
+        if (!isset($this->routes[$routeID]))
+        {
+            $this->routes[$routeID] = $this->routeRegistrations->getRouteObject($routeID);
+        }
+        
+        $relativePath = $this->routes[$routeID]->getRelativePath($args);
+        $relativePath = ltrim($relativePath, '/');
+        
+        if ($absoluteURL)
+        {
+            return $this->appRequestURI->getBaseURL() . $relativePath;
+        }
+        else
+        {
+            return $this->appRequestURI->getBasePath() . $relativePath;
+        }
     }
     
     /**

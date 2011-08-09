@@ -78,8 +78,8 @@ class Route implements RouteInterface
      * @param array $args The routing arguments.
      *
      */
-    public function getURL(array $args)
+    public function getRelativePath(array $args)
     {
-        return $this->appRequestURI->getBasePath();
+        return '/';
     }
 }

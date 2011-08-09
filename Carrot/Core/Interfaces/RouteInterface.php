@@ -48,17 +48,37 @@ interface RouteInterface
     public function route();
     
     /**
-     * Translates arguments from view into a valid string URL.
+     * Translates arguments from view into a relative path to this route.
      * 
-     * When your view or template calls
-     * \Carrot\Core\Router::getURL(), the Router will relay the
-     * arguments to this method. Make sure you return a valid URL,
-     * as a matter of convention, do NOT place the URL string in any
-     * formatting function, like urlencode() or htmlspecialchars(),
-     * simply return the URL string as it is.
+     * The relative path should from this framework's root. You must
+     * return a relative path so that when your view calls
+     * \Carrot\Core\Router::getURL() he/she can specify whether he
+     * wants an absolute URL or just a relative path.
      * 
-     * @return string Valid URL.
+     * The base path prefix will be added by the Router object, so you
+     * only have to return the path relative from Carrot's index.php
+     * file. For example, if your base path is '/carrot/':
+     *
+     * <code>
+     * app/login/ => /carrot/app/login/
+     * blog/post/?variable=value => /carrot/blog/post/?variable=value
+     * </code>
+     *
+     * Alternatively, if the user specifies to that returned URL
+     * should be absolute, the base URL prefix will be appended
+     * instead:
+     *
+     * <code>
+     * app/login/ => http://example.com/carrot/app/login/
+     * blog/post/?variable=value => http://example.com/carrot/blog/post/?variable=value
+     * </code>
+     *
+     * The base URL and base path values are taken from the
+     * Carrot\Core\AppRequestURI{Main:Singleton} instance. You can
+     * change it by editing its DIC configuration.
+     * 
+     * @return string Relative path to this route from the framework's root.
      *
      */
-    public function getURL(array $args);
+    public function getRelativePath(array $args);
 }

@@ -54,13 +54,14 @@ class Route implements RouteInterface
         }
     }
     
-    public function getURL(array $args)
-    {
+    public function getRelativePath(array $args)
+    {   
         if (!isset($args['topicID'], $args['pageID']))
         {
             throw new InvalidArgumentException("Route error in getting URL, required argument 'topicID' and 'pageID' does not exist.");
         }
         
-        return $this->appRequestURI->getBasePath() . 'guides/' . urlencode($args['topicID']) . '/' . urlencode($args['pageID']) . '/';
+        // TODO: This shouldn't be urlencoded, it should be urlencoded in the view
+        return 'guides/' . urlencode($args['topicID']) . '/' . urlencode($args['pageID']) . '/';
     }
 }

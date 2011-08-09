@@ -316,7 +316,8 @@ class System
         // We can only bind this now because RouteRegistrations is not
         // available before, only after now.
         $this->dic->bind('Carrot\Core\Router{Main:Singleton}', array(
-            $this->routeRegistrations
+            $this->routeRegistrations,
+            new ObjectReference('Carrot\Core\AppRequestURI{Main:Singleton}')
         ));
         
         $this->router = $this->dic->getInstance(
