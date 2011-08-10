@@ -34,6 +34,11 @@ class System
     protected $configFilePath;
     
     /**
+     * @var string Absolute file path to the EventDispatcher configuration file.
+     */
+    protected $eventsFilePath;
+    
+    /**
      * @var string Absolute file path to router configuration file.
      */
     protected $routesFilePath;
@@ -67,6 +72,11 @@ class System
      * @var DependencyInjectionContainer Object used to wire dependencies.
      */
     protected $dic;
+    
+    /**
+     * @var EventDispatcher Used to initialize and notify objects of various core events.
+     */
+    protected $events;
     
     /**
      * @var ExceptionHandler Object used to handle exceptions.
@@ -134,7 +144,7 @@ class System
      * @param array $env The $_ENV superglobal.
      *
      */
-    public function __construct($configFilePath, $routesFilePath, $autoloadFilePath, $autoloaderClassFilePath, array $server, array $get, array $post, array $files, array $cookie, array $request, array $env)
+    public function __construct($configFilePath, $eventsFilePath, $routesFilePath, $autoloadFilePath, $autoloaderClassFilePath, array $server, array $get, array $post, array $files, array $cookie, array $request, array $env)
     {
         $this->loadFileFunction = function($filePath, array $params)
         {
@@ -147,6 +157,7 @@ class System
             throw new ErrorException($errstr, 0, $errno, $errfile, $errline);
         };
         
+        $this->eventsFilePath = $eventsFilePath;
         $this->configFilePath = $configFilePath;
         $this->routesFilePath = $routesFilePath;
         $this->autoloadFilePath = $autoloadFilePath;
@@ -270,6 +281,28 @@ class System
     }
     
     /**
+     * Initialize Events instance.
+     * 
+     * 
+     * 
+     */
+    public function initializeEventDispatcher()
+    {
+        $this->events = $this->dic->getInstance(
+            new ObjectReference('Carrot\Core\EventDispatcher{Main:Singleton}')
+        );
+        
+        if (file_exists($this->eventsFilePath))
+        {
+            $loadFile = $this->loadFileFunction;
+            $loadFile($this->eventsFilePath, array('events' => $this->events));
+        }
+        
+        $this->events->setDIC($this->dic);
+        $this->events->notify('Carrot.Core.System:EventDispatcherReady');
+    }
+    
+    /**
      * Set up the error handler.
      * 
      * Uses set_error_handler to register an anonymous function that
@@ -328,6 +361,8 @@ class System
         $this->router = $this->dic->getInstance(
             new ObjectReference('Carrot\Core\Router{Main:Singleton}')
         );
+        
+        $this->events->notify('Carrot.Core.System:routingDone');
     }
     
     /**
@@ -338,7 +373,7 @@ class System
      *
      */
     public function run()
-    {   
+    {
         $callback = $this->router->doRouting();
         $response = $this->getResponse($callback);
         return $response;

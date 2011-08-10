@@ -10,6 +10,7 @@
  */
 
 $configFilePath = __DIR__ . DIRECTORY_SEPARATOR . 'config.php';
+$eventsFilePath = __DIR__ . DIRECTORY_SEPARATOR . 'events.php';
 $routesFilePath = __DIR__ . DIRECTORY_SEPARATOR . 'routes.php';
 $autoloadFilePath = __DIR__ . DIRECTORY_SEPARATOR . 'autoload.php';
 $autoloaderClassFilePath = __DIR__ . DIRECTORY_SEPARATOR . 'Carrot' . DIRECTORY_SEPARATOR . 'Core' . DIRECTORY_SEPARATOR . 'Autoloader.php';
@@ -23,6 +24,7 @@ if (!file_exists($systemClassFilePath))
 require $systemClassFilePath;
 $system = new Carrot\Core\System(
     $configFilePath,
+    $eventsFilePath,
     $routesFilePath,
     $autoloadFilePath,
     $autoloaderClassFilePath,
@@ -40,6 +42,7 @@ $system->checkPHPRequirements();
 $system->checkRequiredFileExistence();
 $system->initializeAutoloader();
 $system->initializeDependencyInjectionContainer();
+$system->initializeEventDispatcher();
 $system->initializeErrorHandler();
 $system->initializeExceptionHandler();
 $system->initializeRouter();
