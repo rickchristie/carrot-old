@@ -362,7 +362,7 @@ class System
             new ObjectReference('Carrot\Core\Router{Main:Singleton}')
         );
         
-        $this->events->notify('Carrot.Core.System:routingDone');
+        $this->events->notify('Carrot.Core.System:RouterReady');
     }
     
     /**
@@ -375,6 +375,7 @@ class System
     public function run()
     {
         $callback = $this->router->doRouting();
+        $this->events->notify('Carrot.Core.System:RoutingCompleted');
         $response = $this->getResponse($callback);
         return $response;
     }

@@ -234,7 +234,7 @@ class BasicRoute implements RouteInterface
         
         if (!array_key_exists('type', $config))
         {
-            $config['type'] = 'GET';
+            $config['type'] = '*';
         }
         
         if (!array_key_exists('prefix', $config))
@@ -286,7 +286,8 @@ class BasicRoute implements RouteInterface
         
         if (array_key_exists('type', $config) AND
             $config['type'] != 'GET' AND
-            $config['type'] != 'POST'
+            $config['type'] != 'POST' AND
+            $config['type'] != '*'
         )
         {
             throw new InvalidArgumentException("BasicRoute error in instantiation. The 'type' configuration for route ID '{$this->id}' must be either 'GET' or 'POST'");
@@ -320,6 +321,11 @@ class BasicRoute implements RouteInterface
     
     protected function requestTypeMismatch()
     {
+        if ($this->requestType == '*')
+        {
+            return false;
+        }
+        
         return (
             ($this->requestType == 'GET' AND !$this->request->isGetRequest()) OR
             ($this->requestType == 'POST' AND !$this->request->isPostRequest())

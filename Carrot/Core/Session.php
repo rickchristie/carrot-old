@@ -147,6 +147,23 @@ class Session
     }
     
     /**
+     * TODO: Write docs
+     *
+     */
+    public function getOrReturnDefault($index, $default)
+    {
+        if ($this->started && !$this->closed)
+        {
+            if (isset($_SESSION[$index]))
+            {
+                return $_SESSION[$index];
+            }
+            
+            return $default;
+        }
+    }
+    
+    /**
      * Checks if the variable exists or not using isset.
      *
      * When checking value with this method, make sure you do a strict

@@ -108,7 +108,7 @@ class Router
      *
      */
     public function doRouting()
-    {
+    {   
         foreach ($this->registeredRouteIDs as $routeID)
         {
             if (!isset($this->routes[$routeID]))
@@ -119,7 +119,7 @@ class Router
             $callback = $this->routes[$routeID]->route();
             
             if ($this->validCallback($callback))
-            {
+            {   
                 $this->activeRouteID = $routeID;
                 $this->activeCallback = $callback;
                 return $callback;
