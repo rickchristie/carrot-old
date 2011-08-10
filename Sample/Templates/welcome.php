@@ -323,7 +323,7 @@
             object reference at your <code>routes.php</code> file to access it.
             Here is the route registration snippet:
         </p>
-        <pre>$router->registerRoute('CarrotDocs', new ObjectReference(
+        <pre>$router->registerRoute('Carrot.Docs.Page', new ObjectReference(
     'Carrot\Docs\Route{Main:Transient}'
 ));</pre>
         <p>

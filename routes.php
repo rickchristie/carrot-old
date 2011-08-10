@@ -19,5 +19,21 @@
 
 use Carrot\Core\ObjectReference;
 
-$routes->registerRouteObjectReference('Sample', new ObjectReference('Sample\Route{Main:Transient}'));
-$routes->registerRouteObjectReference('CarrotDocs', new ObjectReference('Carrot\Docs\Route{Main:Transient}'));
+$routes->registerBasicRoute('Carrot.Sample', array(
+    'pattern' => '/',
+    'object' => 'Sample\Welcome{Main:Transient}',
+    'method' => 'getWelcomeResponse'
+));
+
+$routes->registerBasicRoute('Carrot.Docs.Home', array(
+    'pattern' => '/guides/',
+    'object' => 'Carrot\Docs\Controller{Main:Transient}',
+    'method' => 'getResponse'
+));
+
+$routes->registerBasicRoute('Carrot.Docs.Page', array(
+    'pattern' => '/guides/{topicID}/{pageID}/',
+    'object' => 'Carrot\Docs\Controller{Main:Transient}',
+    'method' => 'getResponse',
+    'args' => array('@topicID', '@pageID')
+));

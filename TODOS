@@ -56,6 +56,15 @@ TODO: Fix Autoloader's paranoid handling of class names. No matter
       to the spl autoloader callback is always without a backslash
       prefix.
 
+TODO: Write Sample\Welcome::get404Response() for default 404
+      response as well as an example for the users on how to set
+      the 404 page.
+
+TODO: Write custom exception classes for core exceptions thrown,
+      assign error code for them, and then in the exception
+      handler, you can try to dynamically load pointers and hints
+      of how the problem began and how to solve it.
+
 
 NEW MODULES/CLASSES
 -------------------

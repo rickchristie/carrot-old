@@ -309,7 +309,12 @@ class System
      */
     public function initializeRouter()
     {
-        $this->routeRegistrations = new RouteRegistrations($this->dic);
+        $this->routeRegistrations = new RouteRegistrations(
+            $this->dic->getInstance(new ObjectReference('Carrot\Core\Request{Main:Singleton}')),
+            $this->dic->getInstance(new ObjectReference('Carrot\Core\AppRequestURI{Main:Singleton}')),
+            $this->dic
+        );
+        
         $loadFile = $this->loadFileFunction;
         $loadFile($this->routesFilePath, array('routes' => $this->routeRegistrations));
         
@@ -432,7 +437,7 @@ class System
         $this->dic->bind('Carrot\Docs\View{Main:Transient}', array(
             new ObjectReference('Carrot\Docs\Model{Main:Singleton}'),
             new ObjectReference('Carrot\Core\Router{Main:Singleton}'),
-            'CarrotDocs'
+            'Carrot.Docs.Page'
         ));
     }
 }

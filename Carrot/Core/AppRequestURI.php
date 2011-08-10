@@ -64,6 +64,11 @@ class AppRequestURI
     protected $string;
     
     /**
+     * @var string The application request URI in string, minus the query string portion.
+     */
+    protected $pathString;
+    
+    /**
      * Construct the application request URI object.
      * 
      * If base path is not provided, this class will try to guess on
@@ -99,6 +104,7 @@ class AppRequestURI
         $this->segments = $this->generateSegments();
         $this->segmentCount = count($this->segments);
         $this->string = $this->generateString();
+        $this->pathString = $this->generatePathString();
     }
     
     /**
@@ -173,6 +179,22 @@ class AppRequestURI
     public function getString()
     {
         return $this->string;
+    }
+    
+    /**
+     * Returns the application request URI string sans query string.
+     * 
+     * Path string is exactly like application request URI string
+     * {@see getString()}, only with the query string portion removed
+     * (if exists). This makes it suitable for pattern matching when
+     * routing.
+     * 
+     * @return string Application request URI string without query string.
+     *
+     */
+    public function getPathString()
+    {
+        return $this->pathString;
     }
     
     /**
@@ -375,6 +397,31 @@ class AppRequestURI
             $appRequestURIString = '/' . $appRequestURIString;
         }
         
-        return $appRequestURIString;
+        return urldecode($appRequestURIString);
+    }
+    
+    /**
+     * Constructs a string similar to application URI string, but without query string.
+     * 
+     * This method gets the application URI string and removes the
+     * query string portion (if it exists). The result is the path
+     * portion of the request URI string, suitable for pattern
+     * matching in routing.
+     * 
+     * @see generateString()
+     * @return string Application request URI string without query string.
+     * 
+     */
+    protected function generatePathString()
+    {
+        $pathString = $this->string;
+        $questionMarkLocation = strrpos($pathString, '?');
+        
+        if ($questionMarkLocation === false)
+        {
+            return $pathString;
+        }
+        
+        return substr($pathString, 0, $questionMarkLocation);
     }
 }

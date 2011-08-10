@@ -84,122 +84,304 @@ class Request
     }
     
     /**
+     * Checks if the current request is a GET request.
+     * 
+     * Uses $_SERVER['SERVER_METHOD'], depending on the server
+     * environment you have, this method may or may not work.
+     *
+     * @return bool True if a GET request, false otherwise.
+     *
+     */
+    public function isGetRequest()
+    {
+        return (strtoupper($this->getServer('REQUEST_METHOD')) == 'GET');
+    }
+    
+    /**
+     * Checks if the current request is a POST request.
+     * 
+     * Uses $_SERVER['SERVER_METHOD'], depending on the server
+     * environment you have, this method may or may not work.
+     *
+     * @return bool True if a POST request, false otherwise.
+     *
+     */
+    public function isPostRequest()
+    {
+        return (strtoupper($this->getServer('REQUEST_METHOD')) == 'POST');
+    }
+    
+    /**
      * Returns wrapped $_SERVER variable.
      *
-     * @param string $item Leave empty to return the whole array.
+     * @param string $index Leave empty to return the whole array.
      * @return mixed
      *
      */
-    public function getServer($item = '')
-    {
-        if (empty($item))
+    public function getServer($index = '')
+    {   
+        if (empty($index))
         {
             return $this->server;
         }
         
-        return $this->server[$item];
+        if (!array_key_exists($index, $this->server))
+        {
+            return null;
+        }
+        
+        return $this->server[$index];
     }
     
     /**
      * Returns wrapped $_GET variable.
      *
-     * @param string $item Leave empty to return the whole array.
+     * @param string $index Leave empty to return the whole array.
      * @return mixed
      *
      */
-    public function getGet($item = '')
+    public function getGet($index = '')
     {
-        if (empty($item))
+        if (empty($index))
         {
             return $this->get;
         }
         
-        return $this->get[$item];
+        if (!array_key_exists($index, $this->get))
+        {
+            return null;
+        }
+        
+        return $this->get[$index];
     }
     
     /**
      * Returns wrapped $_POST variable.
      *
-     * @param string $item Leave empty to return the whole array.
+     * @param string $index Leave empty to return the whole array.
      * @return mixed
      *
      */
-    public function getPost($item = '')
+    public function getPost($index = '')
     {
-        if (empty($item))
+        if (empty($index))
         {
             return $this->post;
         }
         
-        return $this->post[$item];
+        if (!array_key_exists($index, $this->post))
+        {
+            return null;
+        }
+        
+        return $this->post[$index];
     }
     
     /**
      * Returns wrapped $_FILES variable.
      *
-     * @param string $item Leave empty to return the whole array.
+     * @param string $index Leave empty to return the whole array.
      * @return mixed
      *
      */
-    public function getFiles($item = '')
+    public function getFiles($index = '')
     {
-        if (empty($item))
+        if (empty($index))
         {
             return $this->files;
         }
         
-        return $this->files[$item];
+        if (!array_key_exists($index, $this->files))
+        {
+            return null;
+        }
+        
+        return $this->files[$index];
     }
     
     /**
      * Returns wrapped $_COOKIE variable.
      *
-     * @param string $item Leave empty to return the whole array.
+     * @param string $index Leave empty to return the whole array.
      * @return mixed
      *
      */
-    public function getCookie($item = '')
+    public function getCookie($index = '')
     {
-        if (empty($item))
+        if (empty($index))
         {
             return $this->cookie;
         }
         
-        return $this->cookie[$item];
+        if (!array_key_exists($index, $this->cookie))
+        {
+            return null;
+        }
+        
+        return $this->cookie[$index];
     }
     
     /**
      * Returns wrapped $_REQUEST variable.
      *
-     * @param string $item Leave empty to return the whole array.
+     * @param string $index Leave empty to return the whole array.
      * @return mixed
      *
      */
-    public function getRequest($item = '')
+    public function getRequest($index = '')
     {
-        if (empty($item))
+        if (empty($index))
         {
             return $this->request;
         }
         
-        return $this->request[$item];
+        if (!array_key_exists($index, $this->request))
+        {
+            return null;
+        }
+        
+        return $this->request[$index];
     }
     
     /**
      * Returns wrapped $_ENV variable.
      *
-     * @param string $item Leave empty to return the whole array.
+     * @param string $index Leave empty to return the whole array.
      * @return mixed
      *
      */
-    public function getEnv($item = '')
+    public function getEnv($index = '')
     {
-        if (empty($item))
+        if (empty($index))
         {
             return $this->env;
         }
         
-        return $this->env[$item];
+        if (!array_key_exists($index, $this->env))
+        {
+            return null;
+        }
+        
+        return $this->env[$index];
+    }
+    
+    /**
+     * Returns the $_SERVER variable or the default value if it doesn't exist.
+     * 
+     * @param string $index The index of the value to get.
+     * @param mixed $default The default value to be returned.
+     *
+     */
+    public function getServerOrReturnDefault($index, $default)
+    {
+        if (array_key_exists($index, $this->server))
+        {
+            return $this->server[$index];
+        }
+        
+        return $default;
+    }
+    
+    /**
+     * Returns the $_GET variable or the default value if it doesn't exist.
+     * 
+     * @param string $index The index of the value to get.
+     * @param mixed $default The default value to be returned.
+     *
+     */
+    public function getGetOrReturnDefault($index, $default)
+    {
+        if (array_key_exists($index, $this->get))
+        {
+            return $this->get[$index];
+        }
+        
+        return $default;
+    }
+    
+    /**
+     * Returns the $_POST variable or the default value if it doesn't exist.
+     * 
+     * @param string $index The index of the value to get.
+     * @param mixed $default The default value to be returned.
+     *
+     */
+    public function getPostOrReturnDefault($index, $default)
+    {
+        if (array_key_exists($index, $this->post))
+        {
+            return $this->post[$index];
+        }
+        
+        return $default;
+    }
+    
+    /**
+     * Returns the $_FILES variable or the default value if it doesn't exist.
+     * 
+     * @param string $index The index of the value to get.
+     * @param mixed $default The default value to be returned.
+     *
+     */
+    public function getFilesOrReturnDefault($index, $default)
+    {
+        if (array_key_exists($index, $this->files))
+        {
+            return $this->files[$index];
+        }
+        
+        return $default;
+    }
+    
+    /**
+     * Returns the $_COOKIE variable or the default value if it doesn't exist.
+     * 
+     * @param string $index The index of the value to get.
+     * @param mixed $default The default value to be returned.
+     *
+     */
+    public function getCookieOrReturnDefault($index, $default)
+    {
+        if (array_key_exists($index, $this->cookie))
+        {
+            return $this->cookie[$index];
+        }
+        
+        return $default;
+    }
+    
+    /**
+     * Returns the $_REQUEST variable or the default value if it doesn't exist.
+     * 
+     * @param string $index The index of the value to get.
+     * @param mixed $default The default value to be returned.
+     *
+     */
+    public function getRequestOrReturnDefault($index, $default)
+    {
+        if (array_key_exists($index, $this->request))
+        {
+            return $this->request[$index];
+        }
+        
+        return $default;
+    }
+    
+    /**
+     * Returns the $_ENV variable or the default value if it doesn't exist.
+     * 
+     * @param string $index The index of the value to get.
+     * @param mixed $default The default value to be returned.
+     *
+     */
+    public function getEnvOrReturnDefault($index, $default)
+    {
+        if (array_key_exists($index, $this->env))
+        {
+            return $this->env[$index];
+        }
+        
+        return $default;
     }
     
     /**

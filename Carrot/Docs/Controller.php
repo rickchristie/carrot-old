@@ -46,7 +46,7 @@ class Controller
      * @return Response
      * 
      */
-    public function getResponse($topicID, $pageID)
+    public function getResponse($topicID = '', $pageID = '')
     {
         if (empty($topicID) && empty($pageID))
         {

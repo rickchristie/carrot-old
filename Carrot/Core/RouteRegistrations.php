@@ -55,6 +55,16 @@ class RouteRegistrations
     protected $dic;
     
     /**
+     * @var Request Used to construct BasicRoute.
+     */
+    protected $request;
+    
+    /**
+     * @var AppRequestURI Used to construct BasicRoute.
+     */
+    protected $appRequestURI;
+    
+    /**
      * Constructor.
      * 
      * This class can access the DIC because it needs to dynamically
@@ -64,8 +74,10 @@ class RouteRegistrations
      * @param DependencyInjectionContainer $dic Used to instantiate the route objects.
      * 
      */
-    public function __construct(DependencyInjectionContainer $dic)
+    public function __construct(Request $request, AppRequestURI $appRequestURI, DependencyInjectionContainer $dic)
     {
+        $this->request = $request;
+        $this->appRequestURI = $appRequestURI;
         $this->dic = $dic;
     }
     
@@ -93,7 +105,7 @@ class RouteRegistrations
      * );
      * </code>
      * 
-     * @param string $routeID The route ID to be used.
+     * @param string $routeID The route registration ID.
      * @param ObjectReference $objectReference Later will be used by DIC to instantiate the route object.
      *
      */
@@ -102,6 +114,44 @@ class RouteRegistrations
         $registrationArray = array(
             'type' => 'ObjectReference',
             'reference' => $objectReference
+        );
+        
+        $this->registrations[$routeID] = $registrationArray;
+    }
+    
+    /**
+     * Registers a basic route configuration.
+     * 
+    // ---------------------------------------------------------------
+     * Use this method to register basic routes. Your configuration
+     * array will be used to instantiate the BasicRoute instance, so
+     * for more information on the configuration array format you
+     * should see {@see BasicRoute::__construct()}.
+     *
+     * <code>
+     * $routes->registerBasicRoute('App.Admin.NewPost', array(
+     *     'pattern' => '/blog/post/{id}/{slug}/lang/{(fr|de):lang}',
+     *     'object' => 'App\Admin\NewPostController{Main:Transient}',
+     *     'method' => 'showPost',
+     *     'args' => array('@id', '@slug', 1, '@lang'),
+     *     'prefix' => '@',
+     *     'type' => 'GET'
+     * ));
+     * </code>
+     *
+     * TODO: Finish documentation
+     * 
+     * @param string $routeID The route registration ID.
+     * @param array $config The configuration array to send.
+     * 
+     */
+    public function registerBasicRoute($routeID, array $config)
+    {
+        // TODO: Throw exception if route ID already exists.
+        
+        $registrationArray = array(
+            'type' => 'BasicRoute',
+            'config' => $config
         );
         
         $this->registrations[$routeID] = $registrationArray;
@@ -152,6 +202,9 @@ class RouteRegistrations
             case 'ObjectReference':
                 $routeObject = $this->getRouteObjectByReference($routeID);
             break;
+            case 'BasicRoute':
+                $routeObject = $this->getBasicRouteInstance($routeID);
+            break;
         }
         
         if (!is_object($routeObject) OR !($routeObject instanceof RouteInterface))
@@ -198,5 +251,22 @@ class RouteRegistrations
     protected function getRouteObjectByReference($routeID)
     {
         return $this->dic->getInstance($this->registrations[$routeID]['reference']);
+    }
+    
+    /**
+     * Instantiates BasicRoute using the configuration array of the route ID provided.
+     *
+     * // TODO: More documentation
+     *
+     */
+    protected function getBasicRouteInstance($routeID)
+    {
+        $config = $this->registrations[$routeID]['config'];
+        return new BasicRoute(
+            $routeID,
+            $config,
+            $this->request,
+            $this->appRequestURI
+        );
     }
 }
