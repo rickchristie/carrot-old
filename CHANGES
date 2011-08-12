@@ -1,20 +1,52 @@
 TRUNK
 -----
 
+
+
+
+VERSION 0.2.7
+-------------
+
 - Renamed Carrot\Core\Dispatch to Carrot\Core\Callback.
-    - Moved call_user_func_array() logic to the Callback class itself, adhering to tell, don't ask principle.
+    - Moved call_user_func_array() logic to the Callback class itself, adhering to tell, don't ask principle
 - Removed FrontController, simplified Carrot\Core\System::run() method.
-- Router
-    - Added Carrot\Core\RouteRegistrations to handle route registrations.
+- Added Carrot\Core\EventDispatcher for simple handling of core events
+    - Allows user to run specific routines when an event occurs
+    - Arguments sent are determined by the notifier
+    - Added event: Carrot.Core.System:EventDispatcherReady
+    - Added event: Carrot.Core.System:RouterReady
+    - Added event: Carrot.Core.System:RoutingCompleted
+- Session Package
+    - Carrot\Session is going to be another package
+    - Added Carrot\Core\Session for simple native session wrapper
+- Carrot\Core\Router
+    - Added Carrot\Core\RouteRegistrations to handle route registrations
+        - Allows quick creation of Carrot\Core\BasicRoute object, removing the need to code boilerplate route classes
+        - Coupled with the DIC as it has the responsibility of creating the route objects
+        - Allows Router to lazy-load route objects as needed
     - Router and DIC are now decoupled.
     - Added getActiveRouteID()
     - Added getActiveCallback()
-    - Added getRouteIDForThisRoute()
-    - 
-- Session
-    - Carrot\Session is going to be another package.
-    - Added Carrot\Core\Session.
-- Carrot\Core\Database\MySQLiWrapper now ready to use.
+    - Added getAllRegisteredRouteIDs()
+- Carrot\Core\Interfaces\RouteInterface
+    - getURL() is now getRelativePath(), base path is appended as a prefix by Router object
+    - Added setID(), which is called by RouteRegistration after it has instantiated the route object
+- Carrot\Core\Database\MySQLiWrapper now ready to use
+- Carrot\Core\AppRequestURI
+    - Now has singleton lifecycle
+    - Now handles base path and base URL
+    - Added getBaseURL()
+    - Added segmentMatches()
+    - Added segmentStartsWith()
+- Carrot\Core\Request
+    - Now has singleton lifecycle
+    - Now has get*OrReturnDefault() methods
+    - Added isPostRequest()
+    - Added isGetRequest()
+    - Less sucky now because each get* methods return null when index doesn't exist.
+- Carrot\Core\System now returns the response instead of sending it immediately.
+- Some other changes
+- Fixed some bugs
 
 VERSION 0.2.6
 -------------

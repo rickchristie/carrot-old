@@ -76,6 +76,11 @@ class Router
     protected $activeCallback;
     
     /**
+     * @var bool Set to TRUE if the doRouting() method is called at least once, FALSE otherwise.
+     */
+    protected $routingHasBeenDone;
+    
+    /**
      * Constructor.
      *
      * RouteRegistrations represents the route registrations and is
@@ -94,15 +99,18 @@ class Router
     {
         $this->appRequestURI = $appRequestURI;
         $this->routeRegistrations = $routeRegistrations;
-        $this->initializeRoutes();
+        $this->registeredRouteIDs = $this->routeRegistrations->getRegisteredRouteIDs();
     }
     
     /**
      * Routes the request into a callback instance.
+     * 
+     * The actual routing method. Loops through the RouteRegistrations
+     * objects and return immediately if one of them returns an
+     * instance of Callback.
      *
-     * The actual routing method. Make sure route objects are already
-     * instantiated using instantiateRouteObjects() before calling
-     * this method.
+     * Sets the $routingHasBeenDone class property just before
+     * returning the Callback instance.
      * 
      * @return Callback The callback instance.
      *
@@ -122,13 +130,15 @@ class Router
             {   
                 $this->activeRouteID = $routeID;
                 $this->activeCallback = $callback;
+                $this->routingHasBeenDone = TRUE;
                 return $callback;
             }
         }
         
         $callback = $this->getCallbackForNoMatchingRoute();
-        $this->activeRouteID = false;
+        $this->activeRouteID = FALSE;
         $this->activeCallback = $callback;
+        $this->routingHasBeenDone = TRUE;
         return $callback;
     }
     
@@ -173,21 +183,28 @@ class Router
     
     /**
      * Returns the active route ID.
-     *
+     * 
      * Returns the ID of the route that is responsible for returning
      * the Callback instance after doRouting() is called.
-     *
-     * Returns null if doRouting() is not called yet.
-     *
+     * 
      * Returns false if doRouting() has been called but there is no
      * matching route, which also means that the callback for no
      * matching route is the active one.
      *
+     * Throws RuntimeException if this method is called before
+     * doRouting() is called at least once.
+     * 
+     * @throws RuntimeException
      * @return mixed Either the active route ID, false, or null.
      *
      */
     public function getActiveRouteID()
     {
+        if ($this->routingHasBeenDone == FALSE)
+        {
+            throw new RuntimeException("Router error in getting the active route ID. Routing hasn't been done yet.");
+        }
+        
         return $this->activeRouteID;
     }
     
@@ -206,6 +223,11 @@ class Router
      */
     public function getActiveCallback()
     {
+        if ($this->routingHasBeenDone == FALSE)
+        {
+            throw new RuntimeException("Router error in getting the active callback. Routing hasn't been done yet.");
+        }
+        
         return $this->activeCallback;
     }
     
@@ -229,20 +251,6 @@ class Router
     public function getAllRegisteredRouteIDs()
     {
         return $this->registeredRouteIDs;
-    }
-    
-    /**
-     * Initialize the routes array.
-     * 
-     * Initializes $registeredRouteIDs class property by calling the
-     * appropriate method at RouteRegistrations instance.
-     * 
-     * @see __construct()
-     *
-     */
-    protected function initializeRoutes()
-    {
-        $this->registeredRouteIDs = $this->routeRegistrations->getRegisteredRouteIDs();
     }
     
     /**

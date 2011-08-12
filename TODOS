@@ -34,6 +34,8 @@ TODO: Also for debugging purposes, inject the Router to the
 TODO: Take a look at Symfony's HTTPKernel for hints to improve
       your request and response objects.
 
+TODO: Add isAjaxRequest() to the request object.
+
 TODO: Finish the guide pages.
 
 TODO: Make the ErrorHandler class throws appropriate exceptions?

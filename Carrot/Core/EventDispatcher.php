@@ -31,15 +31,26 @@ use RuntimeException;
 class EventDispatcher
 {
     /**
-     * @var type comments
+     * @var array List of listener information, indexed by the event ID they are observing.
      */
     protected $listeners;
     
     /**
-     * @var DependencyInjectionContainer comments
+     * @var DependencyInjectionContainer Used to get the instance of the listener object when notifying.
      */
     protected $dic;
     
+    /**
+     * Set the DependencyInjectionContainer instance.
+     * 
+    // ---------------------------------------------------------------
+     * Should be called before you start notifying listeners.
+     * 
+     * The reason we use setter injection instead
+     * 
+     * @param DependencyInjectionContainer $dic
+     * 
+     */
     public function setDIC(DependencyInjectionContainer $dic)
     {
         $this->dic = $dic;
@@ -95,6 +106,10 @@ class EventDispatcher
         );
     }
     
+    /**
+     * Checks if we can notify the current event.
+     *
+     */
     protected function canNotify($eventName)
     {
         return (isset($this->listeners[$eventName]) AND $this->dic instanceof DependencyInjectionContainer);
