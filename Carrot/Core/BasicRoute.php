@@ -43,8 +43,14 @@ class BasicRoute implements RouteInterface
      */
     protected $routineObjectInstanceName;
     
+    /**
+     * @var type comments
+     */
     protected $routineMethodName;
     
+    /**
+     * @var type comments
+     */
     protected $requestType;
     
     /**
@@ -52,8 +58,14 @@ class BasicRoute implements RouteInterface
      */
     protected $placeholderPrefix;
     
+    /**
+     * @var type comments
+     */
     protected $variablePrefix;
     
+    /**
+     * @var type comments
+     */
     protected $variableSuffix;
     
     protected $routineMethodArgs;
@@ -112,16 +124,32 @@ class BasicRoute implements RouteInterface
      * 'object' is the routine object's instance name, 'method' is the
      * routine method to run, 'args' is an array containing arguments
      * to be passed to the routine method, while 'type' is the type of
-     * the request.
+     * the request, which could be either 'GET' or 'POST'.
      * 
      * Your variables can also denote rules. The available rules are:
      * 
      * <code>
+     * {label} -> no rules, accepts anything other than slash '/'.
      * {d:label} -> numerics.
      * {a:label} -> alphabets.
      * {b:label} -> alphanumerics.
-     * {u:label} -> alphanumerics, underscores, and the minus character.
+     * {u:label} -> alphanumerics, underscores '_', and minus '-'.
      * {(regex):label} -> regex rule inside the parentheses.
+     * </code>
+     *
+     * The regular expression rule is applied to the segment only, and
+     * should be used for simple expressions only, such as the or
+     * operator:
+     *
+     * <code>
+     * $pattern = '/blog/{id}/lang/{(de|en|fr):lang}';
+     * </code>
+     *
+     * The above example will be converted to will be converted to
+     * this regex:
+     *
+     * <code>
+     * /(de|en|fr)/
      * </code>
      * 
      * // TODO: Complete documentation here!
@@ -141,7 +169,11 @@ class BasicRoute implements RouteInterface
     }
     
     /**
-     * Routes the request.
+     * Routes the request if current request matches the pattern.
+     * 
+     * 
+     * 
+     * @return null|Callback 
      *
      */
     public function route()
@@ -185,6 +217,15 @@ class BasicRoute implements RouteInterface
         return $this->returnCallback();
     }
     
+    /**
+     * Get relative path according to the pattern.
+     * 
+     * 
+     * 
+     * @param array $args Must contain 
+     * @return 
+     *
+     */
     public function getRelativePath(array $args)
     {
         $variableNames = $this->getVariableNamesFromPattern();
@@ -398,6 +439,8 @@ class BasicRoute implements RouteInterface
     
     /**
      * Passes variable requirements.
+     * 
+     * Checks the requirements of the variables/placeholders
      * 
      * 
      * @return bool True if passes, false if not.

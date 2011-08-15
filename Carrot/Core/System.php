@@ -460,6 +460,7 @@ class System
         ));
         
         // Documentation bindings
+        // TODO: Separate Carrot\Docs DIC bindings to another method of its own
         
         $this->dic->bind('Carrot\Docs\Route{Main:Transient}', array(
             new ObjectReference('Carrot\Core\AppRequestURI{Main:Singleton}')

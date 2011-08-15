@@ -40,5 +40,5 @@ interface ExceptionHandlerInterface
      * @return \Carrot\Core\Response The response to be sent to the browser.
      *
      */
-    public function handle(Exception $exception, );
+    public function handle(Exception $exception);
 }

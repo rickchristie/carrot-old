@@ -147,7 +147,16 @@ class Session
     }
     
     /**
-     * TODO: Write docs
+     * Get the session variable or return default value given.
+     * 
+     * If the index exists, returns the session variable value, but if
+     * the index doesn't exist, returns the default value given.
+     * Please note that this method doesn't create the session
+     * variable if it doesn't exist, it simply returns the default
+     * value given.
+     * 
+     * @param string $index The index of the session variable to get.
+     * @param mixed $default The default value to be returned.
      *
      */
     public function getOrReturnDefault($index, $default)
