@@ -10,25 +10,21 @@
  */
 
 /**
- * Validation Result
- *
-// ---------------------------------------------------------------
- * This class represents a result status from a validation method.
- * The validation method is 
+ * Warning Message
  * 
+ * Represents an warning message.
+ *
+ * For more information, {@see AbstractMessage} and
+ * {@see MessageInterface}.
+ *
  * @author      Ricky Christie <seven.rchristie@gmail.com>
  * @license     http://www.opensource.org/licenses/mit-license.php MIT License
  *
  */
 
-namespace Carrot\Validation;
+namespace Carrot\Message;
 
-class ValidationResult
+class WarningMessage extends AbstractMessage
 {
-    public function __construct('')
-    {
-        
-    }
     
-    public function 
 }
