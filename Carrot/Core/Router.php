@@ -156,7 +156,7 @@ class Router
      * @param array $args The arguments to send to the route.
      *
      */
-    public function getURL($routeID, array $args = array(), $absoluteURL = false)
+    public function getURL($routeID, array $args = array(), $absoluteURL = FALSE)
     {   
         if (!in_array($routeID, $this->registeredRouteIDs))
         {
@@ -187,7 +187,7 @@ class Router
      * Returns the ID of the route that is responsible for returning
      * the Callback instance after doRouting() is called.
      * 
-     * Returns false if doRouting() has been called but there is no
+     * Returns FALSE if doRouting() has been called but there is no
      * matching route, which also means that the callback for no
      * matching route is the active one.
      *
@@ -195,7 +195,7 @@ class Router
      * doRouting() is called at least once.
      * 
      * @throws RuntimeException
-     * @return mixed Either the active route ID, false, or null.
+     * @return mixed Either the active route ID, FALSE, or NULL.
      *
      */
     public function getActiveRouteID()
@@ -216,7 +216,7 @@ class Router
      * found when routing, this method will return the callback for
      * no matching route.
      * 
-     * Returns null if doRouting() hasn't been called yet.
+     * Returns NULL if doRouting() hasn't been called yet.
      *
      * @return Callback The callback instance returned by doRouting() method.
      *

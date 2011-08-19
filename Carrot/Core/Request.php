@@ -89,7 +89,7 @@ class Request
      * Uses $_SERVER['SERVER_METHOD'], depending on the server
      * environment you have, this method may or may not work.
      *
-     * @return bool True if a GET request, false otherwise.
+     * @return bool TRUE if a GET request, FALSE otherwise.
      *
      */
     public function isGetRequest()
@@ -103,7 +103,7 @@ class Request
      * Uses $_SERVER['SERVER_METHOD'], depending on the server
      * environment you have, this method may or may not work.
      *
-     * @return bool True if a POST request, false otherwise.
+     * @return bool TRUE if a POST request, FALSE otherwise.
      *
      */
     public function isPostRequest()
@@ -127,7 +127,7 @@ class Request
         
         if (!array_key_exists($index, $this->server))
         {
-            return null;
+            return NULL;
         }
         
         return $this->server[$index];
@@ -149,7 +149,7 @@ class Request
         
         if (!array_key_exists($index, $this->get))
         {
-            return null;
+            return NULL;
         }
         
         return $this->get[$index];
@@ -171,7 +171,7 @@ class Request
         
         if (!array_key_exists($index, $this->post))
         {
-            return null;
+            return NULL;
         }
         
         return $this->post[$index];
@@ -193,7 +193,7 @@ class Request
         
         if (!array_key_exists($index, $this->files))
         {
-            return null;
+            return NULL;
         }
         
         return $this->files[$index];
@@ -215,7 +215,7 @@ class Request
         
         if (!array_key_exists($index, $this->cookie))
         {
-            return null;
+            return NULL;
         }
         
         return $this->cookie[$index];
@@ -237,7 +237,7 @@ class Request
         
         if (!array_key_exists($index, $this->request))
         {
-            return null;
+            return NULL;
         }
         
         return $this->request[$index];
@@ -259,7 +259,7 @@ class Request
         
         if (!array_key_exists($index, $this->env))
         {
-            return null;
+            return NULL;
         }
         
         return $this->env[$index];
@@ -388,7 +388,7 @@ class Request
      * Wrapper for PHP isset on $_SERVER index.
      *
      * @param string $index The index to check.
-     * @return bool True if the index exists, false otherwise.
+     * @return bool TRUE if the index exists, FALSE otherwise.
      *
      */
     public function issetServer($index)
@@ -400,7 +400,7 @@ class Request
      * Wrapper for PHP isset on $_GET index.
      *
      * @param string $index The index to check.
-     * @return bool True if the index exists, false otherwise.
+     * @return bool TRUE if the index exists, FALSE otherwise.
      *
      */
     public function issetGet($index)
@@ -412,7 +412,7 @@ class Request
      * Wrapper for PHP isset on $_POST index.
      *
      * @param string $index The index to check.
-     * @return bool True if the index exists, false otherwise.
+     * @return bool TRUE if the index exists, FALSE otherwise.
      *
      */
     public function issetPost($index)
@@ -424,7 +424,7 @@ class Request
      * Wrapper for PHP isset on $_FILES index.
      *
      * @param string $index The index to check.
-     * @return bool True if the index exists, false otherwise.
+     * @return bool TRUE if the index exists, FALSE otherwise.
      *
      */
     public function issetFiles($index)
@@ -436,7 +436,7 @@ class Request
      * Wrapper for PHP isset on $_COOKIE index.
      *
      * @param string $index The index to check.
-     * @return bool True if the index exists, false otherwise.
+     * @return bool TRUE if the index exists, FALSE otherwise.
      *
      */
     public function issetCookie($index = '')
@@ -448,7 +448,7 @@ class Request
      * Wrapper for PHP isset on $_REQUEST index.
      *
      * @param string $index The index to check.
-     * @return bool True if the index exists, false otherwise.
+     * @return bool TRUE if the index exists, FALSE otherwise.
      *
      */
     public function issetRequest($index = '')
@@ -460,7 +460,7 @@ class Request
      * Wrapper for PHP isset on $_ENV index.
      *
      * @param string $index The index to check.
-     * @return bool True if the index exists, false otherwise.
+     * @return bool TRUE if the index exists, FALSE otherwise.
      *
      */
     public function issetEnv($index = '')

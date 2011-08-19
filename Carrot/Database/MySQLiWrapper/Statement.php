@@ -116,7 +116,7 @@ class Statement extends MySQLi_STMT
     protected $blobParams;
     
     /**
-     * @var bool True if the statement has a result set, false otherwise.
+     * @var bool TRUE if the statement has a result set, FALSE otherwise.
      */
     protected $hasResultSet;
     
@@ -269,14 +269,14 @@ class Statement extends MySQLi_STMT
      * }
      * </code>
      *
-     * @return mixed Result row as array. False if no more rows or failure in fetching.
+     * @return mixed Result row as array. FALSE if no more rows or failure in fetching.
      *
      */
     public function fetchArray()
     {   
         $result = $this->fetch();
         
-        if ($result === true)
+        if ($result === TRUE)
         {
             $row = array();
             
@@ -288,7 +288,7 @@ class Statement extends MySQLi_STMT
             return $row;
         }
         
-        return false;
+        return FALSE;
     }
     
     /**
@@ -304,14 +304,14 @@ class Statement extends MySQLi_STMT
      * }
      * </code>
      *
-     * @return mixed Result row as associative array. False if no more rows or failure in fetching.
+     * @return mixed Result row as associative array. FALSE if no more rows or failure in fetching.
      *
      */
     public function fetchAssociativeArray()
     {
         $result = $this->fetch();
         
-        if ($result === true)
+        if ($result === TRUE)
         {
             $row = array();
             
@@ -323,7 +323,7 @@ class Statement extends MySQLi_STMT
             return $row;
         }
         
-        return false;
+        return FALSE;
     }
     
     /**
@@ -339,14 +339,14 @@ class Statement extends MySQLi_STMT
      * }
      * </code>
      *
-     * @return mixed Result row as PHP standard object. False if no more rows or failure in fetching.
+     * @return mixed Result row as PHP standard object. FALSE if no more rows or failure in fetching.
      *
      */
     public function fetchObject()
     {
         $result = $this->fetch();
         
-        if ($result === true)
+        if ($result === TRUE)
         {
             $row = array();
             
@@ -358,7 +358,7 @@ class Statement extends MySQLi_STMT
             return (object) $row;
         }
         
-        return false;
+        return FALSE;
     }
     
     /**
@@ -441,10 +441,10 @@ class Statement extends MySQLi_STMT
      *
      * If the statement has a result set,
      * MySQLi_STMT::result_metadata() will return a MySQLi_Result
-     * object. If the statement has no result set it will return false.
+     * object. If the statement has no result set it will return FALSE.
      * 
      * @see __construct()
-     * @return bool True if the statement has a result set, false otherwise.
+     * @return bool TRUE if the statement has a result set, FALSE otherwise.
      *
      */
     protected function hasResultSet($resultMetadata)
@@ -472,7 +472,7 @@ class Statement extends MySQLi_STMT
         
         foreach ($this->placeholders as $placeholder)
         {
-            $this->params[$placeholder] = null;
+            $this->params[$placeholder] = NULL;
             $this->paramsReferences[$placeholder] = &$this->params[$placeholder];
         }
     }
@@ -496,7 +496,7 @@ class Statement extends MySQLi_STMT
         {
             foreach ($resultMetadata->fetch_fields() as $field)
             {
-                $this->resultRow[$field->name] = null;
+                $this->resultRow[$field->name] = NULL;
                 $this->resultRowReferences[$field->name] = &$this->resultRow[$field->name];
             }
         }
@@ -506,7 +506,7 @@ class Statement extends MySQLi_STMT
      * Binds the $resultRowReferences class property with bind_result().
      *
      * Will not perform the binding if class property $hasResultSet is
-     * false. We can immediately bind result references after creating
+     * FALSE. We can immediately bind result references after creating
      * it in constructor because once a statement has been made, the
      * result set would not change.
      *

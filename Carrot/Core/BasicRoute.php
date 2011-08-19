@@ -173,7 +173,7 @@ class BasicRoute implements RouteInterface
      * 
      * 
      * 
-     * @return null|Callback 
+     * @return NULL|Callback 
      *
      */
     public function route()
@@ -364,7 +364,7 @@ class BasicRoute implements RouteInterface
     {
         if ($this->requestType == '*')
         {
-            return false;
+            return FALSE;
         }
         
         return (
@@ -443,7 +443,7 @@ class BasicRoute implements RouteInterface
      * Checks the requirements of the variables/placeholders
      * 
      * 
-     * @return bool True if passes, false if not.
+     * @return bool TRUE if passes, FALSE if not.
      *
      */
     protected function passesVariableRequirements($name, $value)
@@ -476,11 +476,11 @@ class BasicRoute implements RouteInterface
             
             if (preg_match($pattern, $value, $matches) <= 0)
             {
-                return false;
+                return FALSE;
             }
         }
         
-        return true;
+        return TRUE;
     }
     
     /**
@@ -507,7 +507,7 @@ class BasicRoute implements RouteInterface
     {   
         $colonCharLocation = strrpos($name, ':');
         
-        if ($colonCharLocation === false)
+        if ($colonCharLocation === FALSE)
         {
             return $name;
         }

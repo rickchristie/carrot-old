@@ -51,13 +51,13 @@
 {
     public function getAdvantage()
     {
-        if (true)
+        if (TRUE)
         {
-            return true;
+            return TRUE;
         }
         else
         {
-            return false;
+            return FALSE;
         }
     }
 }</pre>
@@ -88,8 +88,16 @@ $groceries = new GroceryList(
         visibility explicitly.
     </li>
     <li>
-        Use lowercase for PHP native constants, e.g. <code>true</code>, <code>false</code>,
-        <code>null</code>.
+        Use uppercase to denote booleans, e.g. <code>TRUE</code>,
+        <code>FALSE</code>.
+    </li>
+    <li>
+        Use uppercase to denote NULL value, e.g.
+        <code>NULL</code>.
+    </li>
+    <li>
+        Use uppercase for PHP native constants, e.g. <code>TRUE</code>, <code>FALSE</code>,
+        <code>NULL</code>.
     </li>
     <li>
         Class properties are declared before methods. Public methods are declared before

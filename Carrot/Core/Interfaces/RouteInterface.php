@@ -42,7 +42,7 @@ interface RouteInterface
      * move on to the next route object.
      * 
      * @see \Carrot\Core\Callback
-     * @return mixed Either an instance of \Carrot\Core\Callback or null.
+     * @return mixed Either an instance of \Carrot\Core\Callback or NULL.
      * 
      */
     public function route();

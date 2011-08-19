@@ -230,7 +230,7 @@ class RouteRegistrations
     /**
      * Returns callback for no matching route.
      *
-     * @return Callback|null The callback object or null if not set yet.
+     * @return Callback|NULL The callback object or NULL if not set yet.
      *
      */
     public function getCallbackForNoMatchingRoute()

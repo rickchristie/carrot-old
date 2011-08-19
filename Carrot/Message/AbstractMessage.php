@@ -95,12 +95,12 @@ abstract class AbstractMessage implements MessageInterface
     /**
      * @var array The list of parameter names and their labels.
      */
-    protected $parameterLabels;
+    protected $parameterLabels = array();
     
     /**
      * @var array The list of placeholder names and their replacements.
      */
-    protected $placeholders;
+    protected $placeholders = array();
     
     /**
      * Constructor.
@@ -268,7 +268,7 @@ abstract class AbstractMessage implements MessageInterface
      */
     public function get()
     {
-        $message = $this->replaceParameterIDs($message);
+        $message = $this->replaceParameterIDs($this->rawMessage);
         $message = $this->replacePlaceholders($message);
         return $message;
     }

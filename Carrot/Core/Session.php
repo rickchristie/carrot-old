@@ -30,17 +30,17 @@ namespace Carrot\Core;
 class Session
 {
     /**
-     * @var bool True if session_start() has been called at least once, false otherwise.
+     * @var bool TRUE if session_start() has been called at least once, FALSE otherwise.
      */
     protected $hasBeenStartedBefore;
 
     /**
-     * @var bool True if session is currently started, false otherwise.
+     * @var bool TRUE if session is currently started, FALSE otherwise.
      */
     protected $started;
     
     /**
-     * @var bool True if session is currently closed using session_write_close(), false otherwise.
+     * @var bool TRUE if session is currently closed using session_write_close(), FALSE otherwise.
      */
     protected $closed;
     
@@ -51,19 +51,19 @@ class Session
      * session is not started yet. This is the best possible scenario
      * to use this class.
      * 
-     * @param bool $sessionIsStarted True if the session is currently started, defaults to false.
-     * @param bool $sessionWriteClosed True if the session is currently write closed, defaults to false.
-     * @param bool $sessionHasBeenStartedBefore True if session has been started at least once, defaults to false.
+     * @param bool $sessionIsStarted TRUE if the session is currently started, defaults to FALSE.
+     * @param bool $sessionWriteClosed TRUE if the session is currently write closed, defaults to FALSE.
+     * @param bool $sessionHasBeenStartedBefore TRUE if session has been started at least once, defaults to FALSE.
      *
      */
-    public function __construct($sessionIsStarted = false, $sessionWriteClosed = true, $sessionHasBeenStartedBefore = false)
+    public function __construct($sessionIsStarted = FALSE, $sessionWriteClosed = TRUE, $sessionHasBeenStartedBefore = FALSE)
     {
         $this->started = $sessionIsStarted;
         $this->closed = $sessionWriteClosed;
         
         if ($this->started)
         {
-            $this->hasBeenStartedBefore = true;
+            $this->hasBeenStartedBefore = TRUE;
         }
         else
         {
@@ -75,7 +75,7 @@ class Session
      * Starts the session.
      *
      * Assuming that the booleans that were given at the constructor
-     * is true and your application always uses this instance
+     * is correct and your application always uses this instance
      * (singleton lifecycle) to access the $_SESSION superglobal and
      * its functions, you can safely call this function numerous
      * times, just to make sure the session is writable.
@@ -86,9 +86,9 @@ class Session
         if (!$this->started)
         {
             session_start();
-            $this->started = true;
-            $this->closed = false;
-            $this->hasBeenStartedBefore = true;
+            $this->started = TRUE;
+            $this->closed = FALSE;
+            $this->hasBeenStartedBefore = TRUE;
         }
     }
     
@@ -96,10 +96,10 @@ class Session
      * Destroys the session, acts as a wrapper for session_destroy().
      * 
      * Destroys both the data and the cookie for the session ID at the
-     * client side. Will not run if $started property is false or if
-     * $closed property is true.
+     * client side. Will not run if $started property is FALSE or if
+     * $closed property is TRUE.
      *
-     * @return bool True if destroyed, false if session is not started or is currently write closed.
+     * @return bool TRUE if destroyed, FALSE if session is not started or is currently write closed.
      * 
      */
     public function destroy()
@@ -113,13 +113,12 @@ class Session
             session_destroy();
             
             // Set the session state
-            $this->started = false;
-            $this->closed = true;
-            
-            return true;
+            $this->started = FALSE;
+            $this->closed = TRUE;
+            return TRUE;
         }
         
-        return false;
+        return FALSE;
     }
     
     /**
@@ -176,7 +175,7 @@ class Session
      * Checks if the variable exists or not using isset.
      *
      * When checking value with this method, make sure you do a strict
-     * compare (===). This method returns null if the session is not
+     * compare (===). This method returns NULL if the session is not
      * started or it is currently write closed. You can call start()
      * before usage to make sure that session is started and writable.
      * 
@@ -194,13 +193,13 @@ class Session
     /**
      * Writes/overwrites a session variable.
      * 
-     * This method will return false if the session is not started or
+     * This method will return FALSE if the session is not started or
      * if the session is currently write closed. Use start() to make
      * sure that the variable is writable before using this method.
      * 
      * @param string $index Session array index to be written on.
      * @param string $content Value used to write.
-     * @return bool True if the write is sucessful, false otherwise.
+     * @return bool TRUE if the write is sucessful, FALSE otherwise.
      *
      */
     public function write($index, $content)
@@ -208,16 +207,16 @@ class Session
         if ($this->started && !$this->closed)
         {
             $_SESSION[$index] = $content;
-            return true;
+            return TRUE;
         }
         
-        return false;
+        return FALSE;
     }
     
     /**
      * Clears all session variable or remove a particular variable.
      *
-     * Will return false if session is not started or if the session
+     * Will return FALSE if session is not started or if the session
      * is currently write closed. Use start() to make sure that
      * variable is writable.
      * 
@@ -231,14 +230,14 @@ class Session
             if (empty($index))
             {
                 $_SESSION = array();
-                return true;
+                return TRUE;
             }
             
             unset($_SESSION[$index]);
-            return true;
+            return TRUE;
         }
         
-        return false;
+        return FALSE;
     }
     
     /**
@@ -254,8 +253,8 @@ class Session
         if ($this->started && !$this->closed)
         {
             session_write_close();
-            $this->started = false;
-            $this->closed = true;
+            $this->started = FALSE;
+            $this->closed = TRUE;
         }
     }
         
@@ -300,16 +299,16 @@ class Session
      * Wrapper for session_regenerate_id().
      *
      * @param bool $deleteOldSession Whether to delete the old associated session file or not.
-     * @return bool True on success, false on failure.
+     * @return bool TRUE on success, FALSE on failure.
      *
      */
-    public function regenerateID($deleteOldSession = false)
+    public function regenerateID($deleteOldSession = FALSE)
     {
         return session_regenerate_id($deleteOldSession);
     }
     
     /**
-     * Returns true if session is currently started, false otherwise.
+     * Returns TRUE if session is currently started, FALSE otherwise.
      *
      * @return bool 
      *
@@ -320,7 +319,7 @@ class Session
     }
     
     /**
-     * Returns true if session is currently write closed, false otherwise.
+     * Returns TRUE if session is currently write closed, FALSE otherwise.
      *
      * @return bool
      *
@@ -331,7 +330,7 @@ class Session
     }
     
     /**
-     * Returns true if session has already been started at least once, false otherwise.
+     * Returns TRUE if session has already been started at least once, FALSE otherwise.
      *
      * @return bool
      *
@@ -354,7 +353,7 @@ class Session
      * Wrapper for session_decode().
      *
      * @param string Encoded session data.
-     * @return bool True on success, false on failure.
+     * @return bool TRUE on success, FALSE on failure.
      *
      */
     public function decode($string)
@@ -440,9 +439,9 @@ class Session
      * @param int $lifetime Lifetime of the session cookie, defined in seconds.
      * @param string $path Path on the domain where the cookie will work. Use a single slash ('/') for all paths on the domain.
      * @param string $domain Cookie domain, for example 'www.php.net'. To make cookies visible on all subdomains then the domain must be prefixed with a dot like '.php.net'.
-     * @param bool $secure If true cookie will only be sent over secure connections.
-     * @param bool $httponly If set to true then PHP will attempt to send the httponly flag when setting the session cookie.
-     * @return bool True if it changes the cookie parameters, false if it doesn't.
+     * @param bool $secure If TRUE cookie will only be sent over secure connections.
+     * @param bool $httponly If set to TRUE then PHP will attempt to send the httponly flag when setting the session cookie.
+     * @return bool TRUE if it changes the cookie parameters, FALSE if it doesn't.
      *
      */
     public function setCookieParams($lifetime, $path, $domain, $secure, $httponly)
@@ -450,10 +449,10 @@ class Session
         if (!$this->hasBeenStartedBefore)
         {
             session_set_cookie_params($lifetime, $path, $domain, $secure, $httponly);
-            return true;
+            return TRUE;
         }
         
-        return false;
+        return FALSE;
     }
     
     /**
@@ -516,6 +515,6 @@ class Session
             return session_set_save_handler($open, $close, $read, $write, $destroy, $gc);
         }
         
-        return false;
+        return FALSE;
     }
 }

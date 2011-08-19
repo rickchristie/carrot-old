@@ -1,7 +1,7 @@
 TRUNK
 -----
 
-
+- 
 
 
 VERSION 0.2.7
@@ -43,7 +43,7 @@ VERSION 0.2.7
     - Now has get*OrReturnDefault() methods
     - Added isPostRequest()
     - Added isGetRequest()
-    - Less sucky now because each get* methods return null when index doesn't exist.
+    - Less sucky now because each get* methods return NULL when index doesn't exist.
 - Carrot\Core\System now returns the response instead of sending it immediately.
 - Some other changes
 - Fixed some bugs

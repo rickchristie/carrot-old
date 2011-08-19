@@ -84,7 +84,7 @@ class AppRequestURI
      * @param string $baseURL 
      *
      */
-    public function __construct(Request $request, $basePath = null, $baseURL = null)
+    public function __construct(Request $request, $basePath = NULL, $baseURL = NULL)
     {
         $this->server = $request->getServer();
         
@@ -108,7 +108,7 @@ class AppRequestURI
     }
     
     /**
-     * Returns true if the array give equals the segments array.
+     * Returns TRUE if the array give equals the segments array.
      *
      * Comparison is done using the identity comparison operator (the
      * triple equal sign '==='). This means both must have the same
@@ -116,7 +116,7 @@ class AppRequestURI
      * 
      * @see http://www.php.net/manual/en/language.operators.array.php
      * @param array $array The array to be compared.
-     * @return bool True or false.
+     * @return bool TRUE or FALSE.
      *
      */
     public function segmentMatches(array $array)
@@ -125,14 +125,14 @@ class AppRequestURI
     }
     
     /**
-     * Returns true if the segment array starts with the given array.
+     * Returns TRUE if the segment array starts with the given array.
      * 
      * Useful if you want have a custom route and wants to exit as
      * soon as possible.
      *
      * TODO: Example case
      * 
-     * @return bool True or false.
+     * @return bool TRUE or FALSE.
      * 
      */
     public function segmentStartsWith(array $array)
@@ -304,7 +304,7 @@ class AppRequestURI
      * 
      * @see http://stackoverflow.com/questions/1175096/how-to-find-out-if-you-are-using-https-without-serverhttps
      * @see http://www.php.net/manual/en/reserved.variables.server.php
-     * @return bool True if the request is using https, false otherwise.
+     * @return bool TRUE if the request is using https, FALSE otherwise.
      *
      */
     protected function requestIsHTTPS()
@@ -350,7 +350,7 @@ class AppRequestURI
         // Remove query string, if it exists
         $pos = strrpos($appURIString, '?');
         
-        if ($pos !== false)
+        if ($pos !== FALSE)
         {
             $appURIString = substr($appURIString, 0, $pos);
         }
@@ -417,7 +417,7 @@ class AppRequestURI
         $pathString = $this->string;
         $questionMarkLocation = strrpos($pathString, '?');
         
-        if ($questionMarkLocation === false)
+        if ($questionMarkLocation === FALSE)
         {
             return $pathString;
         }

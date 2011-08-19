@@ -103,7 +103,7 @@ class ExceptionHandlerManager
     protected $dic;
     
     /**
-     * @var bool True if the exception handler is set, false otherwise.
+     * @var bool TRUE if the exception handler is set, FALSE otherwise.
      */
     protected $set;
     
@@ -129,10 +129,10 @@ class ExceptionHandlerManager
      * @param ExceptionLoggerInterface The logging interface implementation.
      *
      */
-    public function __construct(array $handlerBindings, ExceptionLoggerInterface $logger = null)
+    public function __construct(array $handlerBindings, ExceptionLoggerInterface $logger = NULL)
     {
         $this->handlerBindings = array();
-        $this->set = false;
+        $this->set = FALSE;
         
         if (!$logger)
         {
@@ -201,7 +201,7 @@ class ExceptionHandlerManager
         {
             $this->logger->log($exception);
             $classList = $this->getClassList($exception);
-            $exceptionHandlerObjectReference = null;
+            $exceptionHandlerObjectReference = NULL;
             
             foreach ($classList as $className)
             {
@@ -303,7 +303,7 @@ class ExceptionHandlerManager
         if (!$this->set)
         {
             set_exception_handler(array($this, 'dispatchException'));
-            $this->set = true;
+            $this->set = TRUE;
         }
     }
     
@@ -319,7 +319,7 @@ class ExceptionHandlerManager
         if ($this->set)
         {
             restore_exception_handler();
-            $this->set = false;
+            $this->set = FALSE;
         }
     }
     

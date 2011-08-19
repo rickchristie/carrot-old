@@ -65,9 +65,9 @@ class Autoloader
     protected $classToFileBindings = array();
     
     /**
-     * @var bool True if this class has already registered its method using spl_autoload_register.
+     * @var bool TRUE if this class has already registered its method using spl_autoload_register.
      */
-    protected $registered = false;
+    protected $registered = FALSE;
     
     /**
      * @var array List of files that this autoloader really loads, for debugging purposes.
@@ -137,7 +137,7 @@ class Autoloader
         if (!$this->registered)
         {
             spl_autoload_register(array($this, 'loadClass'));
-            $this->registered = true;
+            $this->registered = TRUE;
         }
     }
     
@@ -150,7 +150,7 @@ class Autoloader
         if ($this->registered)
         {
             spl_autoload_unregister(array($this, 'loadClass'));
-            $this->registered = false;
+            $this->registered = FALSE;
         }
     }
     
@@ -245,7 +245,7 @@ class Autoloader
      * 
      * @throws \RuntimeException
      * @param string $className Fully qualified class name with backslash prefix.
-     * @return bool True if class file found and loaded, false otherwise.
+     * @return bool TRUE if class file found and loaded, FALSE otherwise.
      *
      */
     protected function loadClassFromClassToFileBindings($className)
@@ -259,17 +259,17 @@ class Autoloader
             
             require $this->classToFileBindings[$className];
             $this->loadedFiles[$className] = $this->classToFileBindings[$className];
-            return true;
+            return TRUE;
         }
         
-        return false;
+        return FALSE;
     }
     
     /**
      * Loads the class from namespace to directory bindings.
      * 
      * @param string $className Fully qualified class name with backslash prefix.
-     * @return bool True if class file found and loaded, false otherwise.
+     * @return bool TRUE if class file found and loaded, FALSE otherwise.
      *
      */
     protected function loadClassFromNamespaceToDirectoryBindings($className)
@@ -287,12 +287,12 @@ class Autoloader
                 {
                     require $classFilePath;
                     $this->loadedFiles[$className] = $classFilePath;
-                    return true;
+                    return TRUE;
                 }
             }
         }
         
-        return false;
+        return FALSE;
     }
     
     /**

@@ -78,7 +78,7 @@ class Model
     /**
      * @var array Complete list of pages in an array.
      */
-    protected $completePageList = null;
+    protected $completePageList = NULL;
     
     /**
      * Construct the model.
@@ -98,7 +98,7 @@ class Model
      * @param string $pageFileSuffix The suffix to the page file name, added after the page title.
      *
      */
-    public function __construct($storageDirectory = null, $pageFileSuffix = '.html')
+    public function __construct($storageDirectory = NULL, $pageFileSuffix = '.html')
     {
         if (!$storageDirectory)
         {
@@ -108,7 +108,7 @@ class Model
         $this->pageFileSuffix = $pageFileSuffix;
         $realpath = realpath($storageDirectory);
         
-        if ($realpath === false)
+        if ($realpath === FALSE)
         {
             throw new InvalidArgumentException("Failed to construct SimpleDocs model. Storage directory provided ({$storageDirectory}) is not valid.");
         }
@@ -262,7 +262,7 @@ class Model
      * to the string injected at object construction.
      *
      * @param string $filePath Absolute path to the file to be checked.
-     * @return bool True if it is a valid page file, false otherwise.
+     * @return bool TRUE if it is a valid page file, FALSE otherwise.
      *
      */
     protected function isValidPageFile($filePath)
