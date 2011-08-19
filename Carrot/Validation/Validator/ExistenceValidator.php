@@ -23,7 +23,7 @@
 namespace Carrot\Validation\Validator;
 
 use Carrot\Validation\ValidationResult;
-use Carrot\Message\ErrorMessage;
+use Carrot\Message\Field\FieldMessage;
 
 class ExistenceValidator implements ValidatorInterface
 {   
@@ -39,9 +39,9 @@ class ExistenceValidator implements ValidatorInterface
      * 
      *
      */
-    public function notEmpty($activeParamID, array $parameters, $args = NULL)
+    public function notEmpty($activeValueID, array $parameters, $args = NULL)
     {
-        $value = $parameters[$activeParamID];
+        $value = $parameters[$activeValueID];
         
         if (is_integer($value) OR is_bool($value) OR is_float($value))
         {
@@ -54,17 +54,19 @@ class ExistenceValidator implements ValidatorInterface
             
             if ($value === '')
             {
-                return $this->getInvalidResult($activeParamID);
+                return $this->getInvalidResult($activeValueID);
             }
         }
         
         if (empty($value))
         {
-            return $this->getInvalidResult($activeParamID);
+            return $this->getInvalidResult($activeValueID);
         }
+        
+        return $this->getValidResult();
     }
     
-    public function zendNotEmpty($activeParamID, array $parameters, array $args = array())
+    public function zendNotEmpty($activeValueID, array $parameters, array $args = array())
     {
         
     }
@@ -76,10 +78,15 @@ class ExistenceValidator implements ValidatorInterface
         return $result;
     }
     
-    protected function getInvalidResult($activeParamID)
+    protected function getInvalidResult($activeValueID)
     {
-        $message = new ErrorMessage(_("{@$activeParamID} must not be empty."));
-        $message->setParameterID($activeParamID);
+        $message = new FieldMessage(
+            get_class($this),
+            _("{@$activeValueID} must not be empty."),
+            FieldMessage::ERROR
+        );
+        
+        $message->setFieldID($activeValueID);
         $result = new ValidationResult;
         $result->setStatusToInvalid();
         $result->addMessage($message);

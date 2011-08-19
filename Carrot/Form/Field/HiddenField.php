@@ -10,22 +10,24 @@
  */
 
 /**
- * Form View
+ * Text Field
  * 
 // ---------------------------------------------------------------
- * 
+ * Value object
  * 
  * @author      Ricky Christie <seven.rchristie@gmail.com>
  * @license     http://www.opensource.org/licenses/mit-license.php MIT License
  *
  */
 
-namespace Carrot\Form;
+namespace Carrot\Form\Field;
 
-class FormView
+class TextField extends AbstractSingleInputField
 {
-    public function __construct()
+    protected $type = 'hidden';
+    
+    public function renderLabel()
     {
-        
+        // This method is intentionally left blank
     }
 }

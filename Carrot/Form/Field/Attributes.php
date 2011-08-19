@@ -23,6 +23,7 @@
 namespace Carrot\Form\Field;
 
 use RuntimeException;
+use InvalidArgumentException;
 
 class Attributes
 {
@@ -32,7 +33,7 @@ class Attributes
     protected $attributes;
     
     /**
-     * @var array List of attribute names that cannot be set after construction.
+     * @var array List of attribute names that must not be set.
      */
     protected $forbidden;
     
@@ -47,6 +48,14 @@ class Attributes
      */
     public function __construct(array $attributes = array(), array $forbidden = array())
     {
+        foreach ($attributes as $name => $value)
+        {
+            if (in_array($name, $forbidden))
+            {
+                throw new InvalidArgumentException("Attributes error in instantiation. The attribute '{$name}' is forbidden.");
+            }
+        }
+        
         $this->attributes = $attributes;
         $this->forbidden = $forbidden;
     }
@@ -97,7 +106,7 @@ class Attributes
     {
         if (in_array($nam, $this->forbidden))
         {
-            throw new RuntimeException("Attributes error when attempting to appen value. The attribute '{$name}' is forbidden. Please use class specific methods.");
+            throw new RuntimeException("Attributes error when attempting to append value. The attribute '{$name}' is forbidden. Please use class specific methods.");
         }
         
         if (array_key_exists($name, $this->attributes))
@@ -164,11 +173,6 @@ class Attributes
      */
     public function remove($name)
     {
-        if (in_array($nam, $this->forbidden))
-        {
-            throw new RuntimeException("Attributes error when attempting to remove attribute. The attribute '{$name}' is forbidden. Please use class specific methods.");
-        }
-        
         unset($this->attributes[$name]);
     }
     
@@ -181,7 +185,7 @@ class Attributes
      */
     public function exists($name)
     {
-        return (array_key_exists($name, $this->attributes))
+        return (array_key_exists($name, $this->attributes));
     }
     
     /**

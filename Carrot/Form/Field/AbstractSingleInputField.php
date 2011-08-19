@@ -24,29 +24,38 @@
 
 namespace Carrot\Form\Field;
 
-use Carrot\Form\Attributes;
-
 abstract class AbstractSingleInputField implements FieldInterface
 {
     /**
      * @var type comments
      */
-    protected $requestVariableName;
+    protected $id;
     
     /**
      * @var type comments
+     */
+    protected $name;
+    
+    protected $label;
+    
+    /**
+     * @var Attributes comments
      */
     protected $attributes;
     
     /**
      * @var type comments
      */
-    protected $forbidden = array('name', 'type');
+    protected $forbidden = array('name', 'type', 'value', 'id');
     
     /**
      * @var string The input type 
      */
     protected $inputType = 'text';
+    
+    protected $defaultValue = '';
+    
+    protected $errorMessages = array();
     
     /**
      * Constructor.
@@ -54,41 +63,12 @@ abstract class AbstractSingleInputField implements FieldInterface
      * @param array $attributes
      * 
      */
-    public function __construct(array $attributes = array())
+    public function __construct($id, $label, $prefix = '', array $attributes = array())
     {
-        $this->initializeAttributes($attributes);
-    }
-    
-    /**
-     * Render the field
-     * 
-     */
-    public function render()
-    {
-        
-    }
-    
-    public function setRequestVariableName($requestVariableName)
-    {
-        $this->requestVariableName = $requestVariableName;
-        $attributes = $this->attributes->getAll();
-        $attributes['name'] = $requestVariableName;
-        $this->initializeAttributes($attributes);
-    }
-    
-    public function getRequestVariableValue(array $requestArray)
-    {
-        if (!array_key_exists($this->requestVariableName, $requestArray))
-        {
-            return NULL;
-        }
-        
-        return $requestArray($requestVariableName);
-    }
-    
-    public function setDefaultValue($defaultValue)
-    {
-        $this->attributes->set('value', $defaultValue);
+        $this->id = $id;
+        $this->label = $label;
+        $this->name = $prefix . $id;
+        $this->attributes = new Attributes($attributes, $this->forbidden);
     }
     
     public function getAttributes()
@@ -96,11 +76,64 @@ abstract class AbstractSingleInputField implements FieldInterface
         return $this->attributes;
     }
     
-    protected function initializeAttributes(array $attributes = array())
+    public function setDefaultValue($defaultValue)
     {
-        $this->attributes = new Attributes(
-            $attributes,
-            $this->forbidden
-        );
+        $this->defaultValue = $defaultValue;
+    }
+    
+    public function getValue(array $formSubmissionArray)
+    {
+        if (array_key_exists($this->name, $formSubmissionArray))
+        {
+            return $formSubmissionArray[$this->name];
+        }
+        
+        return NULL;
+    }
+    
+    public function isSubmissionValid(array $formSubmissionArray)
+    {
+        if (array_key_exists($this->name, $formSubmissionArray))
+        {
+            return TRUE;
+        }
+        
+        return FALSE;
+    }
+    
+    public function getID()
+    {
+        return $this->id;
+    }
+    
+    public function getLabel()
+    {
+        return $this->label;
+    }
+    
+    public function addErrorMessage($message)
+    {
+        $this->errorMessages[] = (string) $message;
+    }
+    
+    public function getErrorMessages()
+    {
+        return $this->errorMessages;
+    }
+    
+    public function renderControl()
+    {
+        $attributes = $this->attributes->render();
+        $defaultValue = htmlentities($this->defaultValue, ENT_QUOTES);
+        $name = htmlentities($this->name, ENT_QUOTES);
+        $type = htmlentities($this->type, ENT_QUOTES);
+        return "<input type=\"{$type}\" id=\"{$name}\" name=\"{$name}\" value=\"{$defaultValue}\"{$attributes} />";
+    }
+    
+    public function renderLabel()
+    {
+        $name = htmlentities($this->name, ENT_QUOTES);
+        $label = htmlentities($this->label, ENT_QUOTES);
+        return "<label for=\"{$name}\">{$label}</label>";
     }
 }

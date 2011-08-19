@@ -13,7 +13,7 @@
  * Validation Chain
  * 
  * Represents chains of validation processes. This class is used
- * to validate a set of parameters using validator callbacks that
+ * to validate a set of values using validator callbacks that
  * may be either an anonymous function or an array containing an
  * object reference and a method name. This class is meant to be
  * used inside your model's method.
@@ -29,11 +29,11 @@
  * {@see ValidatorInterface}.
  * 
  * Before starting the validation chain, you must first set the
- * parameters to be validated (along with their parameter ID):
+ * values to be validated (along with their value ID):
  * 
  * <code>
  * $chain = new ValidatorChain;
- * $chain->setParameters(array(
+ * $chain->setValues(array(
  *     'username' => $username,
  *     'password' => $password
  * ));
@@ -62,8 +62,8 @@
  * </code>
  * 
  * After calling the stop() method, the ValidationChain instance
- * can be reused to validate the rest of the parameters. After
- * validation, you can check whether the parameters passes or not:
+ * can be reused to validate the rest of the values. After
+ * validation, you can check whether the values passes or not:
  *
  * <code>
  * if (!$chain->passesValidation())
@@ -77,7 +77,7 @@
  * Get an array containing instances of MessageInterface returned
  * by validators, representing messages the validators would like
  * to display to the user. These messages should be tied to the
- * relevant parameter ID. Ideally you should have a mediator
+ * relevant value ID. Ideally you should have a mediator
  * object that takes these messages and maps them to their
  * respective form fields {@see MessageInterface}:
  * 
@@ -86,14 +86,14 @@
  * </code>
  * 
  * If the validation is successful, don't forget to get the
- * parameters back from the ValidationChain instance.
+ * values back from the ValidationChain instance.
  * 
  * <code>
- * // Immediately replace the parameters
- * extract($chain->getParameters());
+ * // Immediately replace the values
+ * extract($chain->getValues());
  * </code>
  * 
- * The reason you need to get the new parameter values is that
+ * The reason you need to get the new values is that
  * some validators might perform data cleaning/normalization. Read
  * each individual validator's docs for more info.
  * 
@@ -117,9 +117,9 @@ use Carrot\Validation\Validator\ComparisonValidator;
 class ValidationChain
 {
     /**
-     * @var array List of parameters to be validated, sorted by their parameter ID.
+     * @var array List of values to be validated, sorted by their value ID.
      */
-    protected $parameters = array();
+    protected $values = array();
     
     /**
      * @var array Instances of MessageInterface returned by validator methods.
@@ -142,9 +142,9 @@ class ValidationChain
     protected $chainStarted = FALSE;
     
     /**
-     * @var string The ID of the parameter currently active in the chain, could be NULL.
+     * @var string The ID of the value currently active in the chain, could be NULL.
      */
-    protected $chainActiveParameterID;
+    protected $chainActiveValueID;
     
     /**
      * @var bool TRUE if the current chain is optional, FALSE otherwise.
@@ -250,7 +250,7 @@ class ValidationChain
      * 
      * <code>
      * $chain->registerValidatorCallback('business.customLogic',
-     *     function($activeParamID, array $parameters, $args)
+     *     function($activeValueID, array $values, $args)
      *     {
      *         // Custom validator logic
      *     }
@@ -286,7 +286,7 @@ class ValidationChain
      * 
      * This method starts a validation chain. You must run this method
      * each time you want to start a new validation chain. Pass the
-     * ID of the main parameter to be validated.
+     * ID of the main value to be validated.
      *
      * <code>
      * $chain->start('username')
@@ -303,19 +303,19 @@ class ValidationChain
      * 
      * @see stop()
      * @see startOptional() 
-     * @param string $activeParameterID The ID of the parameter to validate.
+     * @param string $activeValueID The ID of the value to validate.
      * @return ValidationChain This object itself.
      * 
      */
-    public function start($activeParameterID = NULL)
+    public function start($activeValueID = NULL)
     {
-        if ($activeParameterID != NULL AND !array_key_exists($activeParameterID, $this->parameters))
+        if ($activeValueID != NULL AND !array_key_exists($activeValueID, $this->values))
         {
-            throw new InvalidArgumentException("ValidationChain error when trying to start chain. The parameter ID '{$activeParameterID}' is not set.");
+            throw new InvalidArgumentException("ValidationChain error when trying to start chain. The value ID '{$activeValueID}' is not set.");
         }
         
         $this->chainStarted = TRUE;
-        $this->chainActiveParameterID = $activeParameterID;
+        $this->chainActiveValueID = $activeValueID;
         $this->chainIsOptional = FALSE;
         $this->ignoreChain = FALSE;
         return $this;
@@ -341,7 +341,7 @@ class ValidationChain
      *         Messages from the result are note saved.
      *     </li>
      *     <li>
-     *         Parameter value changes will not be conducted.
+     *         Value value changes will not be conducted.
      *     </li>
      *     <li>
      *         The invalid result returned is discarded and doesn't
@@ -349,7 +349,7 @@ class ValidationChain
      *     </li>
      * </ul>
      *
-     * Example usage (validating an optional birthday parameter):
+     * Example usage (validating an optional birthday value):
      *
      * <code>
      * $chain->startOptional('birthday')
@@ -358,19 +358,19 @@ class ValidationChain
      *       ->stop();
      * </code>
      * 
-     * @param string $activeParameterID The ID of the parameter to validate.
+     * @param string $activeValueID The ID of the value to validate.
      * @return ValidationChain This object itself.
      * 
      */
-    public function startOptional($activeParameterID = NULL)
+    public function startOptional($activeValueID = NULL)
     {
-        if ($activeParameterID != NULL AND array_key_exists($activeParameterID, $this->parameters))
+        if ($activeValueID != NULL AND array_key_exists($activeValueID, $this->values))
         {
-            throw new InvalidArgumentException("ValidationChain error when trying to start optional chain. The parameter ID '{$activeParameterID}' is not set.");
+            throw new InvalidArgumentException("ValidationChain error when trying to start optional chain. The value ID '{$activeValueID}' is not set.");
         }
         
         $this->chainStarted = TRUE;
-        $this->chainActiveParameterID = $activeParameterID;
+        $this->chainActiveValueID = $activeValueID;
         $this->chainIsOptional = TRUE;
         $this->ignoreChain = FALSE;
         return $this;
@@ -387,7 +387,7 @@ class ValidationChain
     public function stop()
     {
         $this->chainStarted = FALSE;
-        $this->chainActiveParameterID = NULL;
+        $this->chainActiveValueID = NULL;
         $this->chainIsOptional = FALSE;
         $this->ignoreChain = FALSE;
     }
@@ -396,8 +396,8 @@ class ValidationChain
      * Run a validator.
      * 
      * Runs the validator callback and process its result object. Will
-     * add messages and updates parameters with new values regardless
-     * of whether the result is valid or invalid.
+     * add messages and updates values with new, transformed values regardless
+     * of whether the result is valid or invalid (except if the chain is optional).
      * 
      * To use, first start the chain {@see start()}:
      *
@@ -412,7 +412,7 @@ class ValidationChain
      * What the second argument represents depends on the validator
      * method. The second argument for 'string.maxLength', for
      * example, must be an integer and represents the maximum string
-     * length for the parameter being validated. Read the docs of each
+     * length for the value being validated. Read the docs of each
      * validator so you know what you need to send. Validators should
      * throw relevant exceptions if the arguments provided is invalid.
      *
@@ -497,57 +497,58 @@ class ValidationChain
             }
         }
         
-        $this->updateParameters($result);
+        $this->updateValues($result);
         $this->addMessages($result);
         return $this;
     }
     
     /**
-     * Sets parameter values to validate.
+     * Sets values to validate.
      * 
      * Before you can start a validation chain, you have to set the
-     * parameters to validate first. Each parameter must have an ID,
+     * values to validate first. Each value must have an ID,
+    // ---------------------------------------------------------------
      * which will later be used by the returned messages to attach
-     * itself to a particular parameter and refering to the
-     * parameter's label string.
+     * itself to a particular field and refering to the
+     * field's label string.
      *
      * <code>
-     * $chain->setParameters(array(
+     * $chain->setValues(array(
      *     'firstName' => $firstName,
      *     'lastName' => $lastName,
      *     'email' => $email,
      * ));
      * </code>
      * 
-     * @param array $parameters List of parameters to be validated, sorted by their parameter ID.
+     * @param array $values List of values to be validated, sorted by their value ID.
      * 
      */
-    public function setParameters(array $parameters)
+    public function setValues(array $values)
     {
-        $this->parameters = $parameters;
+        $this->values = $values;
     }
     
     /**
      * Get the validated values.
      * 
-     * The parameter values might differ with the ones originally
+     * The returned values might differ with the ones originally
      * provided because validator methods can tell validator chain to
-     * change the value of the parameter after cleaning/conversion/
+     * transform the value after cleaning/conversion/
      * normalization of the value. Hence, you can use this method to
-     * get the transformed parameters after validation.
+     * get the transformed values after validation.
      *
      * <code>
-     * // Immediately replace the parameters
-     * extract($chain->getParameters());
+     * // Immediately replace the values
+     * extract($chain->getValues());
      * </code>
      * 
      * @see ValidationResult::changeValue
-     * @return array Validated values with their parameter ID 
+     * @return array Validated values with their value ID 
      * 
      */
-    public function getParameters()
+    public function getValues()
     {
-        return $this->parameter;
+        return $this->values;
     }
     
     /**
@@ -580,7 +581,7 @@ class ValidationChain
     }
     
     /**
-     * Checks if parameters successfully passed all validations or not.
+     * Checks if values successfully passed all validations or not.
      *
      * Use this method to determine the next steps after you have
      * finished running your validation chains.
@@ -606,7 +607,7 @@ class ValidationChain
     /**
      * Throws exception if the validator ID is not valid.
      * 
-     * A parameter is valid if it has a validator type (basic or
+     * A validator ID is valid if it has a validator type (basic or
      * complex), a group name, and a validator name, separated by dot.
      * It must match this regex:
      *
@@ -665,40 +666,40 @@ class ValidationChain
             $callbackObject = $callback[0];
             $callbackMethod = $callback[1];
             return $callbackObject->$callbackMethod(
-                $this->chainActiveParameterID,
-                $this->parameters,
+                $this->chainActiveValueID,
+                $this->values,
                 $args
             );
         }
         
         return $callback(
-            $this->chainActiveParameterID,
-            $this->parameters,
+            $this->chainActiveValueID,
+            $this->values,
             $args
         );
     }
     
     /**
-     * Update parameters value with newly transformed values.
+     * Update values with newly transformed ones.
      * 
-     * This method replaces the old parameter values with newly
-     * transformed/cleaned/normalized parameter values returned via
-     * the ValidationResult object. If the new value parameter ID
-     * doesn't already exist in this class's $parameters class
-     * property, the new value is discarded, hence updating parameters
-     * cannot create new parameter.
+     * This method replaces the old values with newly
+     * transformed/cleaned/normalized values returned via
+     * the ValidationResult object. If the new value ID
+     * doesn't already exist in this class's $values class
+     * property, the new value is discarded, hence updating values
+     * cannot create new value.
      * 
      * @see validate()
      * @param ValidationResult $result The result object from a validator method.
      *
      */
-    protected function updateParameters(ValidationResult $result)
+    protected function updateValues(ValidationResult $result)
     {
-        foreach ($result->getNewValues() as $parameterID => $value)
+        foreach ($result->getNewValues() as $valueID => $value)
         {
-            if (array_key_exists($parameterID, $this->parameters))
+            if (array_key_exists($valueID, $this->values))
             {
-                $this->parameters[$parameterID] = $value;
+                $this->values[$valueID] = $value;
             }
         }
     }

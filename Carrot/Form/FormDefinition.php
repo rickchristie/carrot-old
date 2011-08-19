@@ -22,18 +22,20 @@
 
 namespace Carrot\Form;
 
+use InvalidArgumentException;
 use Carrot\Core\Request;
-use Carrot\Message\MessageInterface;
+use Carrot\Message\Field\FieldMessageInterface;
+use Carrot\Form\Field\FieldInterface;
 
 class FormDefinition
 {
     /**
-     * @var array Contains instances of Parameter.
+     * @var array Contains instances of FieldInterface.
      */
-    protected $parameters = array();
+    protected $fields = array();
     
     /**
-     * @var array List of labels with their parameter IDs as index. To be used later in adding error messages.
+     * @var array List of labels with their field IDs as index. To be used later in adding error messages.
      */
     protected $labels = array();
     
@@ -48,43 +50,45 @@ class FormDefinition
     protected $enctype;
     
     /**
-     * @var array List of fieldset labels and the parameters that belongs to this fieldset.
+     * @var array List of fieldset labels and the FieldInterface instances that belongs to this fieldset.
      */
     protected $fieldsets = array();
+    
+    protected $fieldsInFieldsets = array();
     
     /**
      * Constructor.
      * 
      * 
      * 
-     * @param array $parameters
+     * @param array $fields
      * 
      */
-    public function __construct(array $parameters = array())
+    public function __construct(array $fields = array())
     {
         $this->setMethodToPost();
         $this->setEnctypeToFormURLEncoded();
         
-        foreach ($parameters as $parameter)
+        foreach ($fields as $field)
         {
-            $this->addParameter($parameter);
+            $this->addField($field);
         }
     }
     
     /**
-     * Add a parameter to this form.
+     * Add a field to this form.
      * 
      * 
      * 
-     * @param Parameter $parameter Instance of Parameter.
+     * @param Field $field Instance of Field.
      *
      */
-    public function addParameter(Parameter $parameter)
+    public function addField(FieldInterface $field)
     {
-        $id = $parameter->getID();
-        $label = $parameter->getLabel();        
+        $id = $field->getID();
+        $label = $field->getLabel();
         $this->labels[$id] = $label;
-        $this->parameter[$id]['object'] = $parameter;
+        $this->fields[$id] = $field;
     }
     
     /**
@@ -99,15 +103,13 @@ class FormDefinition
      * @return bool TRUE if the form request is valid, FALSE otherwise.
      * 
      */
-    public function submissionIsValid(Request $request)
+    public function isSubmissionValid(Request $request)
     {
-        $requestArray = $this->getRequestArray($request);
+        $formSubmissionArray = $this->getFormSubmissionArray($request);
         
-        foreach ($this->parameters as $parameter)
-        {
-            $field = $parameter->getField();
-            
-            if (!$field->canReturnRequestVariableValue())
+        foreach ($this->fields as $field)
+        {   
+            if (!$field->isSubmissionValid($formSubmissionArray))
             {
                 return FALSE;
             }
@@ -117,54 +119,56 @@ class FormDefinition
     }
     
     /**
-     * Adds a fieldset (a group of parameters).
+     * Adds a fieldset (a group of fields).
      * 
     // ---------------------------------------------------------------
      * If the 
      * 
      * @param string $label The label of the fieldset (also acts as its ID).
-     * @param array $parameterIDs IDs of the parameters belonging to this fieldset.
+     * @param array $fieldIDs IDs of the fields belonging to this fieldset.
      * 
      */
-    public function addFieldset($label, array $parameterIDs)
+    public function addFieldset($label, array $fieldIDs)
     {
-        foreach ($parameterIDs as $parameterID)
+        foreach ($fieldIDs as $fieldID)
         {
-            if (array_key_exists($parameterID, $this->parameters))
+            if (!array_key_exists($fieldID, $this->fields))
             {
-                $parameter = $this->parameters[$parameterID];
-                $this->fieldsets[$label][] = $parameter;
-                unset($this->parameters[$parameterID]);
+                throw new InvalidArgumentException("FormDefinition error in adding fieldset with the label '{$label}'. The field '{$fieldID}' does not exist.");
             }
+            
+            $field = $this->fields[$fieldID];
+            $this->fieldsets[$label][] = $field;
+            $this->fieldsInFieldsets[] = $fieldID;
         }
     }
     
     /**
-     * Set error messages for all parameters.
+     * Set error messages for all fields.
      * 
     // ---------------------------------------------------------------
      * This method ignores the MessageInterface instance if it is not
-     * attached to any of the parameter ID of this form.
+     * attached to any of the field ID of this form.
      * 
      * @param array $messages Contains MessageInterface implementations.
      * 
      */
-    public function setParameterErrorMessages(array $messages)
+    public function setFieldErrorMessages(array $messages)
     {
         foreach ($messages as $message)
         {
-            if (!is_object($message) OR !($message instanceof MessageInterface))
+            if (!is_object($message) OR !($message instanceof FieldMessageInterface))
             {
                 continue;
             }
             
-            $parameterID = $message->getParameterID();
+            $fieldID = $message->getFieldID();
             
-            if ($parameterID != FALSE and array_key_exists($parameterID, $this->parameters))
+            if ($fieldID != FALSE and array_key_exists($fieldID, $this->fields))
             {
-                $message->setParameterLabels($this->labels);
-                $parameter = $this->parameters[$parameterID];
-                $parameter->addErrorMessage($message->get());
+                $message->setFieldLabels($this->labels);
+                $field = $this->fields[$fieldID];
+                $field->addErrorMessage($message->get());
             }
         }
     }
@@ -177,12 +181,12 @@ class FormDefinition
      */
     public function setDefaultValues(Request $request)
     {
-        $requestArray = $this->getRequestArray($request);
+        $formSubmissionArray = $this->getFormSubmissionArray($request);
         
-        foreach ($this->parameters as $parameter)
+        foreach ($this->fields as $field)
         {
-            $parameter->getField()
-                      ->setDefaultValue($requestArray);
+            $field->getField()
+                  ->setDefaultValue($formSubmissionArray);
         }
     }
     
@@ -190,22 +194,28 @@ class FormDefinition
      * Defies imagination, extends boundaries and saves the world ...all before breakfast!
      *
      */
-    public function getSubmissionValue()
+    public function getSubmittedValue($fieldID, Request $request)
     {
+        if (!array_key_exists($fieldID, $this->fields))
+        {
+            throw new InvalidArgumentException("FormDefinition error in getting value submitted. The field '{$fieldID}' does not exist.");
+        }
         
+        $formSubmissionArray = $this->getFormSubmissionArray($request);
+        return $this->fields[$fieldID]->getValue($formSubmissionArray);
     }
     
     /**
-     * Get the list of parameter labels
+     * Get the list of field labels
      *
      */
-    public function getParameterLabels()
+    public function getFieldLabels()
     {
         return $this->labels;
     }
     
     /**
-     * Gets fieldsets, along with Parameter instances that belong the them.
+     * Gets fieldsets, along with FieldInterface instances that belong the them.
      * 
      * 
      * 
@@ -215,15 +225,50 @@ class FormDefinition
         return $this->fieldsets;
     }
     
+    public function getFieldset($label)
+    {
+        if (!array_key_exists($label, $this->fieldsets))
+        {
+            throw new InvalidArgumentException("FormDefinition error in getting fieldset. Fieldset with the label '{$label}' does not exist.");
+        }
+        
+        return $this->fieldsets[$label];
+    }
+    
     /**
-     * Get instances of Parameter not attached to any fieldset.
+     * Get instances of FieldInterface 
      * 
      * 
      * 
      */
-    public function getParameters()
+    public function getFields()
     {
-        return $this->parameters;
+        return $this->fields;
+    }
+    
+    public function getFieldsNotInFieldsets()
+    {
+        $fieldsNotInFieldsets = array();
+        
+        foreach ($this->fields as $fieldID => $field)
+        {
+            if (!in_array($fieldID, $this->fieldsInFieldsets))
+            {
+                $fieldsNotInFieldsets[$fieldID] = $field;
+            }
+        }
+        
+        return $fieldsNotInFieldsets;
+    }
+    
+    public function getField($fieldID)
+    {
+        if (!array_key_exists($fieldID, $this->fields))
+        {
+            throw new InvalidArgumentException("FormDefinition error in getting field. Field with ID '{$fieldID}' does not exist.");
+        }
+        
+        return $this->fields[$fieldID];
     }
     
     /**
@@ -294,7 +339,7 @@ class FormDefinition
      * @param Request $request Instance of Request.
      * 
      */
-    protected function getRequestArray(Request $request)
+    protected function getFormSubmissionArray(Request $request)
     {
         if ($this->method == 'post')
         {

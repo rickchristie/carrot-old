@@ -40,20 +40,20 @@
  * Example method/function signature:
  *
  * <code>
- * function validator($activeParamID, array $parameters, $args)
+ * function validator($activeValueID, array $parameters, $args)
  * {
  *     // Do validation
  * }
  * </code>
  * 
- * $activeParamID is the ID of the parameter being validated for
+ * $activeValueID is the ID of the parameter being validated for
  * the current validation chain. This may be NULL, as its value
  * depends on how the user calls ValidationChain::start(), so you
  * have to check it first before using it.
  * 
  * $parameters simply contain the list of parameters to validate
  * in an associative array. Depending on what the validator is
- * trying to do, it may disregard $activeParamID entirely and work
+ * trying to do, it may disregard $activeValueID entirely and work
  * directly with the values and indexes of $parameters. If the
  * variables you need doesn't exist in $parameters, throw a
  * {@see Validator\Exception\MissingParameterException}.

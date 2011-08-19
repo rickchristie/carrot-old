@@ -25,33 +25,6 @@ namespace Carrot\Form\Field;
 interface FieldInterface
 {
     /**
-     * Set request variable name of this field.
-     * 
-    // ---------------------------------------------------------------
-     * TODO: Define request variable name
-     * 
-     * Each parameter in the form has a value, and that value is tied
-     * to a request variable name somehow with the field. For most
-     * HTML form fields, the request variable name is saved in the
-     * name attribute, but this is not always the case since 
-     * 
-     * An example of this is a multiple select box, where the 'name'
-     * attribute must be in array format (e.g. name="hobbys[]") while
-     * the request variable name used to access this parameter is
-     * still just 'hobbys', without the brackets. Another example is
-     * in the case of field groups.
-     * 
-     * Each parameter is tied to a request variable name somehow. In
-     * a field, this information is saved inside the 'name' attribute,
-     * but it is not always that easy since the value of this
-     * attribute may differ with the name of the request variable.
-     * 
-     * @param string $requestVariableName Request variable name 
-     *
-     */
-    public function setRequestVariableName($requestVariableName);
-    
-    /**
      * Get the request variable value from a request array.
      * 
      * The request array could be either GET or POST array, but the
@@ -68,7 +41,7 @@ interface FieldInterface
      * @return mixed|NULL If the 
      * 
      */
-    public function getRequestVariableValue(array $requestArray);
+    public function getValue(array $formSubmissionArray);
     
     /**
      * Checks if the field can return request variable value from the given request array.
@@ -98,7 +71,7 @@ interface FieldInterface
      * @return bool TRUE if the request array contains 
      * 
      */
-    public function canReturnRequestVariableValue(array $requestArray);
+    public function isSubmissionValid(array $formSubmissionArray);
     
     /**
      * Set the default value for this field.
@@ -108,7 +81,31 @@ interface FieldInterface
      * @param array $requestArray
      * 
      */
-    public function setDefaultValue(array $requestArray);
+    public function setDefaultValue($defaultValue);
+    
+    /**
+     * Get field ID
+     *
+     */
+    public function getID();
+    
+    /**
+     * Get field label
+     *
+     */
+    public function getLabel();
+    
+    /**
+     * Add error message string
+     *
+     */
+    public function addErrorMessage($message);
+    
+    /**
+     * Get error messages
+     *
+     */
+    public function getErrorMessages();
     
     /**
      * Render the field as HTML form string.
@@ -121,5 +118,7 @@ interface FieldInterface
      * @return string The field, rendered as a HTML string.
      * 
      */
-    public function render();
+    public function renderControl();
+    
+    public function renderLabel();
 }

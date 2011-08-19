@@ -131,7 +131,7 @@ abstract class AbstractMessage implements MessageInterface
      * @param string $message The message to send.
      * 
      */
-    public function __construct($rawMessage)
+    public function __construct($issuer, $rawMessage)
     {
         $this->rawMessage = $rawMessage;
     }

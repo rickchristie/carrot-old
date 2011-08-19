@@ -10,7 +10,7 @@
  */
 
 /**
- * Text Field
+ * Password Field
  * 
 // ---------------------------------------------------------------
  * Value object
@@ -22,7 +22,12 @@
 
 namespace Carrot\Form\Field;
 
-class TextField extends AbstractSingleInputField
+class PasswordField extends AbstractSingleInputField
 {
-    protected $type = 'text';   
+    protected $type = 'password';
+    
+    public function setDefaultValue($defaultValue)
+    {
+        // This method is intentionally left blank
+    }
 }
