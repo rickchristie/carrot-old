@@ -31,15 +31,15 @@ if ($form->isSubmissionValid($request))
 {
     $chain = new Carrot\Validation\ValidationChain;
     $chain->setValues(array(
-        'username' => $form->getSubmittedValue('username', $request),
-        'password' => $form->getSubmittedValue('password', $request)
+        'usernameBlah' => $form->getSubmittedValue('username', $request),
+        'passwordBlah' => $form->getSubmittedValue('password', $request)
     ));
     
-    $chain->start('username')
+    $chain->start('usernameBlah')
           ->validate('existence.notEmpty')
           ->stop();
     
-    $chain->start('password')
+    $chain->start('passwordBlah')
           ->validate('existence.notEmpty')
           ->stop();
     
@@ -49,8 +49,13 @@ if ($form->isSubmissionValid($request))
     }
     else
     {
+        echo 'Did not pass validation!';
         $messages = $chain->getMessages();
-        $form->setFieldErrorMessages($messages);
+        $form->addValidatorMessages($messages, array(
+            'usernameBlah' => 'username',
+            'passwordBlah' => 'password'
+        ));
+        $form->setDefaultValues($request);
     }
 }
 

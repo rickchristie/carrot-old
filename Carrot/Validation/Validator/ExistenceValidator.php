@@ -23,7 +23,7 @@
 namespace Carrot\Validation\Validator;
 
 use Carrot\Validation\ValidationResult;
-use Carrot\Message\Field\FieldMessage;
+use Carrot\Message\ValidatorMessage;
 
 class ExistenceValidator implements ValidatorInterface
 {   
@@ -80,13 +80,13 @@ class ExistenceValidator implements ValidatorInterface
     
     protected function getInvalidResult($activeValueID)
     {
-        $message = new FieldMessage(
+        $message = new ValidatorMessage(
             get_class($this),
             _("{@$activeValueID} must not be empty."),
-            FieldMessage::ERROR
+            ValidatorMessage::ERROR
         );
         
-        $message->setFieldID($activeValueID);
+        $message->setValueID($activeValueID);
         $result = new ValidationResult;
         $result->setStatusToInvalid();
         $result->addMessage($message);

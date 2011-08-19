@@ -1,5 +1,27 @@
 <?php
 
+/**
+ * This file is part of the Carrot framework.
+ *
+ * Copyright (c) 2011 Ricky Christie <seven.rchristie@gmail.com>
+ *
+ * Licensed under the MIT License.
+ *
+ */
+
+/**
+ * Message
+ * 
+// ---------------------------------------------------------------
+ * Represents a message and/or notification from the application
+ * to the client. This interface is relied upon by Validation,
+ * Form, and Notification classses.
+ * 
+ * @author      Ricky Christie <seven.rchristie@gmail.com>
+ * @license     http://www.opensource.org/licenses/mit-license.php MIT License
+ *
+ */
+
 namespace Carrot\Message;
 
 class Message implements MessageInterface

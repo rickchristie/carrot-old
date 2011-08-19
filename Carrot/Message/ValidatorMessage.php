@@ -1,8 +1,8 @@
 <?php
 
-namespace Carrot\Message\Field;
+namespace Carrot\Message;
 
-class FieldMessage implements FieldMessageInterface
+class ValidatorMessage implements ValidatorMessageInterface
 {
     protected $issuer;
     
@@ -42,19 +42,19 @@ class FieldMessage implements FieldMessageInterface
         return $this->code;
     }
     
-    public function getFieldID()
+    public function getValueID()
     {
-        return $this->fieldID;
+        return $this->valueID;
     }
     
-    public function setFieldID($fieldID)
+    public function setValueID($valueID)
     {
-        $this->fieldID = $fieldID;
+        $this->valueID = $valueID;
     }
     
-    public function setFieldLabels(array $fieldLabels)
+    public function setValueLabels(array $valueLabels)
     {
-        $this->fieldLabels = $fieldLabels;
+        $this->valueLabels = $valueLabels;
     }
     
     public function setMessage($message)
@@ -70,7 +70,7 @@ class FieldMessage implements FieldMessageInterface
     public function get()
     {
         $message = $this->replacePlaceholders($this->message);
-        return $this->replaceFieldLabels($message);
+        return $this->replaceValueLabels($message);
     }
     
     /**
@@ -94,9 +94,9 @@ class FieldMessage implements FieldMessageInterface
         return $message;
     }
     
-    protected function replaceFieldLabels($message)
+    protected function replaceValueLabels($message)
     {   
-        foreach ($this->fieldLabels as $id => $label)
+        foreach ($this->valueLabels as $id => $label)
         {
             $pattern = "/{@$id}/";
             $message = preg_replace($pattern, $label, $message);

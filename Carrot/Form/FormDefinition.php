@@ -24,7 +24,7 @@ namespace Carrot\Form;
 
 use InvalidArgumentException;
 use Carrot\Core\Request;
-use Carrot\Message\Field\FieldMessageInterface;
+use Carrot\Message\ValidatorMessageInterface;
 use Carrot\Form\Field\FieldInterface;
 
 class FormDefinition
@@ -153,23 +153,40 @@ class FormDefinition
      * @param array $messages Contains MessageInterface implementations.
      * 
      */
-    public function setFieldErrorMessages(array $messages)
+    public function addValidatorMessages(array $messages, array $valueToFieldMap = array())
     {
+        $labels = $this->getLabelsFromMap($valueToFieldMap);
+        
         foreach ($messages as $message)
         {
-            if (!is_object($message) OR !($message instanceof FieldMessageInterface))
+            if (!is_object($message) OR !($message instanceof ValidatorMessageInterface))
             {
                 continue;
             }
             
-            $fieldID = $message->getFieldID();
+            $currentValueID = $message->getValueID();
+            $fieldID = $this->getFieldIDFromMap($currentValueID, $valueToFieldMap);
             
-            if ($fieldID != FALSE and array_key_exists($fieldID, $this->fields))
+            if ($fieldID != FALSE AND array_key_exists($fieldID, $this->fields))
             {
-                $message->setFieldLabels($this->labels);
+                $message->setValueLabels($labels);
                 $field = $this->fields[$fieldID];
                 $field->addErrorMessage($message->get());
             }
+        }
+    }
+    
+    public function addErrorMessages($fieldID, array $messages)
+    {
+        if (!array_key_exists($fieldID, $this->fields))
+        {
+            throw new InvalidArgumentException("FormDefinition error in adding error messages. The field '{$fieldID}' does not exist.");
+        }
+        
+        foreach ($messages as $message)
+        {
+            $message = (string) $message;
+            $this->fields[$fieldID]->addErrorMessage($message);
         }
     }
     
@@ -185,8 +202,8 @@ class FormDefinition
         
         foreach ($this->fields as $field)
         {
-            $field->getField()
-                  ->setDefaultValue($formSubmissionArray);
+            $defaultValue = $field->getValue($formSubmissionArray);
+            $field->setDefaultValue($defaultValue);
         }
     }
     
@@ -347,5 +364,53 @@ class FormDefinition
         }
         
         return $request->getGet();
+    }
+    
+    protected function getLabelsFromMap(array $valueToFieldMap)
+    {
+        // If no map provided, assume that the value ID
+        // is exactly the same as the field ID.
+        if (empty($valueToFieldMap))
+        {
+            return $this->labels;
+        }
+        
+        $labelsBuilt = array();
+        
+        foreach ($this->labels as $fieldID => $label)
+        {
+            $valueID = array_search($fieldID, $valueToFieldMap, TRUE);
+            
+            if ($valueID === FALSE)
+            {
+                throw new InvalidArgumentException("FormDefinition error when trying to add validator messages. The value-to-field map given doesn't have mappings for field '{$fieldID}'.");
+            }
+            
+            $labelsBuilt[$valueID] = $label;
+        }
+        
+        return $labelsBuilt;
+    }
+    
+    protected function getFieldIDFromMap($valueID, $valueToFieldMap)
+    {
+        // If no map provided, assume that the value ID
+        // is exactly the same as the field ID.
+        if (empty($valueToFieldMap))
+        {
+            return $valueID;
+        }
+        
+        if ($valueID === FALSE)
+        {
+            return FALSE;
+        }
+        
+        if (!array_key_exists($valueID, $valueToFieldMap))
+        {
+            return FALSE;
+        }
+        
+        return $valueToFieldMap[$valueID];
     }
 }
