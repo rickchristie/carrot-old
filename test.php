@@ -19,13 +19,17 @@ $form = new Carrot\Form\FormDefinition;
 
 $form->addField(new Carrot\Form\Field\TextField(
     'username',
-    'User Name'
+    'User Name',
+    'prefix_'
 ));
 
 $form->addField(new Carrot\Form\Field\PasswordField(
     'password',
-    'Password'
+    'Password',
+    'prefix_'
 ));
+
+$ValidationMessages = array();
 
 if ($form->isSubmissionValid($request))
 {
@@ -36,36 +40,36 @@ if ($form->isSubmissionValid($request))
     ));
     
     $chain->start('usernameBlah')
-          ->validate('existence.notEmpty')
-          ->stop();
+          ->validate('notEmpty.simple');
     
     $chain->start('passwordBlah')
-          ->validate('existence.notEmpty')
-          ->stop();
+          ->validate('notEmpty.simple');
     
-    if ($chain->passesValidation())
+    if ($chain->isValid())
     {
         echo 'Passes Validation!';
     }
     else
     {
         echo 'Did not pass validation!';
-        $messages = $chain->getMessages();
-        $form->addValidatorMessages($messages, array(
-            'usernameBlah' => 'username',
-            'passwordBlah' => 'password'
-        ));
-        $form->setDefaultValues($request);
+        $ValidationMessages = $chain->getMessages();
     }
 }
 
+$form->addValidationMessages($ValidationMessages, array(
+    'usernameBlah' => 'username',
+    'passwordBlah' => 'password'
+));
+
+$form->setDefaultValues($request);
+
 // Render the form
-$formRenderer = new Carrot\Form\FormRenderer($form);
+$formView = new Carrot\Form\FormView($form);
 
 ?>
 
-<form method="<?php echo $formRenderer->method() ?>" enctype="<?php $formRenderer->enctype() ?>" action="">
-<?php echo $formRenderer->render() ?>
+<form method="<?php echo $formView->method() ?>" enctype="<?php $formView->enctype() ?>" action="">
+<?php echo $formView->render() ?>
 <button type="submit">
     Submit
 </button>

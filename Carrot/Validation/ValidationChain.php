@@ -12,90 +12,9 @@
 /**
  * Validation Chain
  * 
- * Represents chains of validation processes. This class is used
- * to validate a set of values using validator callbacks that
- * may be either an anonymous function or an array containing an
- * object reference and a method name. This class is meant to be
- * used inside your model's method.
- *
- * You can either construct this object directly on your model
- * method (thereby encapsulating the validation behavior in your
- * domain model class) or you can have it injected to your model,
- * whichever suits you better.
- * 
- * This class comes with a set of default validators. You can
- * inject your custom validators via the constructor or via the
- * setter method. Your custom validator class must implement
- * {@see ValidatorInterface}.
- * 
- * Before starting the validation chain, you must first set the
- * values to be validated (along with their value ID):
- * 
- * <code>
- * $chain = new ValidatorChain;
- * $chain->setValues(array(
- *     'username' => $username,
- *     'password' => $password
- * ));
- * </code>
- * 
- * You can start the validation by starting the chain. You cannot
- * run validator methods properly without explicitly starting and
- * stopping the chain. Example of a chain:
- * 
- * <code>
- * $chain->start('username')
- *       ->validate('string.maxLength', 9)
- *       ->validate('string.alphanumeric')
- *       ->stop();
- * </code>
- *
- * Since the state of the chain is the state of the class, you can
- * start chains without resorting to method chaining. So this
- * example will also work:
- *
- * <code>
- * $chain->start('username')
- * $chain->validate('basic.string.maxLength', 9)
- * $chain->validate('basic.string.alphanumeric')
- * $chain->stop();
- * </code>
- * 
- * After calling the stop() method, the ValidationChain instance
- * can be reused to validate the rest of the values. After
- * validation, you can check whether the values passes or not:
- *
- * <code>
- * if (!$chain->passesValidation())
- * {
- *     // Show error page
- * }
- *
- * // Show success page or continue processing
- * </code>
- * 
- * Get an array containing instances of MessageInterface returned
- * by validators, representing messages the validators would like
- * to display to the user. These messages should be tied to the
- * relevant value ID. Ideally you should have a mediator
- * object that takes these messages and maps them to their
- * respective form fields {@see MessageInterface}:
- * 
- * <code>
- * $messages = $chain->getMessages();
- * </code>
- * 
- * If the validation is successful, don't forget to get the
- * values back from the ValidationChain instance.
- * 
- * <code>
- * // Immediately replace the values
- * extract($chain->getValues());
- * </code>
- * 
- * The reason you need to get the new values is that
- * some validators might perform data cleaning/normalization. Read
- * each individual validator's docs for more info.
+ * Contains validator callbacks and represents a chain of
+ * validation against a specific value. To be used in validation
+ * layer for small, generic bits of validation.
  * 
  * @author      Ricky Christie <seven.rchristie@gmail.com>
  * @license     http://www.opensource.org/licenses/mit-license.php MIT License
@@ -104,65 +23,59 @@
 
 namespace Carrot\Validation;
 
-use RuntimeException;
-use InvalidArgumentException;
-use Carrot\Message\MessageInterface;
-use Carrot\Validation\Validator\ValidatorInterface;
-use Carrot\Validation\Validator\ExistenceValidator;
-use Carrot\Validation\Validator\NumberValidator;
-use Carrot\Validation\Validator\StringValidator;
-use Carrot\Validation\Validator\TypeValidator;
-use Carrot\Validation\Validator\ComparisonValidator;
+use InvalidArgumentException,
+    Carrot\Validation\Validator\ComparisonValidator,
+    Carrot\Validation\Validator\DateValidator,
+    Carrot\Validation\Validator\EmailValidator,
+    Carrot\Validation\Validator\NotEmptyValidator,
+    Carrot\Validation\Validator\NumberValidator,
+    Carrot\Validation\Validator\StringValidator,
+    Carrot\Validation\Validator\TypeValidator,
+    Carrot\Validation\Validator\ValidatorInterface;
 
 class ValidationChain
-{
+{   
     /**
-     * @var array List of values to be validated, sorted by their value ID.
+     * @var mixed The value to be validated.
      */
-    protected $values = array();
+    protected $values;
     
     /**
-     * @var array Instances of MessageInterface returned by validator methods.
-     */
-    protected $messages = array();
-    
-    /**
-     * @var status TRUE if all validations return valid results, FALSE if there is at least one invalid result.
-     */
-    protected $passesValidation = TRUE;
-    
-    /**
-     * @var array Contains validator callbacks with their validator IDs as index.
+     * @var array List of validator callbacks and their validator ID.
      */
     protected $callbacks = array();
     
     /**
-     * @var bool TRUE if the chain is currently started, FALSE otherwise.
+     * @var string The ID of the value currently validated in this chain.
      */
-    protected $chainStarted = FALSE;
+    protected $activeValueID;
     
     /**
-     * @var string The ID of the value currently active in the chain, could be NULL.
+     * @var bool TRUE initially, turns into FALSE if failed at least one validation.
      */
-    protected $chainActiveValueID;
+    protected $valid = TRUE;
     
     /**
-     * @var bool TRUE if the current chain is optional, FALSE otherwise.
+     * @var array Contains ValidationMessageInterface instances.
      */
-    protected $chainIsOptional = FALSE;
+    protected $messages = array();
     
     /**
-     * @var bool If set to TRUE, validate() will ignore calls, exists to make optional chains possible.
+     * @var bool If TRUE, then the validation chain is optional, {@see startOptional}.
      */
-    protected $ignoreChain = FALSE;
+    protected $optional = FALSE;
+    
+    /**
+     * @var bool If TRUE, all calls to {@see validate()} will be ignored.
+     */
+    protected $ignore = TRUE;
     
     /**
      * Constructor.
      * 
-     * If constructed without arguments, this class will initialize
-     * all default validator classes. On the other hand, if you inject
-     * an array of validators at construction, the constructor will
-     * not try to register default validators.
+     * This class will first register all default validators before
+     * loading your custom validators. This allows your custom
+     * validators to override the default validators.
      *
      * <code>
      * $chain = new ValidatorChain(array(
@@ -172,23 +85,23 @@ class ValidationChain
      * ));
      * </code>
      * 
-     * @param array $customValidators Contains list of custom validators to add.
+     * You can then start the chain:
+     *
+     * <code>
+     * $chain->start('username', $username)
+     *       ->validate('string.maxLength', 10)
+     *       ->validate('string.minLength', 5)
+     *       ->validate('string.alphanumeric');
+     * </code>
+     * 
+     * @param array $customValidators List of validators to be added.
      * 
      */
-    public function __construct(array $validators = array())
+    public function __construct(array $customValidators = array())
     {
-        if (empty($validators))
-        {
-            $validators = array(
-                new ExistenceValidator,
-                new NumberValidator,
-                new StringValidator,
-                new ComparisonValidator,
-                new TypeValidator
-            );
-        }
+        $this->registerDefaultValidators();
         
-        foreach ($validators as $validator)
+        foreach ($customValidators as $validator)
         {
             $this->registerValidator($validator);
         }
@@ -200,9 +113,9 @@ class ValidationChain
      * Inject your custom validator class with this method:
      *
      * <code>
-     * $validatorChain->registerValidator($businessRuleValidator);
-     * $validatorChain->registerValidator($decimalValidator);
-     * $validatorChain->registerValidator($ISBNValidator);
+     * $chain->registerValidator($businessRuleValidator);
+     * $chain->registerValidator($decimalValidator);
+     * $chain->registerValidator($ISBNValidator);
      * </code>
      * 
      * Throws RuntimeException if ValidatorInterface::getCallbacks()
@@ -213,7 +126,7 @@ class ValidationChain
      * 
      */
     public function registerValidator(ValidatorInterface $validator)
-    {   
+    {
         $callbacks = $validator->getCallbacks();
         
         if (!is_array($callbacks))
@@ -282,122 +195,92 @@ class ValidationChain
     }
     
     /**
-     * Starts the chain.
+     * Starts/restarts the validation chain.
      * 
-     * This method starts a validation chain. You must run this method
-     * each time you want to start a new validation chain. Pass the
-     * ID of the main value to be validated.
+     * You must run this method before you start validating.
      *
      * <code>
      * $chain->start('username')
      *       ->validate('string.maxLength', 10)
      *       ->validate('string.minLength', 5)
-     *       ->validate('string.alphanumeric')
-     *       ->stop();
+     *       ->validate('string.alphanumeric');
      * </code>
-     *
-     * Call stop() when you wanted to finish the chain. Technically
-     * starting the chain again would reset the state of this class,
-     * but you are recommended to run this method regardless because
-     * of readability reasons.
      * 
-     * @see stop()
-     * @see startOptional() 
-     * @param string $activeValueID The ID of the value to validate.
+     * You don't need to call an explicit stop method since the start
+     * method is already explicit.
+     * 
+     * @param string $valueID The ID of the value to be validated.
+     * @param string $value The contents of the value.
      * @return ValidationChain This object itself.
-     * 
+     *
      */
-    public function start($activeValueID = NULL)
+    public function start($valueID)
     {
-        if ($activeValueID != NULL AND !array_key_exists($activeValueID, $this->values))
+        if ($valueID != NULL AND !array_key_exists($valueID, $this->values))
         {
-            throw new InvalidArgumentException("ValidationChain error when trying to start chain. The value ID '{$activeValueID}' is not set.");
+            throw new InvalidArgumentException("ValidationChain error when trying to start chain. The value ID '{$valueID}' is not set.");
         }
         
-        $this->chainStarted = TRUE;
-        $this->chainActiveValueID = $activeValueID;
-        $this->chainIsOptional = FALSE;
-        $this->ignoreChain = FALSE;
+        $this->activeValueID = $valueID;
+        $this->ignore = FALSE;
+        $this->optional = FALSE;
         return $this;
     }
     
     /**
-     * Starts the chain, but stops if the first validation fails.
+     * Starts/restarts the chain in optional mode.
      * 
-     * Useful when you have to validate optional variables. When you
-     * start a chain with this method, the result of the first
-     * validation on the chain will be used to determine whether or
-     * not to continue validating.
+     * When a chain is in optional mode, if the first validation
+     * fails, it will not be noted as a validation failure, and the
+     * rest of the chain will be skipped. This is useful in values
+     * that you wanted to validate but doesn't want to if it doesn't
+     * exist.
      * 
-     * If the result of the first validation is valid, the chain will
-     * continue to run exactly like a regular chain. Otherwise, if
-     * the result of the first validation is invalid:
-     *
-     * <ul>
-     *     <li>
-     *         The rest of the chain will be ignored.
-     *     </li>
-     *     <li>
-     *         Messages from the result are note saved.
-     *     </li>
-     *     <li>
-     *         Value value changes will not be conducted.
-     *     </li>
-     *     <li>
-     *         The invalid result returned is discarded and doesn't
-     *         affect the return value of passesValidation().
-     *     </li>
-     * </ul>
-     *
-     * Example usage (validating an optional birthday value):
-     *
-     * <code>
-     * $chain->startOptional('birthday')
-     *       ->validate('existence.notEmpty')
-     *       ->validate('date.validDateString')
-     *       ->stop();
-     * </code>
-     * 
-     * @param string $activeValueID The ID of the value to validate.
+     * @see start()
+     * @param string $valueID The ID of the value to be validated.
+     * @param string $value The contents of the value.
      * @return ValidationChain This object itself.
-     * 
+     *
      */
-    public function startOptional($activeValueID = NULL)
+    public function startOptional($valueID)
     {
-        if ($activeValueID != NULL AND array_key_exists($activeValueID, $this->values))
+        if ($valueID != NULL AND !array_key_exists($valueID, $this->values))
         {
-            throw new InvalidArgumentException("ValidationChain error when trying to start optional chain. The value ID '{$activeValueID}' is not set.");
+            throw new InvalidArgumentException("ValidationChain error when trying to start chain. The value ID '{$valueID}' is not set.");
         }
         
-        $this->chainStarted = TRUE;
-        $this->chainActiveValueID = $activeValueID;
-        $this->chainIsOptional = TRUE;
-        $this->ignoreChain = FALSE;
+        $this->activeValueID = $valueID;
+        $this->ignore = FALSE;
+        $this->optional = TRUE;
         return $this;
     }
     
     /**
-     * Stops the chain, returns everything to normal state.
-     * 
-     * Calling this method is optional, as calling start() once more
-     * will also reset the the chain state. However, calling this
-     * method explicitly may make the chaining code easier to read.
-     * 
+     * Reset the state of the validation chain.
+     *
+     * When this method is called, the state of this class is
+     * reset back as if the it was just constructed. This means class
+     * properties, such as $valid and $messages will be returned to
+     * default values. Make sure you have taken the messages and
+     * checked for validity before reseting the chain.
+     *
      */
-    public function stop()
+    public function reset()
     {
-        $this->chainStarted = FALSE;
-        $this->chainActiveValueID = NULL;
-        $this->chainIsOptional = FALSE;
-        $this->ignoreChain = FALSE;
+        $this->values = array();
+        $this->ignore = TRUE;
+        $this->valid = TRUE;
+        $this->messages = array();
+        $this->optional = FALSE;
     }
     
     /**
      * Run a validator.
      * 
      * Runs the validator callback and process its result object. Will
-     * add messages and updates values with new, transformed values regardless
-     * of whether the result is valid or invalid (except if the chain is optional).
+     * add messages and updates value with new, transformed value
+     * regardless of whether the result is valid or invalid (except if
+     * the chain is optional).
      * 
      * To use, first start the chain {@see start()}:
      *
@@ -405,16 +288,21 @@ class ValidationChain
      * $chain->start('username')
      *       ->validate('string.maxLength', 10)
      *       ->validate('string.minLength', 5)
-     *       ->validate('string.alphanumeric')
-     *       ->stop();
+     *       ->validate('string.alphanumeric');
+     * 
+     * if ($chain->isValid())
+     * {
+     *     // Do stuffs
+     * }
      * </code>
      * 
-     * What the second argument represents depends on the validator
-     * method. The second argument for 'string.maxLength', for
-     * example, must be an integer and represents the maximum string
-     * length for the value being validated. Read the docs of each
-     * validator so you know what you need to send. Validators should
-     * throw relevant exceptions if the arguments provided is invalid.
+     * What you need to send as the second argument depends on
+     * the validator method. The second argument for
+     * 'string.maxLength', for example, must be an integer and
+     * represents the maximum string length for the value being
+     * validated. Read the docs of each validator so you know what you
+     * need to send. Validators should throw relevant exceptions if
+     * the arguments provided is invalid.
      *
      * Normally, validation will still run even after an invalid
      * result is returned. This behavior can be overridden by passing
@@ -423,10 +311,9 @@ class ValidationChain
      * <code>
      * // Stop chain if an invalid result is returned
      * $chain->start('username')
-     *       ->validate('existence.notEmpty', NULL, TRUE)
+     *       ->validate('notEmpty.default', NULL, TRUE)
      *       ->validate('string.MinLength', 5, TRUE)
-     *       ->validate('string.MaxLength', 10, TRUE)
-     *       ->stop();
+     *       ->validate('string.MaxLength', 10, TRUE);
      * </code>
      * 
      * Throws InvalidArgumentException if the validator ID provided
@@ -446,71 +333,87 @@ class ValidationChain
      * 
      */
     public function validate($validatorID, $args = NULL, $breakChainOnFailure = FALSE)
-    {
-        if (!$this->chainStarted)
-        {
-            throw new RuntimeException("ValidationChain error when trying to validate. You cannot start validating before the chain is started.");
-        }
-        
-        if ($this->ignoreChain)
+    {   
+        if ($this->ignore)
         {
             return;
         }
         
         if (!array_key_exists($validatorID, $this->callbacks))
         {
-            throw new InvalidArgumentException("ValidationChain error when trying to validate. Validator with the ID '{$validatorID}' does not exist.");
+            throw new InvalidArgumentException("ValidationChain error when trying to validate. Validator callback with the ID '{$validatorID}' does not exist.");
         }
         
         $result = $this->runValidatorCallback($validatorID, $args);
         
-        if (!is_object($result) OR !($result instanceof ValidationResult))
+        if (!is_object($result) OR !($result instanceof ValidatorResult))
         {
-            throw new RuntimeException("ValidationChain error when trying to validate. Validator with the ID '{$validatorID}' does not return an instance of Carrot\Validation\ValidationResult.");
+            throw new RuntimeException("ValidationChain error when trying to validate. Validator callback with the ID '{$validatorID}' does not return an instance of Carrot\Validation\ValidatorResult.");
         }
         
         // If this is an optional chain and the result is
         // valid, the chain is no longer optional and must
         // be completed.
-        if ($result->isValid() AND $this->chainIsOptional)
+        if ($result->isValid() AND $this->optional)
         {
-            $this->chainIsOptional = FALSE;
+            $this->optional = FALSE;
         }
         
         // If this is an optional chain and the result is
         // invalid, we must ignore the rest of the chain
         // and we must not add the messages or change the
         // value of $valid class property.
-        if (!$result->isValid() AND $this->chainIsOptional)
+        if (!$result->isValid() AND $this->optional)
         {
-            $this->ignoreChain = TRUE;
+            $this->ignore = TRUE;
             return $this;
         }
         
         if (!$result->isValid())
         {
-            $this->passesValidation = FALSE;
+            $this->valid = FALSE;
             
             if ($breakChainOnFailure)
             {
-                $this->ignoreChain = TRUE;
+                $this->ignore = TRUE;
             }
         }
         
-        $this->updateValues($result);
+        $this->updateValue($result);
         $this->addMessages($result);
         return $this;
+    }
+    
+    /**
+     * Returns TRUE if passes all validation chains, FALSE otherwise.
+     * 
+     * @return bool
+     *
+     */
+    public function isValid()
+    {
+        return $this->valid;
+    }
+    
+    /**
+     * Get ValidationMessageInterface instances from validators.
+     * 
+     * @return array Contains instances of ValidationMessageInterface.
+     * 
+     */
+    public function getMessages()
+    {
+        return $this->messages;
     }
     
     /**
      * Sets values to validate.
      * 
      * Before you can start a validation chain, you have to set the
-     * values to validate first. Each value must have an ID,
-    // ---------------------------------------------------------------
-     * which will later be used by the returned messages to attach
-     * itself to a particular field and refering to the
-     * field's label string.
+     * values to validate first. Each value must have an ID, which
+     * will later be used by the returned messages to attach itself
+     * to. The view layer can later read the value ID and use it to
+     * set labels on the messages.
      *
      * <code>
      * $chain->setValues(array(
@@ -529,22 +432,14 @@ class ValidationChain
     }
     
     /**
-     * Get the validated values.
+     * Get the newly transformed/cleaned values.
      * 
-     * The returned values might differ with the ones originally
-     * provided because validator methods can tell validator chain to
-     * transform the value after cleaning/conversion/
-     * normalization of the value. Hence, you can use this method to
-     * get the transformed values after validation.
+     * Some validators may perform transformation/cleaning to the
+     * value. This method allows the chain caller to get the newly
+     * transformed values.
+     * 
+     * @return mixed The new values in associative array.
      *
-     * <code>
-     * // Immediately replace the values
-     * extract($chain->getValues());
-     * </code>
-     * 
-     * @see ValidationResult::changeValue
-     * @return array Validated values with their value ID 
-     * 
      */
     public function getValues()
     {
@@ -552,56 +447,21 @@ class ValidationChain
     }
     
     /**
-     * Get messages returned from validation methods in an array.
+     * Register default validators.
      * 
-     * Please note that these messages may not be all error messages.
-     * This class does not filter instances of MessageInterface
-     * returned by the validators. Default validators will always
-     * return instance of ErrorMessage, but custom validators might
-     * vary in their approach (they might return a valid result but
-     * include a warning message, for example).
+     * Validation library comes with a set of default validators,
+     * which are registered using this method at construction.
      *
-     * Example returned array:
-     *
-     * <code>
-     * $messages = array(
-     *     $errorMessageA,
-     *     $errorMessageB,
-     *     $warningMessage,
-     *     $errorMessageC
-     * );
-     * </code>
-     * 
-     * @return array Contains MessageInterface instances.
+     * @see __construct()
      * 
      */
-    public function getMessages()
+    protected function registerDefaultValidators()
     {
-        return $this->messages;
-    }
-    
-    /**
-     * Checks if values successfully passed all validations or not.
-     *
-     * Use this method to determine the next steps after you have
-     * finished running your validation chains.
-     *
-     * <code>
-     * if (!$chain->passesValidation())
-     * {
-     *     // Show error page
-     * }
-     *
-     * // Show success page or continue processing
-     * </code>
-     * 
-     * 
-     * @return bool TRUE if all validations return valid results, FALSE if there is at least one invalid result.
-     * 
-     */
-    public function passesValidation()
-    {
-        return $this->passesValidation;
+        $this->registerValidator(new NotEmptyValidator);
+        $this->registerValidator(new NumberValidator);
+        $this->registerValidator(new StringValidator);
+        $this->registerValidator(new ComparisonValidator);
+        $this->registerValidator(new TypeValidator);
     }
     
     /**
@@ -636,11 +496,6 @@ class ValidationChain
         {
             throw new InvalidArgumentException("ValidationChain error in adding validator callback. The validator ID '{$validatorID}' is not valid. Validator ID must have a group name and a validator name, separated by dot.");
         }
-        
-        if (array_key_exists($validatorID, $this->callbacks))
-        {
-            throw new InvalidArgumentException("ValidationChain error in adding validator callback. The validator ID '{$validatorID}' has already been defined.");
-        }
     }
     
     /**
@@ -666,15 +521,15 @@ class ValidationChain
             $callbackObject = $callback[0];
             $callbackMethod = $callback[1];
             return $callbackObject->$callbackMethod(
-                $this->chainActiveValueID,
-                $this->values,
+                $this->activeValueID,
+                $this->values[$this->activeValueID],
                 $args
             );
         }
         
         return $callback(
-            $this->chainActiveValueID,
-            $this->values,
+            $this->activeValueID,
+            $this->values[$this->activeValueID],
             $args
         );
     }
@@ -682,25 +537,15 @@ class ValidationChain
     /**
      * Update values with newly transformed ones.
      * 
-     * This method replaces the old values with newly
-     * transformed/cleaned/normalized values returned via
-     * the ValidationResult object. If the new value ID
-     * doesn't already exist in this class's $values class
-     * property, the new value is discarded, hence updating values
-     * cannot create new value.
-     * 
      * @see validate()
-     * @param ValidationResult $result The result object from a validator method.
+     * @param ValidatorResult $result The result object from a validator method.
      *
      */
-    protected function updateValues(ValidationResult $result)
+    protected function updateValue(ValidatorResult $result)
     {
-        foreach ($result->getNewValues() as $valueID => $value)
+        if ($result->hasNewValue())
         {
-            if (array_key_exists($valueID, $this->values))
-            {
-                $this->values[$valueID] = $value;
-            }
+            $this->value = $result->getValue();
         }
     }
     
@@ -710,13 +555,14 @@ class ValidationChain
      * Appends the message to the class's $messages property.
      * 
      * @see validate()
-     * @param ValidationResult $result The result object from a validator method.
+     * @param ValidatorResult $result The result object from a validator method.
      * 
      */
-    protected function addMessages(ValidationResult $result)
+    protected function addMessages(ValidatorResult $result)
     {
         foreach ($result->getMessages() as $message)
         {
+            $message->attachTo($this->activeValueID);
             $this->messages[] = $message;
         }
     }

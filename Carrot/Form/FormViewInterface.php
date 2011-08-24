@@ -22,7 +22,7 @@
 
 namespace Carrot\Form;
 
-interface FormRendererInterface
+interface FormViewInterface
 {
     public function __construct(FormDefinition $form);
     

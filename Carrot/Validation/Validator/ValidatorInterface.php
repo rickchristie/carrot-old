@@ -11,7 +11,7 @@
 
 /**
  * Validator Interface
- *
+ * 
  * Implement this interface if you want to create your own set of
  * validators. Your validators must not contain any state and
  * should serve as collection of validating methods grouped
@@ -33,43 +33,26 @@
  * 
  * The getCallbacks() method should return an array of callbacks
  * to the validator methods/functions along with their validator
- * ID. Your validator must accept 3 parameters: the parameter ID
- * currently active in the chain, an array containing all the
- * parameters, and validator specific arguments.
- *
- * Example method/function signature:
- *
+ * ID. Your validator must accept 3 parameters, the ID of the
+ * value being validated, the value itself, and validator specific
+ * argument.
+ * 
  * <code>
- * function validator($activeValueID, array $parameters, $args)
+ * $callback = function($valueID, $value, $args)
  * {
- *     // Do validation
- * }
+ *     // Validation logic here
+ * };
  * </code>
  * 
- * $activeValueID is the ID of the parameter being validated for
- * the current validation chain. This may be NULL, as its value
- * depends on how the user calls ValidationChain::start(), so you
- * have to check it first before using it.
- * 
- * $parameters simply contain the list of parameters to validate
- * in an associative array. Depending on what the validator is
- * trying to do, it may disregard $activeValueID entirely and work
- * directly with the values and indexes of $parameters. If the
- * variables you need doesn't exist in $parameters, throw a
- * {@see Validator\Exception\MissingParameterException}.
- * 
- * $args is the validator specific argument. It can be anything
- * from string to a configuration array. You have to document
- * your validator properly so that users know what type of values
- * you are expecting in $args, and what does it represents. For
- * example, you send the maximum length integer as the validator
- * specific argument when running string.maxLength, and you pass
- * an array containing IDs of the parameters whose values must
- * match each other when you're running comparison.matches.
+ * The validator specific argument can be anything from integer
+ * to a complex configuration array. You have to document your
+ * validator properly so that users know what type of values your
+ * validator callbacks are expecting as a validator specific
+ * argument.
  * 
  * Your validator method must return an instance of
- * {@see ValidationResult}, otherwise ValidationChain will throw
- * an exception.
+ * {@see Carrot\Validation\ValidatorResult}, otherwise
+ * ValidationChain will throw an exception.
  * 
  * The ValidationChain class expects getCallbacks() method to
  * return an array containing callbacks to validator methods, with
@@ -78,7 +61,8 @@
  * validator class, but this is not enforced.
  * 
  * For more information on how to implement this interface, you
- * can see some example implementations on Validators namespace.
+ * can see some example implementations in
+ * Carrot\Validation\Validator namespace.
  * 
  * @author      Ricky Christie <seven.rchristie@gmail.com>
  * @license     http://www.opensource.org/licenses/mit-license.php MIT License

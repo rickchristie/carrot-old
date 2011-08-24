@@ -10,24 +10,21 @@
  */
 
 /**
- * Message
+ * Validation Message
  * 
- * Value object. The default implementation of MessageInterface.
- * Represents generic message/notification from the application to
- * the client. Allows four message types: informational, error,
- * warning, and success.
+ * The validation message is represents a message issued from the
+ * validation layer, be it from regular validators or other
+ * validation layer objects.
  * 
  * @author      Ricky Christie <seven.rchristie@gmail.com>
  * @license     http://www.opensource.org/licenses/mit-license.php MIT License
  *
  */
 
-namespace Carrot\Message;
+namespace Carrot\Validation;
 
-use InvalidArgumentException;
-
-class Message implements MessageInterface
-{   
+class ValidationMessage implements ValidationMessageInterface
+{
     /**
      * @var string Fully qualified class name of the message issuer, without backslash prefix.
      */
@@ -54,24 +51,22 @@ class Message implements MessageInterface
     protected $placeholders = array();
     
     /**
+     * @var string The ID of the value this validation message belongs to.
+     */
+    protected $valueID;
+    
+    /**
+     * @var array List of value IDs and their label strings.
+     */
+    protected $labels = array();
+    
+    /**
      * Constructor.
      * 
-     * Use MessageInterface constants as types, the message code is
-     * optional and defaults to NULL:
-     * 
+     * The placeholder syntax is the same as Carrot\Core\Message:
+     *
      * <code>
-     * $message = new Message(
-     *     get_class($this),
-     *     'This is an informational message!',
-     *     Message::INFORMATIONAL,
-     *     '#0001'
-     * );
-     * </code>
-     * 
-     * The placeholder syntax is '{:name}'. Example placeholder usage:
-     * 
-     * <code>
-     * $message = new Message(
+     * $message = new ValidationMessage(
      *     get_class($this),
      *     "The file '{:fileName}' is corrupted.",
      *     Message::ERROR
@@ -80,17 +75,51 @@ class Message implements MessageInterface
      *     'fileName' => 'tryout.jpg'
      * ));
      * </code>
-     *
-     * Get the formatted message:
-     *
+     * 
+     * The only difference is that this class allows new placeholder
+     * syntaxes, such as '{@valueID}' to denote labels:
+     * 
      * <code>
-     * echo $message->get();
+     * $message = new ValidationMessage(
+     *     get_class($this),
+     *     '{@username} must not be less than {:minLength} characters',
+     *     ValidationMessage::ERROR
+     * );
+     * $message->setLabels(array(
+     *     'username' => 'User Name'
+     * ));
+     * $message->setPlaceholders(array(
+     *     'minLength' => 10
+     * ));
      * </code>
      * 
-     * According to the above example, the string '{:minLength}' in
-     * the message will be replaced by '6', while the string
-     * '{:maxLength}' will be replaced by '20'.
+     * Since this is a validation message, it can be attached to a
+     * particular validation value:
      *
+     * <code>
+     * $message->attachTo('username');
+     * </code>
+     *
+     * This will allow whatever object responsible for rendering to
+     * properly render the message near the field. You can use
+     * '{#label}' placeholder to denote the label of the value which
+     * the validation message is attached to:
+     *
+     * <code>
+     * $message = new ValidationMessage(
+     *     get_class($this),
+     *     '{#label} must not be less than {:minLength} characters',
+     *     ValidationMessage::ERROR
+     * );
+     * $message->attachTo('username');
+     * $message->setLabels(array(
+     *     'username' => 'User Name'
+     * ));
+     * $message->setPlaceholders(array(
+     *     'minLength' => 10
+     * ));
+     * </code>
+     * 
      * @param string $issuer Fully qualified class name of the message issuer, without backslash prefix.
      * @param string $message The raw message string.
      * @param string $type The type of the string, value corresponds to MessageInterface interface constants.
@@ -101,8 +130,8 @@ class Message implements MessageInterface
     {
         $this->issuer = $issuer;
         $this->message = $message;
+        $this->type = $type;
         $this->code = $code;
-        $this->setType($type);
     }
     
     /**
@@ -202,6 +231,32 @@ class Message implements MessageInterface
     }
     
     /**
+     * Attach this message to a specific validation value.
+     * 
+     * A validation message often is only relevant for a particular
+     * validation value. You can use this method to attach the message
+     * to a specific value ID.
+     * 
+     * @param string $valueID The ID of the value this validation message is attached to.
+     *
+     */
+    public function attachTo($valueID)
+    {
+        $this->valueID = $valueID;
+    }
+    
+    /**
+     * Get the value ID this message is attached to.
+     * 
+     * @return string|NULL Validation value ID, or NULL if not attached to anything.
+     * 
+     */
+    public function getValueID()
+    {
+        return $this->valueID;
+    }
+    
+    /**
      * Set placeholder names and their replacements in array.
      * 
      * You may set placeholders inside the message using the syntax
@@ -263,6 +318,28 @@ class Message implements MessageInterface
     }
     
     /**
+     * Set labels for each value IDs.
+     * 
+     * Used to replace '{@valueID}' placeholders with label strings.
+     * The array structure used is similar to the one used in
+     * {@see setPlaceholders}:
+     *
+     * <code>
+     * $message->setLabels(array(
+     *     'minLength' => '6',
+     *     'maxLength' => '20'
+     * ));
+     * </code>
+     * 
+     * @param array $labels The value IDs and their labels in array.
+     *
+     */
+    public function setLabels(array $labels)
+    {
+        $this->labels = $labels;
+    }
+    
+    /**
      * Get the formatted message, with placeholders replaced.
      *
      * @return string Message with placeholders replaced.
@@ -270,7 +347,9 @@ class Message implements MessageInterface
      */
     public function get()
     {
-        return $this->replacePlaceholders($this->message);
+        $message = $this->replacePlaceholders($this->message);
+        $message = $this->replaceSpecialLabelPlaceholder($message);
+        return $this->replaceLabelPlaceholders($message);
     }
     
     /**
@@ -288,6 +367,52 @@ class Message implements MessageInterface
         {
             $pattern = "/{:$name}/";
             $message = preg_replace($pattern, $replacement, $message);
+        }
+        
+        return $message;
+    }
+    
+    /**
+     * Replace '{#label}' placeholder with the correct label placeholder.
+     * 
+     * The validation message class allows the usage of special label
+     * placeholder '{#label}' to refer to the label of the value this
+     * message is currently attached to. This method replaces the
+     * special placeholder with regular label placeholder, using
+     * $valueID class property.
+     * 
+     * @see attachTo()
+     * @param string $message The string that contains the placeholder syntax.
+     * 
+     */
+    protected function replaceSpecialLabelPlaceholder($message)
+    {
+        if (empty($this->valueID))
+        {
+            return $message;
+        }
+        
+        $pattern = '/{#label}/';
+        $replacement = "{@{$this->valueID}}";
+        $message = preg_replace($pattern, $replacement, $message);
+        return $message;
+    }
+    
+    /**
+     * Replace label placeholders with actual label strings.
+     * 
+     * @see get()
+     * @see setPlaceholders()
+     * @param string $message The string that contains the placeholders syntax.
+     * @return string The formatted message.
+     *
+     */
+    protected function replaceLabelPlaceholders($message)
+    {   
+        foreach ($this->labels as $id => $label)
+        {
+            $pattern = "/{@$id}/";
+            $message = preg_replace($pattern, $label, $message);
         }
         
         return $message;

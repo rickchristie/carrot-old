@@ -25,7 +25,7 @@
         		el.style.display = 'block';
         	}
         	
-        	return FALSE;
+        	return false;
         }
     </script>
 </head>

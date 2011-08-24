@@ -24,7 +24,7 @@ namespace Carrot\Form;
 
 use InvalidArgumentException;
 use Carrot\Core\Request;
-use Carrot\Message\ValidatorMessageInterface;
+use Carrot\Validation\ValidationMessageInterface;
 use Carrot\Form\Field\FieldInterface;
 
 class FormDefinition
@@ -54,7 +54,15 @@ class FormDefinition
      */
     protected $fieldsets = array();
     
+    /**
+     * @var type comments
+     */
     protected $fieldsInFieldsets = array();
+    
+    /**
+     * @var FormRendererInterface Used to render this form.
+     */
+    protected $renderer;
     
     /**
      * Constructor.
@@ -64,15 +72,10 @@ class FormDefinition
      * @param array $fields
      * 
      */
-    public function __construct(array $fields = array())
+    public function __construct()
     {
         $this->setMethodToPost();
         $this->setEnctypeToFormURLEncoded();
-        
-        foreach ($fields as $field)
-        {
-            $this->addField($field);
-        }
     }
     
     /**
@@ -153,13 +156,13 @@ class FormDefinition
      * @param array $messages Contains MessageInterface implementations.
      * 
      */
-    public function addValidatorMessages(array $messages, array $valueToFieldMap = array())
+    public function addValidationMessages(array $messages, array $valueToFieldMap = array())
     {
         $labels = $this->getLabelsFromMap($valueToFieldMap);
         
         foreach ($messages as $message)
         {
-            if (!is_object($message) OR !($message instanceof ValidatorMessageInterface))
+            if (!is_object($message) OR !($message instanceof ValidationMessageInterface))
             {
                 continue;
             }
@@ -169,7 +172,7 @@ class FormDefinition
             
             if ($fieldID != FALSE AND array_key_exists($fieldID, $this->fields))
             {
-                $message->setValueLabels($labels);
+                $message->setLabels($labels);
                 $field = $this->fields[$fieldID];
                 $field->addErrorMessage($message->get());
             }

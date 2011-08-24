@@ -42,9 +42,6 @@ TODO: Make the ErrorHandler class throws appropriate exceptions?
 
 TODO: Fatal error handler in register_shutdown_function?
 
-TODO: Decouple Router from DIC, use System as the builder for the
-      Router.
-
 TODO: Fix the router class to be flexible, to accept quick regex
       or special syntax routes and also accept binding of route
       classes. Kind of like the DIC accepts quick bindings to
@@ -66,6 +63,14 @@ TODO: Write custom exception classes for core exceptions thrown,
       assign error code for them, and then in the exception
       handler, you can try to dynamically load pointers and hints
       of how the problem began and how to solve it.
+
+TODO: Add a simple temporary error and exception handler so that
+      if an error occurs before the real exception handler is
+      instantiated, user still gets nice error/exception pages.
+      Actually, just set the error handler at the start of
+      everything, then start the temporary exception handler
+      before finally instantiating the real exception handler and
+      handing the handler to the real one.
 
 
 NEW MODULES/CLASSES

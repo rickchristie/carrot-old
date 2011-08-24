@@ -22,15 +22,49 @@
 
 namespace Carrot\Form;
 
-class FormRenderer implements FormRendererInterface
+use Carrot\Form\Renderer\FieldRenderer;
+use Carrot\Form\Renderer\FieldRendererInterface;
+use Carrot\Form\Renderer\FieldsetRenderer;
+use Carrot\Form\Renderer\FieldsetRendererInterface;
+
+class FormView implements FormViewInterface
 {
+    /**
+     * @var type comments
+     */
     protected $form;
     
-    public function __construct(FormDefinition $form)
+    /**
+     * @var type comments
+     */
+    protected $fieldRenderer;
+    
+    /**
+     * @var type comments
+     */
+    protected $fieldsetRenderer;
+    
+    public function __construct(FormDefinition $form, FieldRendererInterface $fieldRenderer = NULL, FieldsetRendererInterface $fieldsetRenderer = NULL)
     {
+        if ($fieldRenderer == NULL)
+        {
+            $fieldRenderer = new FieldRenderer;
+        }
+        
+        if ($fieldsetRenderer == NULL)
+        {
+            $fieldsetRenderer = new FieldsetRenderer;
+        }
+        
         $this->form = $form;
+        $this->fieldRenderer = $fieldRenderer;
+        $this->fieldsetRenderer = $fieldsetRenderer;
     }
     
+    /**
+     * Render form encoding type.
+     *
+     */
     public function enctype()
     {
         return $this->form->getEnctype();
@@ -52,6 +86,12 @@ class FormRenderer implements FormRendererInterface
         return $fieldsets . $fields;
     }
     
+    /**
+     * Render fieldsets, along with parameters.
+     * 
+     * @return string 
+     * 
+     */
     public function fieldsets()
     {
         $fieldsetsRendered = '';
@@ -64,6 +104,10 @@ class FormRenderer implements FormRendererInterface
         return $fieldsetsRendered;
     }
     
+    /**
+     * Render a specific fieldset along with its parameters.
+     *
+     */
     public function fieldset($label)
     {
         $fieldsetRendered = $this->fieldsetOpen($label);
@@ -77,14 +121,22 @@ class FormRenderer implements FormRendererInterface
         return $fieldsetRendered;
     }
     
+    /**
+     * Render fieldset opening HTML.
+     *
+     */
     public function fieldsetOpen($label)
     {
-        return "<fieldset><legend>{$label}</legend>";
+        return $this->fieldsetRenderer->renderFieldsetOpen($label);
     }
     
+    /**
+     * Render fieldset closing HTML.
+     *
+     */
     public function fieldsetClose($label)
     {
-        return '</fieldset>';
+        return $this->fieldsetRenderer->renderFieldsetClose($label);
     }
     
     public function fields()
@@ -123,41 +175,31 @@ class FormRenderer implements FormRendererInterface
     
     public function beforeField($fieldID = '')
     {
-        return '<div class="fieldContainer">';
+        $field = $this->form->getField($fieldID);
+        return $this->fieldRenderer->renderBeforeField($field);
     }
     
     public function fieldLabel($fieldID)
     {
         $field = $this->form->getField($fieldID);
-        $labelRendered = $field->renderLabel();
-        return "<div class=\"fieldLabelContainer\">{$labelRendered}</div>";
+        return $this->fieldRenderer->renderFieldLabel($field);
     }
     
     public function fieldControl($fieldID)
     {
         $field = $this->form->getField($fieldID);
-        $controlRendered = $field->renderControl();
-        return "<div class=\"fieldControlContainer\">{$controlRendered}</div>";
+        return $this->fieldRenderer->renderFieldControl($field);
     }
     
     public function fieldErrors($fieldID)
     {
         $field = $this->form->getField($fieldID);
-        $errors = $field->getErrorMessages();
-        $errorsRendered = '<div class="fieldErrorsContainer"><ul>';
-        
-        foreach ($errors as $message)
-        {
-            $message = htmlentities($message, ENT_QUOTES);
-            $errorsRendered .= "<li>{$message}</li>";
-        }
-        
-        $errorsRendered .= '</ul></div>';
-        return $errorsRendered;
+        return $this->fieldRenderer->renderFieldErrors($field);
     }
     
     public function afterField($fieldID = '')
     {
-        return '</div>';
+        $field = $this->form->getField($fieldID);
+        return $this->fieldRenderer->renderAfterField($field);
     }
 }
