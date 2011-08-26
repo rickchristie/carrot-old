@@ -15,21 +15,24 @@
  * Value object. Represents a result status from a validator
  * callback. The validator callback is to return this object when
  * called. You can pass an implementation of
- * ValidationMessageInterface as a message.
+ * {@see ValidationErrorMessageInterface} as an error message.
  * 
  * To return a valid result after validation:
  *
  * <code>
  * $result = new ValidatorResult(TRUE);
- * $result->addMessage($warningMessage);
  * return $result;
  * </code>
+ *
+ * You cannot add an error message if the result is valid. Any
+ * calls to {@see addErrorMessage} when the type is valid will be
+ * ignored.
  * 
  * To return a invalid result after validation:
  * 
  * <code>
  * $result = new ValidatorResult(FALSE);
- * $result->addMessage($message);
+ * $result->addErrorMessage($message);
  * return $result;
  * </code>
  *
@@ -52,6 +55,8 @@
 
 namespace Carrot\Validation;
 
+use Carrot\Message\ValidationErrorMessageInterface;
+
 class ValidatorResult
 {
     /**
@@ -60,9 +65,9 @@ class ValidatorResult
     protected $valid;
     
     /**
-     * @var array Contains ValidationMessageInterface instances.
+     * @var array Contains ValidationErrorMessageInterface instances.
      */
-    protected $messages = array();
+    protected $errorMessages = array();
     
     /**
      * @var array Contains the new value, transformed/cleaned by the validator.
@@ -142,45 +147,57 @@ class ValidatorResult
     }
     
     /**
-     * Add a message to the result.
+     * Add an error message to the result.
+     *
+     * If the state of the result is valid any calls to this method
+     * will be ignored.
      * 
-     * Please note that the messages you add is not required to be an
-     * error message. You might want to make it pass the validation
-     * but send a warning message, for example.
-     * 
-     * @param ValidationMessageInterface $message The message to add.
+     * @param ValidationErrorMessageInterface $message The message to add.
      * 
      */
-    public function addMessage(ValidationMessageInterface $message)
+    public function addErrorMessage(ValidationErrorMessageInterface $message)
     {
-        $this->messages[] = $message;
+        if ($this->valid)
+        {
+            return;
+        }
+        
+        $this->errorMessages[] = $message;
     }
     
     /**
-     * Add an array of messages to the result.
+     * Add an array of error messages to the result.
      * 
      * Added for brevity in user's code. This method simply loops
-     * through the array and call {@see addMessage()}.
+     * through the array and call {@see addErrorMessage()}.
+     *
+     * If the state of the result is valid any calls to this method
+     * will be ignored.
      * 
-     * @param array $messages Array containing ValidationMessageInterface instances.
+     * @param array $messages Array containing ValidationErrorMessageInterface instances.
      * 
      */
-    public function addMessages(array $messages)
+    public function addErrorMessages(array $messages)
     {
+        if ($this->valid)
+        {
+            return;
+        }
+        
         foreach ($messages as $message)
         {   
-            $this->addMessage($message);
+            $this->addErrorMessage($message);
         }
     }
     
     /**
-     * Get all messages.
+     * Get all error messages.
      * 
-     * @return array Contains instances of ValidationMessageInterface.
+     * @return array Contains instances of ValidationErrorMessageInterface.
      *
      */
-    public function getMessages()
+    public function getErrorMessages()
     {
-        return $this->messages;
+        return $this->errorMessages;
     }
 }

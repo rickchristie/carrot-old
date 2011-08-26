@@ -163,13 +163,22 @@ interface MessageInterface
     public function getCode();
     
     /**
+     * Set placeholder name and its replacement.
+     * 
+     * @param string $name The name of the placeholder to set.
+     * @param string $replacement The replacement string.
+     *
+     */
+    public function setPlaceholder($name, $replacement);
+    
+    /**
      * Set placeholder names and their replacements in array.
      * 
      * The placeholder name serves as the array index while the
      * replacement string serves as the array content. Please
      * {@see Message} for a default implementation.
      * 
-     * NOTE: This method should replace the currently defined
+     * NOTE: This method will replace all currently defined
      * placeholder replacements instead of adding it.
      *
      * @param array $placeholders Placeholder names and replacement strings in array.

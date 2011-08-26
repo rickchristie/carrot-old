@@ -10,20 +10,24 @@
  */
 
 /**
- * Validation Message
+ * Validation Error Message
  * 
- * The validation message is represents a message issued from the
- * validation layer, be it from regular validators or other
- * validation layer objects.
+ * The validation message represents an error message issued from
+ * the validation layer, which will be rendered by the
+ * presentation layer, often a form object.
+ * 
+ * NOTE: ValidationErrorMessage's type will always be
+ * MessageInterface::ERROR. This is hardcoded and follows
+ * ValidationErrorMessageInterface specification.
  * 
  * @author      Ricky Christie <seven.rchristie@gmail.com>
  * @license     http://www.opensource.org/licenses/mit-license.php MIT License
  *
  */
 
-namespace Carrot\Validation;
+namespace Carrot\Message;
 
-class ValidationMessage implements ValidationMessageInterface
+class ValidationErrorMessage implements ValidationErrorMessageInterface
 {
     /**
      * @var string Fully qualified class name of the message issuer, without backslash prefix.
@@ -66,10 +70,9 @@ class ValidationMessage implements ValidationMessageInterface
      * The placeholder syntax is the same as Carrot\Core\Message:
      *
      * <code>
-     * $message = new ValidationMessage(
+     * $message = new ValidationErrorMessage(
      *     get_class($this),
-     *     "The file '{:fileName}' is corrupted.",
-     *     Message::ERROR
+     *     "The file '{:fileName}' is corrupted."
      * );
      * $message->setPlaceholders(array(
      *     'fileName' => 'tryout.jpg'
@@ -80,10 +83,9 @@ class ValidationMessage implements ValidationMessageInterface
      * syntaxes, such as '{@valueID}' to denote labels:
      * 
      * <code>
-     * $message = new ValidationMessage(
+     * $message = new ValidationErrorMessage(
      *     get_class($this),
-     *     '{@username} must not be less than {:minLength} characters',
-     *     ValidationMessage::ERROR
+     *     '{@username} must not be less than {:minLength} characters'
      * );
      * $message->setLabels(array(
      *     'username' => 'User Name'
@@ -106,10 +108,9 @@ class ValidationMessage implements ValidationMessageInterface
      * the validation message is attached to:
      *
      * <code>
-     * $message = new ValidationMessage(
+     * $message = new ValidationErrorMessage(
      *     get_class($this),
-     *     '{#label} must not be less than {:minLength} characters',
-     *     ValidationMessage::ERROR
+     *     '{#label} must not be less than {:minLength} characters'
      * );
      * $message->attachTo('username');
      * $message->setLabels(array(
@@ -126,11 +127,11 @@ class ValidationMessage implements ValidationMessageInterface
      * @param string $code The message's code, NULL if not set.
      *
      */
-    public function __construct($issuer, $message, $type = self::INFORMATIONAL, $code = NULL)
+    public function __construct($issuer, $message, $code = NULL)
     {
         $this->issuer = $issuer;
         $this->message = $message;
-        $this->type = $type;
+        $this->type = self::ERROR;
         $this->code = $code;
     }
     
@@ -181,16 +182,15 @@ class ValidationMessage implements ValidationMessageInterface
     /**
      * Set the type of the message.
      * 
-     * The message type should correspond with the constants provided
-     * by this interface. This makes it easier to do comparison
-     * without the risk of a typo.
+     * Since, according to ValidationErrorMessageInterface, the
+     * message type should always be ERROR, this method is disabled.
      *
      * @param string $type The type of this message.
      *
      */
     public function setType($type)
     {
-        $this->type = $type;
+        // This is intentionally left blank
     }
     
     /**
@@ -257,6 +257,18 @@ class ValidationMessage implements ValidationMessageInterface
     }
     
     /**
+     * Set placeholder name and its replacement.
+     * 
+     * @param string $name The name of the placeholder to set.
+     * @param string $replacement The replacement string.
+     *
+     */
+    public function setPlaceholder($name, $replacement)
+    {
+        $this->placeholders[$name] = $replacement;
+    }
+    
+    /**
      * Set placeholder names and their replacements in array.
      * 
      * You may set placeholders inside the message using the syntax
@@ -276,7 +288,7 @@ class ValidationMessage implements ValidationMessageInterface
      * If the placeholder replacement is not set, the placeholder
      * syntax will not be replaced.
      * 
-     * NOTE: This method should replace the currently defined
+     * NOTE: This method will replace all currently defined
      * placeholder replacements instead of adding it.
      *
      * @param array $placeholders Placeholder names and replacement strings in array.

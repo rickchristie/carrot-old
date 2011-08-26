@@ -12,8 +12,9 @@
 /**
  * Attributes
  * 
-// ---------------------------------------------------------------
- * Value object
+ * Value object, represents HTML attributes. Used by some of the
+ * default FieldInterface implementations to note the attributes
+ * owned by their form controls.
  * 
  * @author      Ricky Christie <seven.rchristie@gmail.com>
  * @license     http://www.opensource.org/licenses/mit-license.php MIT License
@@ -40,10 +41,29 @@ class Attributes
     /**
      * Constructor.
      * 
-    // ---------------------------------------------------------------
+     * Pass the initial attributes array and the list of forbidden
+     * attributes to the constructor:
+     *
+     * <code>
+     * $attributes = new Attributes(
+     *     array(
+     *         'maxlength' => '10',
+     *         'class' => 'textField'
+     *     ),
+     *     array(
+     *         'value',
+     *         'id',
+     *         'name'
+     *     )
+     * );
+     * </code>
      * 
+     * Throws InvalidArgumentException if one of the attributes given
+     * is forbidden.
      * 
-     * @param array $forbidden
+     * @throws InvalidArgumentException
+     * @param array $attributes The attributes array.
+     * @param array $forbidden The list of forbidden attribute names.
      * 
      */
     public function __construct(array $attributes = array(), array $forbidden = array())
@@ -63,8 +83,16 @@ class Attributes
     /**
      * Set an attribute.
      * 
+     * Set an attribute value.
      * 
+     * <code>
+     * $attributes->set('maxlength', '10');
+     * </code>
      * 
+     * Throws InvalidArgumentException if the attribute name belongs
+     * to the forbidden attributes.
+     * 
+     * @throws InvalidArgumentException
      * @param string $name The name of the attribute to set.
      * @param string $value The value to set it to.
      * 
@@ -73,7 +101,7 @@ class Attributes
     {
         if (in_array($nam, $this->forbidden))
         {
-            throw new RuntimeException("Attributes error when attempting to set value. The attribute '{$name}' is forbidden. Please use class specific methods.");
+            throw new InvalidArgumentException("Attributes error when attempting to set value. The attribute '{$name}' is forbidden.");
         }
         
         $this->attributes[$name] = $value;
@@ -82,7 +110,10 @@ class Attributes
     /**
      * Set an attribute only if it does not exist, hence setting default value.
      * 
+     * Will not set the attribute if the attribute already exists.
      * 
+     * @param string $name The name of the attribute to set.
+     * @param string $value The value to set it to.
      * 
      */
     public function setDefault($name, $value)
@@ -96,7 +127,13 @@ class Attributes
     /**
      * Append a value to an attribute.
      * 
+     * Very useful when, for example, you wanted to add a class to the
+     * element but does not want to remove previously set classes.
      * 
+     * <code>
+     * $attributes->set('class', 'textField');
+     * $attributes->append('class', 'highlighted');
+     * </code>
      * 
      * @param string $name The name of the attribute to append.
      * @param string $value The value to append it to.
@@ -120,7 +157,7 @@ class Attributes
     /**
      * Get a value of an attribute.
      * 
-     * 
+     * Will return NULL if the attribute does not exist.
      * 
      * @param string $name The name of the attribute to get.
      * @return string|NULL Returns NULL if the attribute does not exist.
@@ -138,7 +175,6 @@ class Attributes
     
     /**
      * Get a value of an attribute, or return a default value if it doesn't exist.
-     * 
      * 
      * @param string $name The name of the attribute to get.
      * @param mixed $default The default value to be returned.
@@ -200,9 +236,8 @@ class Attributes
      * $attributes = ' name="username" id="username_id"';
      * </code>
      *
-     * Please note that attribute values are not escaped, it is the
-    // ---------------------------------------------------------------
-     * user's responsibility to set the attributes correctly.
+     * Both the attribute names and values will be escaped using
+     * htmlentities() with the ENT_QUOTES option.
      * 
      * @return string HTML attributes string cleaned with htmlentities.
      * 
@@ -213,6 +248,8 @@ class Attributes
         
         foreach ($this->attributes as $name => $value)
         {
+            $name = htmlentities($name, ENT_QUOTES);
+            $value = htmlentities($name, ENT_QUOTES);
             $renderedAttributes .= " {$name}=\"{$value}\"";
         }
         

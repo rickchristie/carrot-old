@@ -24,8 +24,8 @@
 
 namespace Carrot\Validation\Validator;
 
+use Carrot\Message\ValidationErrorMessage;
 use Carrot\Validation\ValidatorResult;
-use Carrot\Validation\ValidationMessage;
 
 class NotEmptyValidator implements ValidatorInterface
 {   
@@ -159,14 +159,13 @@ class NotEmptyValidator implements ValidatorInterface
      */
     protected function getInvalidResult($valueID)
     {
-        $message = new ValidationMessage(
+        $message = new ValidationErrorMessage(
             get_class($this),
-            $this->message['default'],
-            ValidationMessage::ERROR
+            $this->message['default']
         );
         
         $result = new ValidatorResult(FALSE);
-        $result->addMessage($message);
+        $result->addErrorMessage($message);
         return $result;
     }
 }

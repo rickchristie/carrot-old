@@ -24,7 +24,7 @@
 
 namespace Carrot\Validation\Validator;
 
-use Carrot\Message\ValidationMessage;
+use Carrot\Message\ValidationErrorMessage;
 use Carrot\Validation\ValidatorResult;
 
 class StringValidator implements ValidatorInterface
@@ -84,10 +84,9 @@ class StringValidator implements ValidatorInterface
     {      
         if (strlen($value) > $maxLength)
         {   
-            $message = new ValidationMessage(
+            $message = new ValidationErrorMessage(
                 get_class($this),
-                $this->messages['maxLength'],
-                ValidationMessage::ERROR
+                $this->messages['maxLength']
             );
             
             $message->setPlaceholder('maxLength', $maxLength);
@@ -219,10 +218,10 @@ class StringValidator implements ValidatorInterface
      * @return ValidationResult
      *
      */
-    protected function getInvalidResult(ValidationMessage $message)
+    protected function getInvalidResult(ValidationErrorMessage $message)
     {
         $result = new ValidatorResult(FALSE);
-        $result->addMessage($message);
+        $result->addErrorMessage($message);
         return $result;
     }
 }

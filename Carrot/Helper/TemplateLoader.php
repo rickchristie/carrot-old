@@ -12,8 +12,8 @@
 /**
  * Template Loader
  * 
-// ---------------------------------------------------------------
- * 
+ * Used to load templates as string. Provides Router,
+ * AppRequestURI and Assets by default to the templates.
  * 
  * @author      Ricky Christie <seven.rchristie@gmail.com>
  * @license     http://www.opensource.org/licenses/mit-license.php MIT License
@@ -22,8 +22,9 @@
 
 namespace Carrot\Helper;
 
-use RuntimeException;
-use Carrot\Core\Router;
+use RuntimeException,
+    Carrot\Core\Router,
+    Carrot\Core\AppRequestURI;
 
 class TemplateLoader
 {
@@ -33,19 +34,19 @@ class TemplateLoader
     protected $templateRootDirectory;
     
     /**
-     * @var array List of loaded template strings.
-     */
-    protected $loadedTemplates;
-    
-    /**
-     * @var Assets|null If set during construction, can be used by templates to get asset paths.
+     * @var Assets Used by templates to get asset paths.
      */
     protected $assets;
     
     /**
-     * @var Router|null If set during construction, can be used by templates to get URLs.
+     * @var Router Used by templates to get URLs.
      */
     protected $router;
+    
+    /**
+     * @var AppRequestURI Used by templates to get base path/URL.
+     */
+    protected $appRequestURI;
     
     /**
      * Constructor.
@@ -54,14 +55,24 @@ class TemplateLoader
      * parameter:
      *
      * <code>
-     * $template = new TemplateLoader('/absolute/path/to/file');
+     * $template = new TemplateLoader(
+     *     '/absolute/path/to/template/directory/',
+     *     $router,
+     *     $assets,
+     *     $appRequestURI
+     * );
      * </code>
      * 
      * @param string $templateRootDirectory Absolute path to the directory that contains the templates.
+     * @param Router $router Used by templates to perform to way routing.
+     * @param Assets $assets Used by templates to load asset file paths.
+     * @param AppRequestURI $appRequestURI Used by templates to get base path and URLs.
      *
      */
-    public function __construct($templateRootDirectory, Router $router = null, Assets $assets = null)
+    public function __construct($templateRootDirectory, Router $router, Assets $assets, AppRequestURI $appRequestURI)
     {
+        // TODO: Once the DIC is refactored, remove $router, $assets, and $appRequestURI from
+        // constructor arguments and just have a second array argument, $defaultVariables
         $templateRootDirectoryFormatted = realpath($templateRootDirectory);
         
         if ($templateRootDirectoryFormatted === false OR !is_dir($templateRootDirectoryFormatted))
@@ -157,29 +168,7 @@ class TemplateLoader
             'variables' => $variables
         );
         
-        $string = $this->loadFileAsString($context);
-        return $this->loadedTemplates[] = $string;
-    }
-    
-    /**
-     * Assembles the loaded template string and returns it.
-     *
-     * After loading templates, get the whole string using this
-     * method:
-     *
-     * <code>
-     * $template->load('default/header');
-     * $template->load('blog/page');
-     * $template->load('default/footer');
-     * $body = $template->assemble();
-     * </code>
-     *
-     * @return string All the loaded template strings, tied into one string.
-     *
-     */
-    public function assemble()
-    {
-        return implode($this->loadedTemplates);
+        return $this->loadFileAsString($context);
     }
     
     /**

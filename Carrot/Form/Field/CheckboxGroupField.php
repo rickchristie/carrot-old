@@ -10,10 +10,10 @@
  */
 
 /**
- * Password Field
+ * Checkbox Group Field
  * 
- * Represents a password field, renders into a single HTML
- * password input tag. Returns a string value.
+// ---------------------------------------------------------------
+ * Value object
  * 
  * @author      Ricky Christie <seven.rchristie@gmail.com>
  * @license     http://www.opensource.org/licenses/mit-license.php MIT License
@@ -24,7 +24,7 @@ namespace Carrot\Form\Field;
 
 use Carrot\Message\ValidationErrorMessageInterface;
 
-class PasswordField implements FieldInterface
+class CheckboxGroupField implements FieldInterface
 {
     /**
      * @var string The ID of this field.
@@ -62,13 +62,7 @@ class PasswordField implements FieldInterface
      * Example construction:
      *
      * <code>
-     * $password = new PasswordField(
-     *     'pwd',
-     *     'Password',
-     *     array(
-     *         'class' => 'passwordText'
-     *     )
-     * );
+     * 
      * </code>
      * 
      * @param string $id The ID of this field.
@@ -84,33 +78,17 @@ class PasswordField implements FieldInterface
     }
     
     /**
-     * Get the Attributes instance.
-     * 
-     * @return Attributes
-     *
-     */
-    public function getAttributes()
-    {
-        return $this->attributes;
-    }
-    
-    /**
      * Get the field value from the form submission arrays.
      * 
      * @see FieldInterface::getValue()
      * @param array $formSubmissionArray Could be either $_GET or $_POST.
      * @param array $fileSubmissionArray The $_FILES array.
-     * @return string The value from the submission arrays, or a default value. 
+     * @return mixed The value from the submission arrays, or a default value. 
      * 
      */
     public function getValue(array $formSubmissionArray, array $fileSubmissionArray)
     {
-        if ($this->isSubmissionValid($formSubmissionArray, $fileSubmissionArray))
-        {
-            return $formSubmissionArray[$this->id];
-        }
         
-        return $this->defaultValue;
     }
     
     /**
@@ -124,27 +102,20 @@ class PasswordField implements FieldInterface
      */
     public function isSubmissionValid(array $formSubmissionArray, array $fileSubmissionArray)
     {
-        return (
-            array_key_exists($this->id, $formSubmissionArray) AND
-            is_string($formSubmissionArray[$this->id])
-        );
+        
     }
     
     /**
      * Set the default value for this field.
      * 
-     * For a password field, it does not make sense to set a default
-     * value, therefore this method does not do anything. The password
-     * field's value will always be empty when the form is loaded.
-     * 
      * @see FieldInterface::setDefaultValue()
-     * @param string $defaultValue The default value.
+     * @param mixed $defaultValue The default value.
      * @return bool TRUE if default value set, FALSE if default value not set/invalid.
      * 
      */
     public function setDefaultValue($defaultValue)
     {
-        return TRUE;
+        
     }
     
     /**
@@ -156,7 +127,7 @@ class PasswordField implements FieldInterface
      */
     public function getID()
     {
-        return $this->id;
+        
     }
     
     /**
@@ -168,7 +139,7 @@ class PasswordField implements FieldInterface
      */
     public function getLabel()
     {
-        return $this->label;
+        
     }
     
     /**
@@ -180,7 +151,7 @@ class PasswordField implements FieldInterface
      */
     public function getForAttributeInLabel()
     {
-        return $this->id;
+        
     }
     
     /**
@@ -192,7 +163,7 @@ class PasswordField implements FieldInterface
      */
     public function addErrorMessage(ValidationErrorMessageInterface $message)
     {
-        $this->errorMessages[] = $message;
+        
     }
     
     /**
@@ -214,7 +185,7 @@ class PasswordField implements FieldInterface
      */
     public function getErrorMessages()
     {
-        return $this->errorMessages;
+        
     }
     
     /**
@@ -226,7 +197,7 @@ class PasswordField implements FieldInterface
      */
     public function shouldRendererRenderLabel()
     {
-        return TRUE;
+        
     }
     
     /**
@@ -238,7 +209,7 @@ class PasswordField implements FieldInterface
      */
     public function shouldRendererRenderErrors()
     {
-        return TRUE;
+        
     }
     
     /**
@@ -250,8 +221,6 @@ class PasswordField implements FieldInterface
      */
     public function render()
     {
-        $id = htmlentities($this->id, ENT_QUOTES);
-        $attributes = $this->attributes->render();
-        return "<input type=\"password\" name=\"{$id}\" id=\"{$id}\" value=\"\"{$attributes} />";
+        
     }
 }

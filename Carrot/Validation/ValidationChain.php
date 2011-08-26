@@ -23,7 +23,8 @@
 
 namespace Carrot\Validation;
 
-use InvalidArgumentException,
+use RuntimeException,
+    InvalidArgumentException,
     Carrot\Validation\Validator\ComparisonValidator,
     Carrot\Validation\Validator\DateValidator,
     Carrot\Validation\Validator\EmailValidator,
@@ -56,9 +57,9 @@ class ValidationChain
     protected $valid = TRUE;
     
     /**
-     * @var array Contains ValidationMessageInterface instances.
+     * @var array Contains ValidationErrorMessageInterface instances.
      */
-    protected $messages = array();
+    protected $errorMessages = array();
     
     /**
      * @var bool If TRUE, then the validation chain is optional, {@see startOptional}.
@@ -270,7 +271,7 @@ class ValidationChain
         $this->values = array();
         $this->ignore = TRUE;
         $this->valid = TRUE;
-        $this->messages = array();
+        $this->errorMessages = array();
         $this->optional = FALSE;
     }
     
@@ -380,7 +381,7 @@ class ValidationChain
         }
         
         $this->updateValue($result);
-        $this->addMessages($result);
+        $this->addErrorMessages($result);
         return $this;
     }
     
@@ -396,14 +397,14 @@ class ValidationChain
     }
     
     /**
-     * Get ValidationMessageInterface instances from validators.
+     * Get ValidationErrorMessageInterface instances from validators.
      * 
-     * @return array Contains instances of ValidationMessageInterface.
+     * @return array Contains instances of ValidationErrorMessageInterface.
      * 
      */
-    public function getMessages()
+    public function getErrorMessages()
     {
-        return $this->messages;
+        return $this->errorMessages;
     }
     
     /**
@@ -517,7 +518,12 @@ class ValidationChain
         $callback = $this->callbacks[$validatorID];
         
         if (is_array($callback))
-        {   
+        {
+            if (count($callback) != 2 OR !is_object($callback[0]))
+            {
+                throw new RuntimeException("ValidationChain error in running validator callback. The callback must be either anonymous function or an array of object reference and method name (static calls not allowed).");
+            }
+            
             $callbackObject = $callback[0];
             $callbackMethod = $callback[1];
             return $callbackObject->$callbackMethod(
@@ -558,12 +564,12 @@ class ValidationChain
      * @param ValidatorResult $result The result object from a validator method.
      * 
      */
-    protected function addMessages(ValidatorResult $result)
+    protected function addErrorMessages(ValidatorResult $result)
     {
-        foreach ($result->getMessages() as $message)
+        foreach ($result->getErrorMessages() as $message)
         {
             $message->attachTo($this->activeValueID);
-            $this->messages[] = $message;
+            $this->errorMessages[] = $message;
         }
     }
 }

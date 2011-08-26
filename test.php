@@ -15,21 +15,22 @@ $request = new Carrot\Core\Request(
     $_ENV
 );
 
+$appRequestURI = new Carrot\Core\AppRequestURI($request);
+echo '<pre>', var_dump($appRequestURI->getBaseURL()), '</pre>';
+
 $form = new Carrot\Form\FormDefinition;
 
 $form->addField(new Carrot\Form\Field\TextField(
     'username',
-    'User Name',
-    'prefix_'
+    'User Name'
 ));
 
 $form->addField(new Carrot\Form\Field\PasswordField(
     'password',
-    'Password',
-    'prefix_'
+    'Password'
 ));
 
-$ValidationMessages = array();
+$validationMessages = array();
 
 if ($form->isSubmissionValid($request))
 {
@@ -40,7 +41,8 @@ if ($form->isSubmissionValid($request))
     ));
     
     $chain->start('usernameBlah')
-          ->validate('notEmpty.simple');
+          ->validate('notEmpty.simple')
+          ->validate('string.maxLength', 5);
     
     $chain->start('passwordBlah')
           ->validate('notEmpty.simple');
@@ -52,11 +54,11 @@ if ($form->isSubmissionValid($request))
     else
     {
         echo 'Did not pass validation!';
-        $ValidationMessages = $chain->getMessages();
+        $validationMessages = $chain->getErrorMessages();
     }
 }
 
-$form->addValidationMessages($ValidationMessages, array(
+$form->addValidationErrorMessages($validationMessages, array(
     'usernameBlah' => 'username',
     'passwordBlah' => 'password'
 ));
@@ -68,8 +70,9 @@ $formView = new Carrot\Form\FormView($form);
 
 ?>
 
-<form method="<?php echo $formView->method() ?>" enctype="<?php $formView->enctype() ?>" action="">
-<?php echo $formView->render() ?>
+<?php echo $formView->renderErrorMessagesSummary() ?>
+<form method="<?php echo $formView->getMethod() ?>" enctype="<?php $formView->getEnctype() ?>" action="">
+<?php echo $formView->renderAll() ?>
 <button type="submit">
     Submit
 </button>

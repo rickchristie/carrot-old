@@ -10,25 +10,31 @@
  */
 
 /**
- * Validator Message Interface
+ * Validation Error Message Interface
  *
- * The validation message is represents a message issued from the
- * validation layer, be it from regular validators or other
- * validation layer objects.
- * 
+ * The validation error message is represents an error message
+ * issued from the validation layer, be it from regular validators
+ * or other validation layer objects.
+ *
  * This interface defines the contract between the validation
- * message class with the objects responsible to render it.
+ * error message class with the objects responsible to create and
+ * render it. Ideally, the implementation of this interface is
+ * instatiated in the validation layer and then passed to the
+ * presentation layer for rendering.
+ *
+ * NOTE: Validation error message's type should be always
+ * MessageInterface::ERROR. You will have to hardcode this to the
+ * class and have to disable the MessageInterface::setType()
+ * method.
  * 
  * @author      Ricky Christie <seven.rchristie@gmail.com>
  * @license     http://www.opensource.org/licenses/mit-license.php MIT License
  *
  */
 
-namespace Carrot\Validation;
+namespace Carrot\Message;
 
-use Carrot\Message\MessageInterface;
-
-interface ValidationMessageInterface extends MessageInterface
+interface ValidationErrorMessageInterface extends MessageInterface
 {
     /**
      * Attach the message to a specific value.
@@ -36,7 +42,7 @@ interface ValidationMessageInterface extends MessageInterface
      * @param string $valueID The ID of the value this validation message is attached to.
      *
      */
-    public function attachTo($fieldID);
+    public function attachTo($valueID);
     
     /**
      * Get ID of the value this message is attached to.

@@ -202,6 +202,18 @@ class Message implements MessageInterface
     }
     
     /**
+     * Set placeholder name and its replacement.
+     * 
+     * @param string $name The name of the placeholder to set.
+     * @param string $replacement The replacement string.
+     *
+     */
+    public function setPlaceholder($name, $replacement)
+    {
+        $this->placeholders[$name] = $replacement;
+    }
+    
+    /**
      * Set placeholder names and their replacements in array.
      * 
      * You may set placeholders inside the message using the syntax
@@ -221,7 +233,7 @@ class Message implements MessageInterface
      * If the placeholder replacement is not set, the placeholder
      * syntax will not be replaced.
      * 
-     * NOTE: This method should replace the currently defined
+     * NOTE: This method will replace all currently defined
      * placeholder replacements instead of adding it.
      *
      * @param array $placeholders Placeholder names and replacement strings in array.
