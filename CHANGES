@@ -1,7 +1,9 @@
 TRUNK
 -----
 
-- 
+- Added Carrot\Form
+- Added Carrot\Validation
+- Added Carrot\Message
 
 
 VERSION 0.2.7

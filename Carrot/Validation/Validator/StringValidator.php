@@ -196,7 +196,7 @@ class StringValidator implements ValidatorInterface
     protected function initializeMessages()
     {
         $this->messages = array(
-            'maxLength' => _('{#label} must be more than {:maxLength} characters length.')
+            'maxLength' => _('{#label} must not be more than {:maxLength} characters length.')
         );
     }
     
