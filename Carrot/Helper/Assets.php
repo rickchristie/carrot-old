@@ -13,8 +13,7 @@
  * Assets
  * 
  * Contains paths to assets (CSS files, JS files) used in
- * rendering templates. Resolves the paths given relative to the
- * base path or base URL from AppRequestURI.
+ * rendering templates.
  * 
  * @author      Ricky Christie <seven.rchristie@gmail.com>
  * @license     http://www.opensource.org/licenses/mit-license.php MIT License
@@ -23,21 +22,19 @@
 
 namespace Carrot\Helper;
 
-use RuntimeException;
 use InvalidArgumentException;
-use Carrot\Core\AppRequestURI;
 
 class Assets
 {
     /**
-     * @var array Paths to assets in an associative array, relative from the base URL or the base path.
+     * @var array Paths to assets in an associative array, relative from the assets root directory given.
      */
     protected $assets;
     
     /**
-     * @var string Base path to the assets in an associative array.
+     * @var string The root directory for assets.
      */
-    protected $basePath;
+    protected $assetsRootDirectory;
     
     /**
      * Constructor.
@@ -45,27 +42,25 @@ class Assets
      * Pass the assets array when constructing:
      *
      * <code>
-     * $assets = new Assets($appRequestURI, array(
+     * $assets = new Assets('http://example.com/assets/', array(
      *     'mainCSS' => 'path/to/style.css',
      *     'jQuery' => 'path/to/jquery.js',
      *     'logo' => 'path/to/logo.png'
      * ));
      * </code>
      * 
-     * @param AppRequestURI $appRequestURI Needed to get the base path/URL.
-     * @param array $assets Relative paths to assets in an associative array, without slash prefix.
+     * @param string $assetsRootDirectory The root directory for assets.
+     * @param array $assets Relative paths to assets in an associative array.
      * 
      */
-    public function __construct(AppRequestURI $appRequestURI, array $assets)
+    public function __construct($assetsRootDirectory, array $assets)
     {
-        // TODO: Once DIC is refactored, assets must accept base path/URL instead of AppRequestURI.
-        $this->basePath = $appRequestURI->getBasePath();
+        $this->assetsRootDirectory = $assetsRootDirectory;
         $this->assets = array();
         
         foreach ($assets as $name => $path)
         {
-            $path = ltrim($path, '/');
-            $this->assets[$name] = htmlentities($this->basePath . $path, ENT_QUOTES);
+            $this->assets[$name] = htmlentities($this->assetsRootDirectory . $path, ENT_QUOTES);
         }
     }
     
@@ -95,24 +90,13 @@ class Assets
     }
     
     /**
-     * Get base path, with trailing slash.
-     * 
-     * @return string
-     * 
+     * Get the assets directory.
+     *
+     * @return string The root directory for assets.
+     *
      */
-    public function getBasePath()
+    public function getAssetsDir()
     {
-        return $this->basePath;
-    }
-    
-    /**
-     * Get base URL, with trailing slash.
-     * 
-     * @return string
-     * 
-     */
-    public function getBaseURL()
-    {
-        return $this->baseURL;
+        return $this->assetsRootDirectory;
     }
 }

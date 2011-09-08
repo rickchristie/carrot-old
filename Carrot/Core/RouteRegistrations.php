@@ -42,7 +42,7 @@ class RouteRegistrations
     /**
      * @var array Contains the list of registered routes.
      */
-    protected $registrations;
+    protected $registrations = array();
     
     /**
      * @var Callback Callback object to be returned when there is no matching route.

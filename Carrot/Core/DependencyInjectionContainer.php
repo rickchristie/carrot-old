@@ -330,7 +330,7 @@ class DependencyInjectionContainer
         $className = $objectReference->getClassName();
         $configName = $objectReference->getConfigurationName();
         $lifecycle = $objectReference->getLifecycleSetting();
-        $providerObjectReference = $this->bindings[$className][$configName][$lifecycle]['provider'];
+        $providerObjectReference = $this->providerBindings[$className][$configName][$lifecycle]['provider'];
         $provider = $this->getInstance($providerObjectReference);
         
         if (!($provider instanceof ProviderInterface))

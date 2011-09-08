@@ -22,9 +22,7 @@
 
 namespace Carrot\Helper;
 
-use RuntimeException,
-    Carrot\Core\Router,
-    Carrot\Core\AppRequestURI;
+use RuntimeException;
 
 class TemplateLoader
 {
@@ -34,19 +32,9 @@ class TemplateLoader
     protected $templateRootDirectory;
     
     /**
-     * @var Assets Used by templates to get asset paths.
+     * @var array Default variables to pass to each template loaded.
      */
-    protected $assets;
-    
-    /**
-     * @var Router Used by templates to get URLs.
-     */
-    protected $router;
-    
-    /**
-     * @var AppRequestURI Used by templates to get base path/URL.
-     */
-    protected $appRequestURI;
+    protected $defaultVars;
     
     /**
      * Constructor.
@@ -57,31 +45,28 @@ class TemplateLoader
      * <code>
      * $template = new TemplateLoader(
      *     '/absolute/path/to/template/directory/',
-     *     $router,
-     *     $assets,
-     *     $appRequestURI
+     *     array(
+     *         'router' => $router,
+     *         'assets' => $assets,
+     *         'appRequestURI' => $appRequestURI
+     *     )
      * );
      * </code>
      * 
      * @param string $templateRootDirectory Absolute path to the directory that contains the templates.
-     * @param Router $router Used by templates to perform to way routing.
-     * @param Assets $assets Used by templates to load asset file paths.
-     * @param AppRequestURI $appRequestURI Used by templates to get base path and URLs.
+     * @param array $defaultVars Default variables to pass to each template loaded.
      *
      */
-    public function __construct($templateRootDirectory, Router $router, Assets $assets, AppRequestURI $appRequestURI)
+    public function __construct($templateRootDirectory, array $defaultVars = array())
     {
-        // TODO: Once the DIC is refactored, remove $router, $assets, and $appRequestURI from
-        // constructor arguments and just have a second array argument, $defaultVariables
         $templateRootDirectoryFormatted = realpath($templateRootDirectory);
         
-        if ($templateRootDirectoryFormatted === false OR !is_dir($templateRootDirectoryFormatted))
+        if ($templateRootDirectoryFormatted === FALSE OR !is_dir($templateRootDirectoryFormatted))
         {
             throw new RuntimeException("Template error in instantiating. Either the path '{$templateRootDirectoryFormatted}' is not a valid path or it is not a directory.");
         }
         
-        $this->assets = $assets;
-        $this->router = $router;
+        $this->defaultVars = $defaultVars;
         $this->templateRootDirectory = $templateRootDirectoryFormatted;
     }
     
@@ -115,8 +100,9 @@ class TemplateLoader
      * </code>
      *
      * Pass variables to the template by sending an associative
-     * array. Please note that variable name 'context', 'assets',
-     * 'router' and 'this' is reserved.
+     * array. Please note that variable name 'context' is reserved.
+     * Your variables will override default variables set at this
+     * object's construction if they have the same key.
      *
      * <code>
      * $variables = array(
@@ -127,26 +113,22 @@ class TemplateLoader
      * 
      * You can access the variables by their associative index
      * directly. Your template is loaded directly by this class, so it
-     * can access this object with '$this'.
+     * can access this object with '$this' or '$t'. This means you can
+     * make use of this object's {@see clean()} method.
      *
      * <code>
      * <h1>
      *     <a href="<?php urlencode($router->getURL('home')) ?>">
-     *         <?php echo $this->clean(pageTitle) ?>
+     *         <?php echo $t->clean(pageTitle) ?>
      *     </a>
      * </h1>
      * </code>
-     * 
-     * If an instance of Assets is passed during object construction,
-     * you will be able to access it using '$assets'.
-     *
-     * if an instance of Router is passed during object construction,
-     * you will be able to access it using '$router'.
      * 
      * Throws RuntimeException if the file doesn't exist.
      * 
      * @throws RuntimeException
      * @param string $templateName Name of the template.
+     * @param array $variables Associative array of variables to pass.
      * @return string The template, loaded in string.
      *
      */
@@ -159,9 +141,7 @@ class TemplateLoader
             throw new RuntimeException("Template error in loading template. The provided template name ({$templateName}) doesn't have a real physical counterpart ($filePath).");
         }
         
-        $variables['assets'] = $this->assets;
-        $variables['router'] = $this->router;
-        
+        $variables = array_merge($this->defaultVars, $variables);
         $context = array(
             'filePath' => $filePath,
             'templateName' => $templateName,
@@ -235,6 +215,7 @@ class TemplateLoader
     {
         extract($context['variables'], EXTR_SKIP);
         ob_start();
+        $t = $this;
         require $context['filePath'];
         return ob_get_clean();
     }
