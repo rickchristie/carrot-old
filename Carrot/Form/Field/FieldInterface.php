@@ -278,6 +278,17 @@ interface FieldInterface
     public function getErrorMessages();
     
     /**
+     * Check if the field currently has error messages attached to it.
+     *
+     * This method is useful for renderers if it needs to render
+     * fields with error messages differently.
+     * 
+     * @return bool TRUE if has error messages, FALSE otherwise.
+     *
+     */
+    public function hasErrorMessages();
+    
+    /**
      * Returns TRUE if the field label should be rendered by the renderer.
      * 
      * Generally speaking, its hould be no problem for the renderer to

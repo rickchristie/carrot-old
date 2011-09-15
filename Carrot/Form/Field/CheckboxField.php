@@ -225,6 +225,20 @@ class CheckboxField implements FieldInterface
     }
     
     /**
+     * Check if the field currently has error messages attached to it.
+     *
+     * This method is useful for renderers if it needs to render
+     * fields with error messages differently.
+     * 
+     * @return bool TRUE if has error messages, FALSE otherwise.
+     *
+     */
+    public function hasErrorMessages()
+    {
+        return (!empty($this->errorMessages));
+    }
+    
+    /**
      * Returns TRUE if the field label should be rendered by the renderer.
      * 
      * For the single checkbox, the label of the field is included in

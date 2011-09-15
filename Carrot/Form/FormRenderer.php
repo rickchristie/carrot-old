@@ -33,7 +33,7 @@ namespace Carrot\Form;
 
 use Carrot\Form\Field\FieldInterface;
 
-class FormRenderer
+class FormRenderer implements FormRendererInterface
 {
     /**
      * Render form error messages summary.
@@ -114,7 +114,21 @@ class FormRenderer
      */
     public function renderField(FieldInterface $field)
     {
-        $fieldRendered = '<div class="fieldContainer">';
+        $divClass = 'fieldContainer';
+        $fieldClassName = get_class($field);
+        $position = strripos($fieldClassName, '\\');
+        
+        if ($position !== FALSE)
+        {
+            $divClass .= ' ' . substr($fieldClassName, $position + 1);
+        }
+        
+        if ($field->hasErrorMessages())
+        {
+            $divClass .= ' hasError';
+        }
+        
+        $fieldRendered = "<div class=\"{$divClass}\">";
         $fieldRendered .= $this->renderFieldLabel($field);
         $fieldRendered .= $this->renderFieldControl($field);
         $fieldRendered .= $this->renderFieldErrors($field);
