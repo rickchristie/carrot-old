@@ -302,9 +302,35 @@ class ExceptionHandler implements ExceptionHandlerInterface
         if (isset($rawTrace['args']) && !empty($rawTrace['args']))
         {
             ob_start();
-            var_dump($rawTrace['args']);
+            
+            // The reason there is a try catch before doing a variable dump
+            // here is that in rare cases, PHP will throw ErrorException
+            // with the error message 'Property access is not allowed yet',
+            // observed when the arguments contain a MySQLi_STMT instance that
+            // isn't properly instantiated.
+            try
+            {
+                var_dump($rawTrace['args']);
+            }
+            catch (Exception $e)
+            {
+                $errorMessage = $e->getMessage();
+            }
+            
             $varDump = htmlspecialchars(ob_get_clean(), ENT_QUOTES);
-            return "<pre>{$varDump}</pre>";
+            
+            if (!empty($varDump))
+            {
+                return "<pre>{$varDump}</pre>";
+            }
+            else if (isset($errorMessage))
+            {
+                return "<pre class=\"grey\">Unable to dump the contents of the arguments, error message is '{$errorMessage}'.</pre>";
+            }
+            else
+            {
+                return '<pre class="grey">Unable to dump the contents of the arguments, unknown error occurred.</pre>';
+            }
         }
         
         return '<pre class="grey">No arguments</pre>';

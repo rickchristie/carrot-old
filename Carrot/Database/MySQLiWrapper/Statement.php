@@ -292,6 +292,33 @@ class Statement extends MySQLi_STMT
     }
     
     /**
+     * Fetch all result rows as an array using {@see fetchArray()}.
+     * 
+     * Useful if the user wanted to get the whole result at once
+     * without further processing. Simply loops the call to
+     * {@see fetchArray()} until there is no more result row to add.
+     * 
+     * @return mixed Array containing the result rows in associative arrays. FALSE if no rows or failure in fetching.
+     *
+     */
+    public function fetchAll()
+    {
+        $allRows = array();
+        
+        while ($row = $this->fetchArray())
+        {
+            $allRows[] = $row;
+        }
+        
+        if (empty($allRows))
+        {
+            return FALSE;
+        }
+        
+        return $allRows;
+    }
+    
+    /**
      * Fetches the result as associative array using MySQLi_STMT::fetch().
      * 
      * Calls to this method is ignored if the statement doesn't have 
@@ -327,6 +354,34 @@ class Statement extends MySQLi_STMT
     }
     
     /**
+     * Fetch all result rows as an associative array using {@see fetchAssociativeArray()}.
+     * 
+     * Useful if the user wanted to get the whole result at once
+     * without further processing. Simply loops the call to
+     * {@see fetchAssociativeArray()} until there is no more result
+     * row to add.
+     * 
+     * @return mixed Array containing the result rows in associative arrays. FALSE if no rows or failure in fetching.
+     *
+     */
+    public function fetchAllAssociative()
+    {
+        $allRows = array();
+        
+        while ($row = $this->fetchAssociativeArray())
+        {
+            $allRows[] = $row;
+        }
+        
+        if (empty($allRows))
+        {
+            return FALSE;
+        }
+        
+        return $allRows;
+    }
+    
+    /**
      * Fetches the result as PHP standard object using MySQLi_STMT::fetch().
      * 
      * Calls to this method is ignored if the statement doesn't have 
@@ -359,6 +414,33 @@ class Statement extends MySQLi_STMT
         }
         
         return FALSE;
+    }
+    
+    /**
+     * Fetch all result rows as an associative array using {@see fetchObject()}.
+     * 
+     * Useful if the user wanted to get the whole result at once
+     * without further processing. Simply loops the call to
+     * {@see fetchObject()} until there is no more result row to add.
+     * 
+     * @return mixed Array containing the result rows in associative arrays. FALSE if no rows or failure in fetching.
+     *
+     */
+    public function fetchAllObject()
+    {
+        $allRows = array();
+        
+        while ($row = $this->fetchObject())
+        {
+            $allRows[] = $row;
+        }
+        
+        if (empty($allRows))
+        {
+            return FALSE;
+        }
+        
+        return $allRows;
     }
     
     /**

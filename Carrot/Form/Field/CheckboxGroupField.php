@@ -12,8 +12,9 @@
 /**
  * Checkbox Group Field
  * 
-// ---------------------------------------------------------------
- * Value object
+ * Represents a checkbox group field, renders into multiple
+ * checkboxes, each with their own labels. Returns an array of
+ * TRUE/FALSE values.
  * 
  * @author      Ricky Christie <seven.rchristie@gmail.com>
  * @license     http://www.opensource.org/licenses/mit-license.php MIT License
@@ -70,7 +71,7 @@ class CheckboxGroupField implements FieldInterface
      * @param array $attributes Array of non-essential attributes.
      * 
      */
-    public function __construct($id, $label, array $attributes = array())
+    public function __construct($id, $label, $ array $attributes = array())
     {
         $this->id = $id;
         $this->label = $label;
