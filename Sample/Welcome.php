@@ -3,7 +3,7 @@
 /**
  * This file is part of the Carrot framework.
  *
- * Copyright (c) 2011 Ricky Christie <seven.rchristie@gmail.com>
+ * Copyright (c) 2011 Ricky Christie <seven.rchristie@gmail.com>.
  *
  * Licensed under the MIT License.
  *

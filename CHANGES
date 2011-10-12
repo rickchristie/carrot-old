@@ -4,6 +4,24 @@ TRUNK
 - Added Carrot\Form
 - Added Carrot\Validation
 - Added Carrot\Message
+- File/Directory Structure Changes:
+    - Changed the file name 'config.php' into 'injection.php'.
+    - Changed 'routes.php' to 'route.php'.
+    - Added 'config.php' to handle configuration values before the injector is set.
+    - Added 'event.php' to instantiate and configure event dispatcher.
+    - Added 'exception.php' to instantiate and configure exception handler.
+- Carrot\Core changes:
+    - Carrot\Core\System now has a temporary exception handler.
+    - New Carrot\Core\DependencyInjection classes:
+        - Properly separated responsibility of configuration object (ConfigInterface), the container (Container), and the injectors (Injector\InjectorInterface).
+        - Added support for BindingsConfig and ArrayMapConfig.
+        - Added ConstructorInjector, ProviderInjector, and CallbackInjector.
+    - Exception handler now more interchangable.
+- Plans added for:
+    - Carrot\Core\DebugFilter
+    - Carrot\Core\DependencyInjection\Injector\SetterInjector
+    - Carrot\Core\Logbook
+    - Carrot\Core\ExceptionHandler\DispatcherHandler
 
 
 VERSION 0.2.7

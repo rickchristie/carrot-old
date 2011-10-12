@@ -3,19 +3,38 @@
 /**
  * This file is part of the Carrot framework.
  *
- * Copyright (c) 2011 Ricky Christie <seven.rchristie@gmail.com>
+ * Copyright (c) 2011 Ricky Christie <seven.rchristie@gmail.com>.
  *
  * Licensed under the MIT License.
  *
  */
 
 /**
- * Dependency Injector Reference
+ * Reference to a specific object instance in Carrot.
+ *
+ * This class is a container and validator for an instance ID,
+ * which is a string that consists of concatenated fully
+ * qualified class name, lifecycle setting, and instance name
+ * (if any). This object, since it contains an instance ID,
+ * is used to 'refer' to a specific object instance wired by the
+ * dependency injector container. This is a value object.
  * 
-// ---------------------------------------------------------------
- * This object represents a reference to a dependency injector
- * configuration for a particular class. Other than used to 
+ * This object is used by the container to pinpoint which
+ * instance to be instantiated. Likewise, each dependency
+ * configuration must also be saved in a way that connects them
+ * a Reference object/instance ID.
+ *
+ * Please note that by default, the instance name is left empty.
+ * A Reference object without an instance name is often referred
+ * to as 'unnamed reference'.
  * 
+ * You should only provide an instance name when it is necessary,
+ * that is, if there is going to be another object in your
+ * application with different instantiation configuration. For
+ * example, if your application uses only one database object,
+ * you don't need to name it, simply save its injection
+ * configuration to an unnamed reference.
+ *
  * @author      Ricky Christie <seven.rchristie@gmail.com>
  * @license     http://www.opensource.org/licenses/mit-license.php MIT License
  *
@@ -26,91 +45,142 @@ namespace Carrot\Core\DependencyInjection;
 use InvalidArgumentException;
 
 class Reference
-{    
+{   
     /**
-     * @var string The name of the class, fully qualified without backslash prefix.
+     * @var array The list of allowed lifecycle values.
      */
-    protected $className;
+    protected $allowedLifecycle = array(
+        'Singleton',
+        'Transient'
+    );
     
     /**
-     * @var string The name of the dependency injector configuration used to instantiate the class.
+     * @var string Fully qualified class name of the instance this object is referring to.
      */
-    protected $configName;
+    protected $class;
     
     /**
-     * @var string The lifecycle setting string of the reference.
+     * @var string Lifecycle setting of the instance this object is referring to.
      */
     protected $lifecycle;
     
     /**
-     * @var array Contains allowed lifecyle setting strings.
+     * @var string The name of the instance this object is referring to.
      */
-    protected $allowedLifecycles = array('Singleton', 'Transient');
+    protected $name;
+    
+    /**
+     * @var string The instance ID string.
+     */
+    protected $id;
     
     /**
      * Constructor.
-     * 
-    // ---------------------------------------------------------------
-     * Pass the class name, the configuration name, and the lifecycle
-     * setting of the 
-     * 
-     * <code>
-     * $reference = new DIReference(
-     *     'App\Controller\BlogController',
-     *     'Main',
-     *     'singleton'
-     * );
-     * </code>
-     * 
-     * @param string $className The name of the class, fully qualified without backslash prefix.
-     * @param string $configName The name of the dependency injector configuration used to instantiate the class.
-     * @param string $lifecycle The lifecycle setting, use one of the provided constants.
+     *
+     * @param string $class Fully qualified class name of the
+     *        instance this object is referring to.
+     * @param string $name The instance name of the instance this
+     *        object is referring to.
+     * @param string $lifecycle Lifecycle setting of the instance
+     *        this object is referring to. Could be either
+     *        'Singleton' or 'Transient', case sensitive.
      *
      */
-    public function __construct($className, $configName, $lifecycle)
+    public function __construct($class, $lifecycle = 'Singleton', $name = '')
     {
-        $className = ltrim($className, '\\');
-        $this->className = $className;
-        $this->configName = (string) $configName;
+        $this->class = trim($class, '\\');
+        $this->name = $name;
         
-        if (!in_array($lifecycle, $this->allowedLifecycles))
+        if (!in_array($lifecycle, $this->allowedLifecycle))
         {
-            throw new InvalidArgumentException("DIReference error in instantiation. Unknown lifecycle setting '{$lifecycle}'. Lifecycle setting must be either 'Transient' or 'Singleton'.");
+            throw new InvalidArgumentException("Reference error in instantiation. Lifecycle '{$lifecycle}' is not recognized. It must be either 'Singleton', or 'Transient', case sensitive.");
         }
         
-        $this->lifecycle = (string) $lifecycle;
+        $this->lifecycle = $lifecycle;
+        $this->id = "{$this->class}{{$this->lifecycle}:{$this->name}}";
     }
     
     /**
-     * Get the fully qualified class name.
+     * Get the fully qualified class name of the instance this object
+     * is referring to.
      *
-     * @return string Fully qualified class name (without backslash prefix).
+     * @return string
      *
      */
-    public function getClassName()
+    public function getClass()
     {
-        return $this->className;
+        return $this->class;
     }
     
     /**
-     * Get the configuration name.
+     * Get the name of the instance this object is referring to.
      *
-     * @return string The configuration name.
+     * @return string
      *
      */
-    public function getConfigName()
+    public function getName()
     {
-        return $this->configName;
+        return $this->name;
     }
     
     /**
-     * Get the lifecycle setting.
+     * Get the instance ID that this reference object refers to.
+     *
+     * The instance ID is a string concatenated from the fully
+     * qualified class name, the lifecycle setting and the instance
+     * name (if any).
+     *
+     * The syntax for instance ID, in extended BNF format:
+     *
+     * <code>
+     * instance id = fully qualified class name , "{" ,
+     *               lifecycle setting , ":" , [instance name] , "}"
+     * lifecycle setting = "Singleton" | "Transient"
+     * </code>
+     *
+     * Example generated instance ID string:
+     *
+     * <code>
+     * Carrot\Core\Request{Singleton:}
+     * Carrot\Database\MySQLiWrapper\MySQLi{Singleton:Main}
+     * Carrot\Database\MySQLiWrapper\MySQLi{Singleton:Backup}
+     * </code>
      * 
-     * @return string The lifecycle setting.
-     * 
+     * The instance ID is meant to be unique. This means if two
+     * Reference object instance generates the same instance ID
+     * string, they are referring to the same object instance.
+     *
+     * @return string
+     *
      */
-    public function getLifecycle()
+    public function getID()
     {
-        return $this->lifecycle;
+        return $this->id;
+    }
+    
+    /**
+     * Checks if the instance this object is referring to has a
+     * singleton lifecycle.
+     *
+     * @return bool TRUE if the lifecycle is singleton, FALSE
+     *         otherwise.
+     *
+     */
+    public function isSingleton()
+    {
+        return ($this->lifecycle == 'Singleton');
+    }
+    
+    /**
+     * Checks if the instance this object is referring to has a
+     * transient lifecycle.
+     *
+     * @return bool TRUE if the lifecycle is transient, FALSE
+     *         otherwise.
+     *
+     */
+    public function isTransient()
+    {
+        return ($this->lifecycle == 'Transient');
     }
 }

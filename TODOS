@@ -7,18 +7,6 @@ TODO: Start making unit tests!
 CORE FEATURES/CHANGES
 ---------------------
 
-TODO: Create an core event manager to handle callbacks (see
-      Symfony's event handler for inspiration). There would be
-      events like 'Carrot\Core\System!Bootstrap',
-      'Carrot\Core\System!ResponseReturned', or
-      'Carrot\Core\System!RouteDiscovered'. Example use cases
-      include redirecting links like '/blog/title' to
-      '/blog/title/' for canonical version, filtering the final
-      response body, request/response logging, for initializing
-      PHP session and setting session save settings/handlers
-      before the script is started, for privilege checking after
-      routing is done, etc.
-
 TODO: Inject the DIC and Autoloader to the exception handler for
       debugging purposes. Have the DIC log which instance names
       are instantiated (how many times) and providers used
@@ -37,8 +25,6 @@ TODO: Take a look at Symfony's HTTPKernel for hints to improve
 TODO: Add isAjaxRequest() to the request object.
 
 TODO: Finish the guide pages.
-
-TODO: Make the ErrorHandler class throws appropriate exceptions?
 
 TODO: Fatal error handler in register_shutdown_function?
 
@@ -64,23 +50,9 @@ TODO: Write custom exception classes for core exceptions thrown,
       handler, you can try to dynamically load pointers and hints
       of how the problem began and how to solve it.
 
-TODO: Add a simple temporary error and exception handler so that
-      if an error occurs before the real exception handler is
-      instantiated, user still gets nice error/exception pages.
-      Actually, just set the error handler at the start of
-      everything, then start the temporary exception handler
-      before finally instantiating the real exception handler and
-      handing the handler to the real one.
-
 
 NEW MODULES/CLASSES
 -------------------
-
-TODO: Carrot\Helper\Template, to be used by view classes. Make the
-      dependency as loose as possible.
-
-TODO: Carrot\Database\MySQLi, extend the original MySQLi class,
-      add factory method to create the StatementWrapper.
       
 TODO: Carrot\Session package, get hints from Symfony, add flash
       variable, different storage mechanism support, consider
@@ -104,12 +76,37 @@ TODO: Fix comments on all classes, add @throws to denote exception
 TODO: Fix comments on all classes, add @see to denote protected
       class caller.
 
-TODO: Use the 'use' keyword for all classes.
+TODO: Use the 'use' keyword for all classes, but only once.
 
 TODO: Fix comments on Database library (you changed namespaces,
       wait for it to stabilize).
 
 
-NOTES
------
+DONE
+----
 
+TODO: Carrot\Helper\Template, to be used by view classes. Make the
+      dependency as loose as possible.
+
+TODO: Carrot\Database\MySQLi, extend the original MySQLi class,
+      add factory method to create the StatementWrapper.
+
+TODO: Add a simple temporary error and exception handler so that
+      if an error occurs before the real exception handler is
+      instantiated, user still gets nice error/exception pages.
+      Actually, just set the error handler at the start of
+      everything, then start the temporary exception handler
+      before finally instantiating the real exception handler and
+      handing the handler to the real one.
+
+TODO: Create an core event manager to handle callbacks (see
+      Symfony's event handler for inspiration). There would be
+      events like 'Carrot\Core\System!Bootstrap',
+      'Carrot\Core\System!ResponseReturned', or
+      'Carrot\Core\System!RouteDiscovered'. Example use cases
+      include redirecting links like '/blog/title' to
+      '/blog/title/' for canonical version, filtering the final
+      response body, request/response logging, for initializing
+      PHP session and setting session save settings/handlers
+      before the script is started, for privilege checking after
+      routing is done, etc.

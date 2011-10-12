@@ -3,7 +3,7 @@
 /**
  * This file is part of the Carrot framework.
  *
- * Copyright (c) 2011 Ricky Christie <seven.rchristie@gmail.com>
+ * Copyright (c) 2011 Ricky Christie <seven.rchristie@gmail.com>.
  *
  * Licensed under the MIT License.
  *
@@ -63,7 +63,7 @@ class TemplateLoader
         
         if ($templateRootDirectoryFormatted === FALSE OR !is_dir($templateRootDirectoryFormatted))
         {
-            throw new RuntimeException("Template error in instantiating. Either the path '{$templateRootDirectoryFormatted}' is not a valid path or it is not a directory.");
+            throw new RuntimeException("Template error in instantiating. Either the path '{$templateRootDirectory}' is not a valid path or it is not a directory.");
         }
         
         $this->defaultVars = $defaultVars;

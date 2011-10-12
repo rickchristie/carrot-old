@@ -1,145 +1,121 @@
 <?php
 
-require __DIR__ . DIRECTORY_SEPARATOR . 'Carrot' . DIRECTORY_SEPARATOR . 'Core' . DIRECTORY_SEPARATOR . 'Autoloader.php';
-$autoloader = new Carrot\Core\Autoloader;
-$autoloader->register();
-require 'autoload.php';
+use Carrot\Core\DependencyInjection\Reference,
+    Carrot\Core\DependencyInjection\Injector\ConstructorInjector,
+    Carrot\Core\DependencyInjection\Injector\ProviderInjector,
+    Carrot\Core\DependencyInjection\Injector\CallbackInjector;
 
-$request = new Carrot\Core\Request(
-    $_SERVER,
-    $_GET,
-    $_POST,
-    $_FILES,
-    $_COOKIE,
-    $_REQUEST,
-    $_ENV
+use Carrot\Core\Routing\HTTPURI;
+
+# Set up autoloader
+
+$autoloader = require 'autoloader.php';
+$autoloader->register();
+
+$uri = new HTTPURI(
+    'http',
+    $_SERVER['SERVER_NAME'],
+    $_SERVER['REQUEST_URI'],
+    $_GET
 );
 
-$appRequestURI = new Carrot\Core\AppRequestURI($request);
-echo '<pre>', var_dump($appRequestURI->getBaseURL()), '</pre>';
+echo '<pre>$_GET = ', var_dump($_GET), '</pre>';
+echo '<pre>', var_dump($uri->getScheme()), '</pre>';
+echo '<pre>', var_dump($uri->getScheme()), '</pre>';
 
-$form = new Carrot\Form\FormDefinition;
-
-$form->addField(new Carrot\Form\Field\TextField(
-    'username',
-    'User Name'
-));
-
-$form->addField(new Carrot\Form\Field\PasswordField(
-    'password',
-    'Password'
-));
-
-$validationMessages = array();
-
-if ($form->isSubmissionValid($request))
-{
-    $chain = new Carrot\Validation\ValidationChain;
-    $chain->setValues(array(
-        'usernameBlah' => $form->getSubmittedValue('username', $request),
-        'passwordBlah' => $form->getSubmittedValue('password', $request)
-    ));
-    
-    $chain->start('usernameBlah')
-          ->validate('notEmpty.simple')
-          ->validate('string.maxLength', 5);
-    
-    $chain->start('passwordBlah')
-          ->validate('notEmpty.simple');
-    
-    if ($chain->isValid())
-    {
-        echo 'Passes Validation!';
-    }
-    else
-    {
-        echo 'Did not pass validation!';
-        $validationMessages = $chain->getErrorMessages();
-    }
-}
-
-$form->addValidationErrorMessages($validationMessages, array(
-    'usernameBlah' => 'username',
-    'passwordBlah' => 'password'
-));
-
-$form->setDefaultValues($request);
-
-// Render the form
-$formView = new Carrot\Form\FormView($form);
+echo '<pre>', var_dump($uri->pathMatches('/^\\/bläh/u')), '</pre>';
 
 ?>
+<a href="<?php echo $uri->get() ?>"><?php echo $uri->get() ?></a>
+<?php
+exit;
 
-<?php echo $formView->renderErrorMessagesSummary() ?>
-<form method="<?php echo $formView->getMethod() ?>" enctype="<?php $formView->getEnctype() ?>" action="">
-<?php echo $formView->renderAll() ?>
-<button type="submit">
-    Submit
-</button>
-</form>
+# Test URI
+
+$string = 'http://www.ics.uci.edu/pub/ietf/uri/?br%C3%BCk=blük#Related';
+//$string = 'xmpp:user@host/resource';
+preg_match_all('/^(([^:\\/?#]+):)?(\\/\\/([^\\/?#]*))?([^?#]*)(\\\\?([^#]*))?(#(.*))?/', $string, $matches);
+echo '<pre>', var_dump($matches), '</pre>';
+echo '<pre>', var_dump(substr($matches[7][0], 1)), '</pre>';
+
+parse_str(substr($matches[7][0], 1), $get);
+echo '<pre>PARSE_STR = ', var_dump($get), '</pre>';
+
+?>
+<meta http-equiv="Content-Type" content="text/html; charset=utf-8">
+<a href="http://localhost/carrot-dev3/blah :bl@h/ bleh %2A[]{} blah/">Tryout</a><br>
+<a href="http://www.realacademiaespañola.es/">Real academia española</a><br>
+<a href="http://www.realacademiaespa%C3%B1ola.es/">Real academia española (urlencode)</a><br>
+<a href="http://localhost/carrot-dev3/test.php?wort=br%C3%BCcke">This page</a>
+
+<br><br>
 
 <?php
 
-exit;
+echo '<pre>', var_dump($_GET), '</pre>';
+echo '<pre>', var_dump($_SERVER), '</pre>';
 
+/*
+echo '<pre>', var_dump($_GET['wort'] == 'www.realacademiaespañola.es'), '</pre>';
+$uri = new URI('http://rick:pwd@www.example.com::80/carrot/blah?asdf=s$dsdf@#adf');
+$uri->appendPath('/dddd/sss');
+echo $uri->getPath('carrot'), '<br>';
+echo $uri->get();
+*/
 
+# Test dependency injection container
 
-$chain = new Carrot\Validation\ValidationChain;
-$chain->setValues(array('username' => ''));
+$config = require 'injection.php';
+$container = new Carrot\Core\DependencyInjection\Container($config);
 
-$chain->start('username')->validate('existence.notEmpty')->stop();
-
-echo '<pre>', var_dump($chain->passesValidation()), '</pre>';
-echo '<pre>', var_dump($messages = $chain->getMessages()), '</pre>';
-
-$messages[0]->setFieldLabels(array('username' => 'User Name'));
-
-echo '<pre>', var_dump($messages[0]->get()), '</pre>';
-
-class Boo
-{
-    public function blah(&$heyho)
-    {
-        $this->heyho =& $heyho;
-    }
-    
-    public function baz()
-    {
-        echo '<pre>', var_dump($this->heyho), '</pre>';
-    }
-}
-
-class Foo
-{
-    public function __construct($string)
-    {
-        $this->string = $string;
-    }
-}
-
-$a = array(
-    new Foo(1),
-    new Foo(2),
-    new Foo(3)
+$config->addInjector(
+    new ProviderInjector(
+        new Reference('Sample\Sec\Bar', 'Singleton', 'Main'),
+        new Reference('Sample\BarProvider')
+    )
 );
-$boo = new Boo;
-$boo->blah($a);
-$a[] = new Foo(4);
-$boo->baz();
 
-exit;
+$config->addInjector(
+    new CallbackInjector(
+        new Reference('Sample\Sec\Bar', 'Singleton', 'Main'),
+        function($array, \Sample\Tri\Bacon $bacon)
+        {
+            $array[] = $bacon;
+            return new \Sample\Sec\Bar($array);
+        },
+        array(
+            array('blah'),
+            new Reference('Sample\Tri\Bacon')
+        )
+    )
+);
 
-/**
- * SPL Autoload Register always gives you the fully qualified namespace
- * as the argument (without backslash prefix).
- *
- */
+$config->addInjector(
+    new ConstructorInjector(
+        new Reference('Sample\Sec\Bar', 'Singleton', 'Tri'),
+        array(
+            array('geek', 'gook', 'gaak')
+        )
+    )
+);
 
-//namespace Foo;
+$config->bind(new Reference('Sample\Sec\Bar', 'Singleton', 'Main'), NULL, 'Sample');
+$config->bind(new Reference('Sample\Sec\Bar', 'Singleton', 'Tri'), NULL, 'Sample\Tri');
 
-spl_autoload_register(function($className)
-{
-    echo '<pre>', var_dump($className), '</pre>';
-});
+$config->addInjector(
+    new ConstructorInjector(
+        new Reference('Sample\Tri\Ham'),
+        array(
+            'aaa',
+            'eee',
+            new Reference('Sample\Sec\Bar', 'Singleton', 'Main')
+        )
+    )
+);
 
-$blah = new \Heyho\Blah();
+$foo = $container->get(new Reference('Sample\Foo'));
+
+echo '<pre>FOO INSTANTIATED = ', var_dump($foo), '</pre>';
+
+echo '<pre>', var_dump($_SERVER), '</pre>';
+echo '<pre>', var_dump(getallheaders()), '</pre>';
