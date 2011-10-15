@@ -23,7 +23,6 @@ TRUNK
     - Carrot\Core\Logbook
     - Carrot\Core\ExceptionHandler\DispatcherHandler
 
-
 VERSION 0.2.7
 -------------
 

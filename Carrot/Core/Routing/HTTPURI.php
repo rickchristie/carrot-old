@@ -30,7 +30,7 @@ namespace Carrot\Core\Routing;
 use Exception,
     InvalidArgumentException;
 
-class HTTPURI 
+class HTTPURI implements HTTPURIInterface
 {   
     /**
      * @var string The scheme part of the URI.
@@ -77,14 +77,13 @@ class HTTPURI
      * );
      * </code>
      * 
-     * 
-     * 
      * @param string $scheme The scheme part of the URL.
      * @param string $authority The authority part of the URL.
      * @param string $path The path part of the URL, still percent
      *        encoded, preferably taken from $_SERVER['REQUEST_URI'].
      * @param array $query The query variables, preferably taken from
-     *        $_GET superglobal.
+     *        $_GET superglobal, with each keys/values decoded from
+     *        their percent encodings.
      * @param string $fragment The fragment part of the URI.
      *
      */
@@ -100,22 +99,38 @@ class HTTPURI
     /**
      * Set the scheme part of the URI.
      * 
+     * The scheme part of a HTTP URI must not be empty, see RFC 2616,
+     * Section 3.2, it can be either 'http', or 'https'.
+     * 
      * @param string $scheme The scheme part of the URI.
      *
      */
     public function setScheme($scheme)
-    {   
+    {
+        if (empty($scheme))
+        {
+            throw new InvalidArgumentException("HTTPURI error in setting the scheme. The scheme part of the URI must not be empty.");
+        }
+        
         $this->scheme = $scheme;
     }
     
     /**
      * Set the authority part of the URI.
+     *
+     * The authority part of a HTTP URI must not be empty, see RFC
+     * 2616, Section 3.2, it can be either 'http', or 'https'.
      * 
      * @param string $authority The authority part of the URI.
      *
      */
     public function setAuthority($authority)
     {
+        if (empty($authority))
+        {
+            throw new InvalidArgumentException("HTTPURI error in setting the authority. The authority part of the URI must not be empty.");
+        }
+        
         $this->authority = $authority;
     }
     
@@ -125,6 +140,13 @@ class HTTPURI
      * This method needs the given path to be already decoded from
      * any percent encodings. If the given path hasn't been decoded
      * yet, tell the method so it can help you decode it.
+     * 
+     * This method will add a starting slash to the path, whether
+     * you like it or not. This is because for URIs that contain an
+     * authority component, the path component must begin with a
+     * slash character (RFC 3986, Section 3.3), and all HTTP URI must
+     * have a host, which means all HTTP URI has an authority
+     * component (RFC 2616, Section 3.2.2).
      * 
      * NOTE: This method will remove all string coming after the '?'
      * character ({@see removeQueryStringFromPath()}) This makes it
@@ -138,6 +160,13 @@ class HTTPURI
      */
     public function setPath($path, $pathIsAlreadyDecoded = TRUE)
     {
+        if (empty($path))
+        {
+            throw new InvalidArgumentException("HTTPURI error in setting the path. The path part of the URI must not be empty. At the very least, the path must contain a slash '/' to be unambiguous in denoting the root.");
+        }
+        
+        $path = ltrim($path, '/');
+        $path = '/' . $path;
         $path = $this->removeQueryStringFromPath($path);
         
         if ($pathIsAlreadyDecoded == FALSE)
@@ -150,6 +179,9 @@ class HTTPURI
     
     /**
      * Append a path string to the path part of the URI.
+     * 
+     * The path string given is treated as a segment and will be
+     * joined with the slash character to the original path string.
      * 
      * This method needs the given path to be already decoded from
      * any percent encodings. If the given path hasn't been decoded
@@ -182,9 +214,19 @@ class HTTPURI
     /**
      * Prepend a path string to the path part of the URI.
      * 
+     * The path string given is treated as a segment and will be
+     * joined with the slash character to the original path string.
+     * 
      * This method needs the given path to be already decoded from
      * any percent encodings. If the given path hasn't been decoded
      * yet, tell the method so it can help you decode it.
+     *
+     * This method will add a starting slash to the path, whether
+     * you like it or not. This is because for URIs that contain an
+     * authority component, the path component must begin with a
+     * slash character (RFC 3986, Section 3.3), and all HTTP URI must
+     * have a host, which means all HTTP URI has an authority
+     * component (RFC 2616, Section 3.2.2).
      *
      * NOTE: This method will remove all string coming after the '?'
      * character ({@see removeQueryStringFromPath()}) This makes it
@@ -202,12 +244,21 @@ class HTTPURI
         
         if ($pathIsAlreadyDecoded == FALSE)
         {
-            $pathToBeDecoded = $this->decodePath($path);
+            $pathToBePrepended = $this->decodePath($pathToBePrepended);
         }
         
-        $pathToBeAppended = rtrim($pathToBeAppended, '/');
+        $pathToBePrepended = trim($pathToBePrepended, '/');
+        
+        // There's no point in prepending an empty
+        // path, as starting slash is guaranteed
+        // in this class.
+        if ($pathToBePrepended == '')
+        {
+            return;
+        }
+        
         $this->path = ltrim($this->path, '/');
-        $this->path = $pathToBeAppended . $this->path;
+        $this->path = '/' . $pathToBePrepended . '/' . $this->path;
     }
     
     /**
@@ -238,8 +289,8 @@ class HTTPURI
      *
      */
     public function mergeQuery(array $queryToBeAppended)
-    {
-        array_merge($this->query, $queryToBeAppended);
+    {   
+        $this->query = array_merge($this->query, $queryToBeAppended);
     }
     
     /**
@@ -270,7 +321,7 @@ class HTTPURI
      *        path using urldecode().
      *
      */
-    public function setFragment($fragment, $fragmentIsAlreadyDecoded)
+    public function setFragment($fragment, $fragmentIsAlreadyDecoded = TRUE)
     {
         if ($fragmentIsAlreadyDecoded == FALSE)
         {
@@ -317,18 +368,6 @@ class HTTPURI
     }
     
     /**
-     * Get the path part of the URI, exploded into an array of
-     * segments.
-     * 
-     * @return array
-     *
-     */
-    public function getPathAsArray()
-    {
-        return explode('/', $this->path);
-    }
-    
-    /**
      * Get the path with the given base path removed.
      *
      * This method is useful in host/location agnostic routing, where
@@ -360,17 +399,25 @@ class HTTPURI
      */
     public function getPathWithoutBase($basePath, $basePathIsAlreadyDecoded = TRUE)
     {
+        if ($this->path == '')
+        {
+            return '';
+        }
+        
         if ($basePathIsAlreadyDecoded == FALSE)
         {
             $basePath = $this->decodePath($basePath);
         }
         
-        $basePath = ltrim($basePath, '/');
-        $path = ltrim($this->path, '/');
-        $basePath = $this->escapePCREMetaCharacters($basePath);
-        $path = $this->PCREReplace("/{$basePath}/u", '', $path);
+        // Base path always have starting
+        // and trailing slash.
+        $basePath = trim($basePath, '/');
+        $basePath = '/' . $basePath . '/';
         
-        // Ensure that the returned path always
+        $basePath = $this->escapePCREMetaCharacters($basePath);
+        $path = $this->PCREReplace("/{$basePath}/u", '', $this->path, 1);
+        
+        // Ensures that the returned path always
         // starts with a starting slash before
         // returning.
         $path = ltrim($path, '/');
@@ -494,6 +541,9 @@ class HTTPURI
      * that method as the path string to be matched instead.
      *
      * NOTE: Don't forget to use the '/u' modifier in your pattern!
+     * Also make sure your pattern is valid before entering, since
+     * this method will catch exceptions and interpret it as a
+     * failure in matching, returning FALSE.
      * 
      * @param string $pattern The regular expression to match this
      *        URI's path.
@@ -580,39 +630,6 @@ class HTTPURI
     }
     
     /**
-     * Tries to convert the encoding of the given string into UTF-8
-     * if the multibyte extension is enabled.
-     *
-     * The reason we need this method is that we cannot guarantee
-     * that the encoding of the URI before being percent encoded is
-     * UTF-8, we need to use UTF-8 when using PCRE functions. Hence
-     * we try to convert the string into UTF-8 first before we try
-     * to use preg_* functions on percent-encoding decoded string.
-     * 
-     * @param string $string The string to be converted
-     * @return string
-     *
-     */
-    protected function convertToUTF8($string)
-    {   
-        if (
-            function_exists('mb_convert_encoding') == FALSE OR
-            function_exists('mb_detect_encoding') == FALSE
-        )
-        {
-            return $string;
-        }
-        
-        if (mb_detect_encoding($string, 'UTF-8', TRUE))
-        {
-            return $string;
-        }
-        
-        $detectedEncoding = mb_detect_encoding($string);
-        return mb_convert_encoding($string, 'UTF-8', $detectedEncoding);
-    }
-    
-    /**
      * Escape all PCRE metacharacters on the given string.
      * 
      * This method Replaces all PCRE meta characters as listed in
@@ -683,14 +700,15 @@ class HTTPURI
      * @param string $pattern As in preg_replace().
      * @param string $replacement As in preg_replace().
      * @param string $subject As in preg_replace().
+     * @param int $limit As in preg_replace().
      * @return string
      *
      */
-    protected function PCREReplace($pattern, $replacement, $subject)
+    protected function PCREReplace($pattern, $replacement, $subject, $limit = -1)
     {
         try
         {
-            $replaced = preg_replace($pattern, $replacement, $subject);
+            $replaced = preg_replace($pattern, $replacement, $subject, $limit);
         }
         catch(Exception $exception)
         {
