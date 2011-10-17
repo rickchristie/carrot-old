@@ -34,9 +34,10 @@ interface HandlerInterface
      * Handles the uncaught exception.
      *
      * Since the execution stops after this handler is finished, you
-     * must send a response directly, bypassing \Carrot\Core\System.
-     * You don't need to call set_exception_handler(), it will be
-     * called by \Carrot\Core\System.
+     * must send a response directly, bypassing
+     * \Carrot\Core\Application. You don't need to call
+     * set_exception_handler(), it will be called by
+     * \Carrot\Core\Application.
      * 
      * Remember to log the uncaught exception manually since setting
      * the exception handler in PHP would disable the default error

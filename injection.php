@@ -34,37 +34,12 @@ use Carrot\Core\DependencyInjection\Reference,
 $config = new BindingsConfig;
 
 /**
- * Write your configuration here.
+ * Write your dependency injection configuration here.
  * 
-//---------------------------------------------------------------
- * 
- * 
- * 
- * After the dependency injection container is properly
- * instantiated, Carrot uses the container to get core classes
- * that is needs. Specifically, Carrot will use the container to
- * get the following instances:
- *
- * <code>
- * Reference('Carrot\Core\Logbook\LogbookInterface')
- * Reference('Carrot\Core\ExceptionHandler\HandlerInterface')
- * Reference('Carrot\Core\Event\HandlerInterface')
- * Reference('Carrot\Core\Routing\Config\ConfigInterface')
- * </code>
- * 
- * The references listed above are reserved for Carrot's internal
- * core, which means if you change them, you will be changing
- * Carrot's behavior. They will be respectively used for internal
- * systems logging, exception handler, event handler, and routing
- * configuration.
- * 
- * Below are the default configurations. You may modify them as
- * you need. The config lines below should work regardless of the
- * injection configuration implementation you use.
- * 
- * Please see the docs on each of the classes for more
- * information about what needs to be injected, and the
- * responsibility of the said classes.
+ * Please note that how you write your configuration may be
+ * different depending on which configuration object you use.
+ * However, the default configurations below should work
+ * regardless of the injection configuration object you use.
  *
  */
 
@@ -92,8 +67,8 @@ $config->addInjector(new ConstructorInjector(
 /**
  * Return the configuration object to the caller.
  * 
- * Carrot\Core\System expects this file to return an instance of
- * Carrot\Core\DependencyInjection\ConfigInterface.
+ * Carrot\Core\Application expects this file to return an
+ * instance of Carrot\Core\DependencyInjection\ConfigInterface.
  *
  */
 

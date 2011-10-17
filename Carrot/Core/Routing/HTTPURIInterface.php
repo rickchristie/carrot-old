@@ -54,7 +54,8 @@ interface HTTPURIInterface
      * @param array $query The query variables, preferably taken from
      *        $_GET superglobal, with each keys/values decoded from
      *        their percent encodings.
-     * @param string $fragment The fragment part of the URI.
+     * @param string $fragment The fragment part of the URI, still
+     *        percent encoded.
      *
      */
     public function __construct($scheme, $authority, $path, $query = array(), $fragment = '');
@@ -234,6 +235,17 @@ interface HTTPURIInterface
      *
      */
     public function getPath();
+    
+    /**
+     * Get the path part of the URI, properly percent encoded.
+     * 
+     * This method is useful if you wanted to get a relative URI
+     * string.
+     * 
+     * @return string
+     *
+     */
+    public function getPathEncoded();
     
     /**
      * Get the path with the given base path removed.

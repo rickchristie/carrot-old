@@ -24,7 +24,7 @@
 namespace Carrot\Core\Routing\Route;
 
 use Carrot\Core\Routing\Destination,
-    Carrot\Core\Routing\URI;
+    Carrot\Core\Routing\HTTPURIInterface;
 
 interface HTTPRouteInterface
 {
@@ -39,15 +39,17 @@ interface HTTPRouteInterface
      * move on to the next route object.
      *
      * @see Destination
+     * @param HTTPURIInterface $requestHTTPURI
+     * @param HTTPURIInterface $baseHTTPURI
      * @return Destination|NULL An instance of Destination if the
      *         route matches the request, NULL otherwise.
      *
      */
-    public function route(URI $requestURI, URI $baseURI);
+    public function route(HTTPURIInterface $requestHTTPURI, HTTPURIInterface $baseHTTPURI);
     
     /**
      * Translates the given arguments into either an absolute or a
-     * relative URI string.
+     * relative HTTP URI string.
      * 
      * Example absolute URI string return:
      * 
@@ -60,13 +62,20 @@ interface HTTPRouteInterface
      * <code>
      * /path/to/file/?query=string
      * </code>
+     *
+     * The HTTP URI to be returned should be already percent encoded.
+     * However, it should not be cleaned with htmlentities() or
+     * htmlspecialchars() yet.
      * 
      * @param array $args Arguments to generate the URI.
+     * @param HTTPURIInterface $baseHTTPURI You can use this copy of
+     *        the base HTTP URI to build the HTTPURIInterface object
+     *        to be returned.
      * @param bool $absolute If TRUE, this method should return an
      *        absolute URI string, otherwise this method returns a
      *        relative URI string.
      * @return string
      *
      */
-    public function generateURIString(array $args, URI $baseURI, $absolute = FALSE);
+    public function getURI(array $args, HTTPURIInterface $baseHTTPURI, $absolute = FALSE);
 }

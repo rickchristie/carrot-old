@@ -32,9 +32,11 @@ use Exception,
     Carrot\Core\DependencyInjection\Reference,
     Carrot\Core\DependencyInjection\Config\ConfigInterface,
     Carrot\Core\DependencyInjection\Injector\PointerInjector,
+    Carrot\Core\DependencyInjection\Injector\ConstructorInjector,
     Carrot\Core\Logbook\LogbookInterface,
     Carrot\Core\ExceptionHandler\HandlerInterface,
     Carrot\Core\Event\DispatcherInterface,
+    Carrot\Core\Routing\Router,
     Carrot\Core\Routing\Config\ConfigInterface as RoutingConfigInterface;
 
 class Application
@@ -66,6 +68,12 @@ class Application
      * @var Container The dependency injection container.
      */
     protected $container;
+    
+    /**
+     * @var ConfigInterface The configuration object for the
+     *      dependency injection container.
+     */
+    protected $containerConfig;
     
     /**
      * @var DispatcherInterface The event dispatcher.
@@ -145,7 +153,7 @@ class Application
      */
     public function run()
     {
-        
+        $destination = $this->router->routeRequest();
     }
     
     /**
@@ -255,7 +263,10 @@ class Application
                 $config['defaults']['eventDispatcher']['name'],
                 $config['defaults']['routingConfig']['class'],
                 $config['defaults']['routingConfig']['name'],
-                $config['baseURL']
+                $config['defaults']['HTTPURI'],
+                $config['base']['scheme'],
+                $config['base']['authority'],
+                $config['base']['path']
             )
         );
     }
@@ -409,6 +420,7 @@ class Application
         }
         
         $this->addReservedInjectors($config);
+        $this->containerConfig = $config;
         $this->container = new Container($config);
     }
     
@@ -468,6 +480,11 @@ class Application
                 'Singleton',
                 $this->config['defaults']['routingConfig']['name']
             )
+        ));
+        
+        $config->addInjector(new PointerInjector(
+            new Reference('Carrot\Core\Routing\RouterInterface'),
+            new Reference('Carrot\Core\Routing\Router')
         ));
     }
     
@@ -543,7 +560,6 @@ class Application
      * Load the routing configuration object and instantiate Carrot's
      * Router object using the container.
      *
-    //---------------------------------------------------------------
      * The Router object is instantiated using the container so that
      * users will be able to access it by configuring dependency
      * injection appropriately.
@@ -553,13 +569,32 @@ class Application
      */
     protected function initializeRouter()
     {
-        //header('Content-Type: text/html; charset=UTF8');
-        echo '<a href="/carrot-dev3/bücher/?büch=wört">Link</a>';
-        echo '<pre>', var_dump($_SERVER['REQUEST_URI']), '</pre>';
-        echo '<pre>', var_dump(urldecode($_SERVER['REQUEST_URI'])), '</pre>';
-        echo '<pre>', var_dump($_SERVER['QUERY_STRING']), '</pre>';
-        echo '<pre>', var_dump($_GET), '</pre>';
-        echo '<pre>', var_dump($_GET['wort'] == 'brücke'), '</pre>';
-        echo '<pre>', var_dump($_SERVER), '</pre>';
+        $routingConfig = $this->container->get(new Reference(
+            'Carrot\Core\Routing\Config\ConfigInterface'
+        ));
+        
+        $filePath = $this->config['files']['routingConfig'];
+        
+        if (!file_exists($filePath))
+        {
+            throw new RuntimeException("Carrot routing configuration file ({$filePath}) does not exist.");
+        }
+        
+        $loadFile = $this->loadFileFunction;
+        $loadFile($filePath, array('config' => $routingConfig));
+        $this->containerConfig->addInjector(new ConstructorInjector(
+            new Reference('Carrot\Core\Routing\Router'),
+            array(
+                $routingConfig,
+                new Reference('Carrot\Core\Request\DefaultRequest'),
+                $this->container,
+                $this->config['base'],
+                $this->config['defaults']['HTTPURI']
+            )
+        ));
+        
+        $this->router = $this->container->get(new Reference(
+            'Carrot\Core\Routing\RouterInterface'
+        ));
     }
 }

@@ -39,8 +39,9 @@
 
 namespace Carrot\Core\Routing\Config;
 
-use Carrot\Core\Routing\HTTPRouteInterface,
-    Carrot\Core\Routing\CLIRouteInterface,
+use Carrot\Core\Routing\Destination,
+    Carrot\Core\Routing\Route\HTTPRouteInterface,
+    Carrot\Core\Routing\Route\CLIRouteInterface,
     Carrot\Core\DependencyInjection\Container;
 
 interface ConfigInterface
@@ -123,19 +124,19 @@ interface ConfigInterface
     
     /**
      * Set the Destination instance to be returned by the router if
-     * there is a routing failure.
+     * there is no matching HTTP route.
      *
      * Generally speaking, this will be a 404 page, but let's not
      * jump into conclusions.
      *
-     * @param Destination $destination 
+     * @param Destination $destination
      *
      */
-    public function setNoMatchingRouteDestination(Destination $destination);
+    public function setNoMatchingHTTPRouteDestination(Destination $destination);
     
     /**
      * Get the Destination instance to be returned by the router if
-     * there is a routing failure.
+     * there is no matching HTTP route.
      *
      * Generally speaking, this will be a 404 page, but let's not
      * jump into conclusions.
@@ -143,7 +144,25 @@ interface ConfigInterface
      * @return Destination
      *
      */
-    public function getNoMatchingRouteDestination();
+    public function getNoMatchingHTTPRouteDestination();
+    
+    /**
+     * Set the Destination instance to be returned by the router if
+     * there is no matching HTTP route.
+     * 
+     * @param Destination $destination
+     *
+     */
+    public function setNoMatchingCLIRouteDestination(Destination $destination);
+    
+    /**
+     * Get the Destination instance to be returned by the router if
+     * there is no matching HTTP route.
+     * 
+     * @return Destination
+     *
+     */
+    public function getNoMatchingCLIRouteDestination();
     
     /**
      * Returns an array that contains IDs of all routes that has been

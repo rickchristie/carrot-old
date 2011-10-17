@@ -13,8 +13,8 @@
  * Autoloader interface.
  *
  * This interface defines the contract between the Autoloader
- * and \Carrot\Core\System. You can define your own autoloader by
- * implementing this interface. 
+ * and \Carrot\Core\Application. You can define your own
+ * autoloader by implementing this interface. 
  *
  */
 
@@ -25,8 +25,8 @@ interface AutoloaderInterface
     /**
      * Registers the autoloader function.
      *
-     * Called by \Carrot\Core\System after loading the autoloader
-     * configuration file.
+     * Called by \Carrot\Core\Application after loading the
+     * autoloader configuration file.
      *
      */
     public function register();

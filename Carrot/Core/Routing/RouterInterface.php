@@ -16,7 +16,7 @@
  * classes and Carrot's Router. Like the dependency injection
  * container, Carrot's Router is an internal class and cannot be
  * replaced. However, unlike the Container, the Router has
- * methods that the user classes needs to access directly. This
+ * methods that the user classes need to access directly. This
  * interface provides the contract for those methods.
  *
  * In your code's interaction with the Carrot's router, you must
@@ -47,8 +47,9 @@ interface RouterInterface
      *        URI we wanted.
      * @param array $args Associative array, contains argument names
      *        and their values.
-     * @param bool $absolute If TRUE, will ask the route to generate
-     *        absolute URI, relative URI otherwise.
+     * @param bool $absolute If TRUE, will ask the route class to
+     *        generate absolute URI. This variable is ignored in CLI
+     *        routes.
      *
      */
     public function getURI($routeID, array $args = array(), $absolute = FALSE);

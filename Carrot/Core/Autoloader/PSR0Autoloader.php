@@ -96,7 +96,7 @@ class PSR0Autoloader implements AutoloaderInterface
      * With the above call, the autoloader will translate as such:
      *
      * <code>
-     * Carrot\Core\System -> /vendors/Carrot/Core/System.php
+     * Carrot\Core\Application -> /vendors/Carrot/Core/Application.php
      * Carrot\Core\Request\Request -> /vendors/Carrot/Core/Request/Request.php
      * </code>
      *

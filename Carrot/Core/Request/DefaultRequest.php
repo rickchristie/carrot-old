@@ -230,7 +230,7 @@ class DefaultRequest implements RequestInterface
     {
         $remoteAddr = $this->getServer('REMOTE_ADDR');
         return (
-            php_sapi_name() == 'cli' AND
+            strtolower(php_sapi_name()) == 'cli' AND
             empty($remoteAddr)
         );
     }

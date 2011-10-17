@@ -270,6 +270,7 @@ class HTTPURITest extends PHPUnit_Framework_TestCase
         $this->assertEquals('/root/root/path/', $uri->getPath());
         $this->assertEquals('/root/root/path/', $uri->getPathWithoutBase('roo'));
         $this->assertEquals('/root/root/path/', $uri->getPathWithoutBase('foo/bar'));
+        $this->assertEquals('/', $uri->getPathWithoutBase('/root/root/path/'));
         $this->assertEquals('/root/path/', $uri->getPathWithoutBase('root'));
         $this->assertEquals('/path/', $uri->getPathWithoutBase('root/root/'));
         $this->assertEquals('/path/', $uri->getPathWithoutBase('/root/root/'));
@@ -303,6 +304,7 @@ class HTTPURITest extends PHPUnit_Framework_TestCase
         $this->assertEquals('/f̸̪̫̫̮͐̽̓͂d/㈱グカ゚ㄤ/sûr!/', $uri->getPath());
         $this->assertEquals('/f̸̪̫̫̮͐̽̓͂d/㈱グカ゚ㄤ/sûr!/', $uri->getPathWithoutBase(''));
         $this->assertEquals('/f̸̪̫̫̮͐̽̓͂d/㈱グカ゚ㄤ/sûr!/', $uri->getPathWithoutBase('bar/baz/'));
+        $this->assertEquals('/', $uri->getPathWithoutBase('/f̸̪̫̫̮͐̽̓͂d/㈱グカ゚ㄤ/sûr!/'));
         $this->assertEquals('/㈱グカ゚ㄤ/sûr!/', $uri->getpathWithoutBase('f̸̪̫̫̮͐̽̓͂d'));
         $this->assertEquals('/㈱グカ゚ㄤ/sûr!/', $uri->getpathWithoutBase('f%CC%AA%CC%AB%CD%90%CC%B8%CC%AB%CC%AE%CC%BD%CD%83%CD%82d', FALSE));
         $this->assertEquals('/sûr!/', $uri->getPathWithoutBase('f̸̪̫̫̮͐̽̓͂d/㈱グカ゚ㄤ/'));

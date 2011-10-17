@@ -32,8 +32,8 @@ interface DispatcherInterface
     /**
      * Set the container.
      *
-     * \Carrot\Core\System will call this method and pass the main
-     * dependency injection container after loading the event
+     * \Carrot\Core\Application will call this method and pass the
+     * main dependency injection container after loading the event
      * dispatcher configuration file. The dispatcher will need the
      * container to get instances of listener objects when an event
      * occurs.

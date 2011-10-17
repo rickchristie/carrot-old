@@ -22,8 +22,12 @@
 
 namespace Carrot\Core\Routing\Config;
 
-use Carrot\Core\Request\RequestInterface,
-    Carrot\Core\Routing\URI,
+use Exception,
+    RuntimeException,
+    InvalidArgumentException,
+    Carrot\Core\Request\RequestInterface,
+    Carrot\Core\Routing\HTTPURI,
+    Carrot\Core\Routing\Destination,
     Carrot\Core\Routing\Route\HTTPRouteInterface,
     Carrot\Core\Routing\Route\CLIRouteInterface,
     Carrot\Core\Routing\Route\BasicHTTPRoute,
@@ -33,96 +37,43 @@ use Carrot\Core\Request\RequestInterface,
 class BasicConfig implements ConfigInterface
 {
     /**
-     * @var RequestInterface The request object.
+     * @var RequestInterface Represents the application's request.
      */
     protected $request;
     
     /**
-     * @var string The 'scheme' part of the base URI, according to
-     *      the generic URI syntax in RFC 2396.
-     */
-    protected $baseURIScheme;
-    
-    /**
-     * @var string The 'authority' part of the base URI, according to
-     *      the generic URI syntax in RFC 2396.
-     */
-    protected $baseURIAuthority;
-    
-    /**
-     * @var string The 'path' part of the base URI, according to the
-     *      generic URI syntax in RFC 2396.
-     */
-    protected $baseURIPath;
-    
-    /**
-     * @var string The 'query' part of the base URI, according to the
-     *      generic URI syntax in RFC 2396.
-     */
-    protected $baseURIQuery;
-    
-    /**
-     * @var array The routes list.
+     * @var array List of added route configurations.
      */
     protected $routes = array();
     
     /**
-     * @var Destination The Destination instance to be returned if
-     *      there's no matching route.
+     * @var array List of added route IDs and their types. To be used
+     *      as a return value for {@see getRouteIDs()}.
      */
-    protected $noMatchingRouteDestination = NULL;
+    protected $routeIDs = array();
+    
+    /**
+     * @var Destination The Destination instance to be returned when
+     *      there is no matching HTTP route.
+     */
+    protected $noMatchingHTTPRouteDestination;
+    
+    /**
+     * @var Destination The Destination instance to be returned when
+     *      there is no matching CLI route.
+     */
+    protected $noMatchingCLIRouteDestination;
     
     /**
      * Constructor.
      * 
-     * This routing configuration object needs base URI information
-     * to work correctly. It will try to guess the base URI scheme,
-     * authority, and path if NULL is given for each of them.
-     * 
-     * <code>
-     * $config = new BasicConfig(
-     *     $request,
-     *     'http',
-     *     'example.org',
-     *     '/base/path/'
-     * );
-     * </code>
-     * 
-     * @param RequestInterface $request The request object.
-     * @param string $baseURIScheme The 'scheme' part of the base
-     *        URI, according to the generic URI syntax in RFC 2396.
-     * @param string $baseURIAuthority The 'authority' part of the
-     *        base URI, according to the generic URI syntax in RFC
-     *        2396.
-     * @param string $baseURIPath The 'path' part of the base URI,
-     *        according to the generic URI syntax in RFC 2396.
-     * @param string $baseURIQuery The 'query' part of the base URI,
-     *        according to the generic URI syntax in RFC 2396.
+     * @param RequestInterface $request Represents the application's
+     *        request.
      *
      */
-    public function __construct(Request $request, $baseURIScheme = NULL, $baseURIAuthority = NULL, $baseURIPath = NULL, $baseURIQuery = '')
+    public function __construct(RequestInterface $request)
     {
         $this->request = $request;
-        $this->baseURIQuery = $baseURIQuery;
-        
-        if ($baseURIScheme == NULL)
-        {
-            $baseURIScheme = $this->guessBaseURIScheme();
-        }
-        
-        if ($baseURIAuthority == NULL)
-        {
-            $baseURIAuthority =  $this->guessBaseURIAuthority();
-        }
-        
-        if ($baseURIPath = NULL)
-        {
-            $baseURIPath = $this->guessBaseURIPath();
-        }
-        
-        $this->baseURIScheme = $baseURIScheme;
-        $this->baseURIAuthority = $baseURIAuthority;
-        $this->baseURIPath = $baseURIPath;
     }
     
     /**
@@ -139,9 +90,9 @@ class BasicConfig implements ConfigInterface
      */
     public function addCLIRoute($routeID, CLIRouteInterface $route)
     {
+        $this->routeIDs[$routeID] = 'CLI';
         $this->routes[$routeID] = array(
-            'listType' => 'object',
-            'routeType' => 'CLI',
+            'type' => 'object',
             'object' => $route
         );
     }
@@ -160,10 +111,52 @@ class BasicConfig implements ConfigInterface
      */
     public function addHTTPRoute($routeID, HTTPRouteInterface $route)
     {
+        $this->routeIDs[$routeID] = 'HTTP';
         $this->routes[$routeID] = array(
-            'listType' => 'object',
-            'routeType' => 'HTTP',
-            'object' => $object
+            'type' => 'object',
+            'object' => $route
+        );
+    }
+    
+    /**
+     * Add a BasicHTTPRoute instance to the list of routes attaching
+     * it to the given route ID.
+     * 
+     * This method provides a shortcut so that the user doesn't have
+     * to instantiate BasicHTTPRoute on his/her own.
+     * 
+     * @param string $routeID The ID string to attach the route to.
+     * @param array $basicHTTPRouteConfig Configuration array, as
+     *        defined by BasicHTTPRoute's constructor.
+     *
+     */
+    public function addBasicHTTPRoute($routeID, array $basicHTTPRouteConfig)
+    {
+        $this->routeIDs[$routeID] = 'HTTP';
+        $this->routes[$routeID] = array(
+            'type' => 'basicHTTP',
+            'config' => $basicHTTPRouteConfig
+        );
+    }
+    
+    /**
+     * Add a BasicCLIRoute instance to the list of routes attaching
+     * it to the given route ID.
+     * 
+     * This method provides a shortcut so that the user doesn't have
+     * to instantiate BasicCLIRoute on his/her own.
+     * 
+     * @param string $routeID The ID string to attach the route to.
+     * @param array $basicCLIRouteConfig Configuration array, as
+     *        defined by BasicCLIRoute's constructor.
+     *
+     */
+    public function addBasicCLIRoute($routeID, array $basicCLIRouteConfig)
+    {
+        $this->routeIDs[$routeID] = 'CLI';
+        $this->routes[$routeID] = array(
+            'type' => 'basicCLI',
+            'config' => $basicCLIRouteConfig
         );
     }
     
@@ -177,6 +170,12 @@ class BasicConfig implements ConfigInterface
      * to check if the class implements CLIRouteInterface since the
      * router will check anyway.
      *
+     * Even though your route objects' lifecycle setting may be set
+     * to transient, it will only be instantiated once as Carrot's
+     * router keeps a cache of instantiated routes. So unless you
+     * really need it, it would be less confusing if you set the
+     * lifecycle setting of each route reference as 'Singleton'.
+     *
      * @param string $routeID The ID string to attach the route, must
      *        only refer to ONE route object (CLI or HTTP).
      * @param Reference $reference Refers to the route object that is
@@ -185,9 +184,9 @@ class BasicConfig implements ConfigInterface
      */
     public function addCLIRouteReference($routeID, Reference $reference)
     {
+        $this->routeIDs[$routeID] = 'CLI';
         $this->routes[$routeID] = array(
-            'listType' => 'reference',
-            'routeType' => 'CLI',
+            'type' => 'reference',
             'reference' => $reference
         );
     }
@@ -202,6 +201,12 @@ class BasicConfig implements ConfigInterface
      * to check if the class implements HTTPRouteInterface since the
      * router will check anyway.
      *
+     * Even though your route objects' lifecycle setting may be set
+     * to transient, it will only be instantiated once as Carrot's
+     * router keeps a cache of instantiated routes. So unless you
+     * really need it, it would be less confusing if you set the
+     * lifecycle setting of each route reference as 'Singleton'.
+     *
      * @param string $routeID The ID string to attach the route, must
      *        only refer to ONE route object (CLI or HTTP).
      * @param Reference $reference Refers to the route object that is
@@ -210,31 +215,31 @@ class BasicConfig implements ConfigInterface
      */
     public function addHTTPRouteReference($routeID, Reference $reference)
     {
+        $this->routeIDs[$routeID] = 'HTTP';
         $this->routes[$routeID] = array(
-            'listType' => 'reference',
-            'routeType' => 'HTTP',
+            'type' => 'reference',
             'reference' => $reference
         );
     }
     
     /**
      * Set the Destination instance to be returned by the router if
-     * there is a routing failure.
+     * there is no matching HTTP route.
      *
      * Generally speaking, this will be a 404 page, but let's not
      * jump into conclusions.
      *
-     * @param Destination $destination 
+     * @param Destination $destination
      *
      */
-    public function setNoMatchingRouteDestination(Destination $destination)
+    public function setNoMatchingHTTPRouteDestination(Destination $destination)
     {
-        $this->noMatchingRouteDestination = $destination;
+        $this->noMatchingHTTPRouteDestination = $destination;
     }
     
     /**
      * Get the Destination instance to be returned by the router if
-     * there is a routing failure.
+     * there is no matching HTTP route.
      *
      * Generally speaking, this will be a 404 page, but let's not
      * jump into conclusions.
@@ -242,9 +247,33 @@ class BasicConfig implements ConfigInterface
      * @return Destination
      *
      */
-    public function getNoMatchingRouteDestination()
+    public function getNoMatchingHTTPRouteDestination()
     {
-        return $this->noMatchingRouteDestination;
+        return $this->noMatchingHTTPRouteDestination;
+    }
+    
+    /**
+     * Set the Destination instance to be returned by the router if
+     * there is no matching HTTP route.
+     * 
+     * @param Destination $destination
+     *
+     */
+    public function setNoMatchingCLIRouteDestination(Destination $destination)
+    {
+        $this->noMatchingCLIRouteDestination = $destination;
+    }
+    
+    /**
+     * Get the Destination instance to be returned by the router if
+     * there is no matching HTTP route.
+     * 
+     * @return Destination
+     *
+     */
+    public function getNoMatchingCLIRouteDestination()
+    {
+        return $this->noMatchingCLIRouteDestination;
     }
     
     /**
@@ -269,14 +298,7 @@ class BasicConfig implements ConfigInterface
      */
     public function getRouteIDs()
     {
-        $routeIDs = array();
-        
-        foreach ($this->routes as $id => $routeArray)
-        {
-            $routeIDs[$id] = $routeArray['routeType'];
-        }
-        
-        return $routeIDs;
+        return $this->routeIDs;
     }
     
     /**
@@ -295,6 +317,83 @@ class BasicConfig implements ConfigInterface
      */
     public function getRoute($routeID, Container $container)
     {
+        if (!isset($this->routes[$routeID]))
+        {
+            throw new InvalidArgumentException("BasicConfig error in trying to get route object. The route '{$routeID}' is not defined.");
+        }
         
+        switch ($this->routes[$routeID]['type'])
+        {
+            case 'object':
+                return $this->routes[$routeID]['object'];
+            break;
+            case 'reference':
+                return $container->get($this->routes[$routeID]['reference']);
+            break;
+            case 'basicHTTP':
+                return $this->instantiateBasicHTTPRoute($routeID);
+            break;
+            case 'basicCLI':
+                return $this->instantiateBasicCLIRoute($routeID);
+            break;
+        }
+    }
+    
+    /**
+     * Instantiates a BasicHTTPRoute instance from the given
+     * configuration array.
+     *
+     * @throws RuntimeException When failed to instantiate the route.
+     * @param string $routeID The ID of the route being instantiated.
+     * @return BasicHTTPRoute
+     *
+     */
+    protected function instantiateBasicHTTPRoute($routeID)
+    {
+        try
+        {
+            $route = new BasicHTTPRoute(
+                $this->routes[$routeID]['config'],
+                $this->request
+            );
+        }
+        catch (Exception $exception)
+        {
+            $message = $exception->getMessage();
+            $file = $exception->getFile();
+            $line = $exception->getLine();
+            throw new RuntimeException("BasicConfig error in instantiating route '{$routeID}': {$message} - {$file} line {$line}");
+        }
+        
+        return $route;
+    }
+    
+    /**
+     * Instantiates a BasicCLIRoute instance from the given
+     * configuration array.
+     * 
+     * @throws RuntimeException When failed to instantiate the route.
+     * @param string $routeID The ID of the route being instantiated.
+     * @return BasicCLIRoute
+     *
+     */
+    protected function instantiateBasicCLIRoute($routeID)
+    {
+        try
+        {
+            $route = new BasicCLIRoute(
+                $this->routes[$routeID]['config'],
+                $this->request
+            );
+        }
+        catch (Exception $exception)
+        {
+            $message = $exception->getMessage();
+            $file = $exception->getFile();
+            $line = $exception->getLine();
+            throw new RuntimeException("BasicConfig error in instantiating route '{$routeID}': {$message}");
+        }
+        
+        return $route;
     }
 }

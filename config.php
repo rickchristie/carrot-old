@@ -33,7 +33,7 @@
 $config['files']['autoloader'] = __DIR__ . DIRECTORY_SEPARATOR . 'autoloader.php';
 $config['files']['injectionConfig'] = __DIR__ . DIRECTORY_SEPARATOR . 'injection.php';
 $config['files']['eventConfig'] = __DIR__ . DIRECTORY_SEPARATOR . 'event.php';
-$config['files']['routingConfig'] = __DIR__ . DIRECTORY_SEPARATOR . 'route.php';
+$config['files']['routingConfig'] = __DIR__ . DIRECTORY_SEPARATOR . 'routing.php';
 $config['files']['application'] = __DIR__ . DIRECTORY_SEPARATOR . 'Carrot' .
                             DIRECTORY_SEPARATOR . 'Core' .
                             DIRECTORY_SEPARATOR . 'Application.php';
@@ -130,21 +130,48 @@ $config['defaults']['routingConfig'] = array(
 );
 
 /**
- * Configure the base URL of this application.
+ * Configure which Carrot\Core\Routing\HTTPURIInterface
+ * implementation to be used in this application.
  *
- * The base URL will be used in two-way routing HTTP request. The
- * base URL string will be parsed using parse_url(). If the base
- * URL if set to an empty string, Carrot\Core\Routing\Router will
- * try to guess it.
+ * Carrot's default implementation supports unicode, but only as
+ * UTF-8. Helper methods from the object will not work correctly
+ * if the encoding of the HTTP URI sent is not in UTF-8. If you
+ * wanted the routing process to accept and route HTTP request
+ * URI's not in UTF-8, you will have to define your own
+ * implementation of various routing object, including this one. 
+ *
+ * Since Carrot\Core\Routing\HTTPURIInterface is a value object,
+ * you do not need to provide an instance name, only the fully
+ * qualified class name is needed.
  *
  */
 
-$config['baseURL'] = '';
+$config['defaults']['HTTPURI'] = 'Carrot\Core\Routing\HTTPURI';
+
+/**
+ * Configure the base HTTP URI of this application.
+ *
+ * These information are used in creating a base HTTP URI object,
+ * to be passed to the route objects in routing. If the the
+ * scheme, authority or the path is empty, the Router class will
+ * try to guess it.
+ *
+ * <code>
+ * $config['base']['scheme'] = 'http';
+ * $config['base']['authority'] = 'example.com';
+ * $config['base']['path'] = '/';
+ * </code>
+ *
+ */
+
+$config['base']['scheme'] = '';
+$config['base']['authority'] = '';
+$config['base']['path'] = '';
 
 /**
  * Return the configuration array to the caller.
  *
- * Carrot\Core\System expects this file to return a valid
+ * Carrot\Core\Application expects this file to return a valid
  * configuration array.
  *
  */

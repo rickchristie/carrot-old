@@ -33,8 +33,8 @@ $autoloader->bindNamespace('Sample', __DIR__ . DIRECTORY_SEPARATOR . 'Sample');
 /**
  * Return the autoloader object to the caller.
  *
- * Carrot\Core\System expects this file to return an instance of
- * Carrot\Core\Autoloader\AutoloaderInterface.
+ * Carrot\Core\Application expects this file to return an
+ * instance of Carrot\Core\Autoloader\AutoloaderInterface.
  *
  */
 

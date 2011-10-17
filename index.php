@@ -26,7 +26,7 @@
 $config = require 'config.php';
 
 /**
- * Require the file that contains Carrot\Core\System class,
+ * Require the file that contains Carrot\Core\Application class,
  * instantiate it and dispatch the request. Send the response
  * back to the client.
  * 

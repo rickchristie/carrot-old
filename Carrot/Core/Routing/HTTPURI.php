@@ -84,7 +84,8 @@ class HTTPURI implements HTTPURIInterface
      * @param array $query The query variables, preferably taken from
      *        $_GET superglobal, with each keys/values decoded from
      *        their percent encodings.
-     * @param string $fragment The fragment part of the URI.
+     * @param string $fragment The fragment part of the URI, still
+     *        percent encoded.
      *
      */
     public function __construct($scheme, $authority, $path, $query = array(), $fragment = '')
@@ -368,6 +369,20 @@ class HTTPURI implements HTTPURIInterface
     }
     
     /**
+     * Get the path part of the URI, properly percent encoded.
+     * 
+     * This method is useful if you wanted to get a relative URI
+     * string.
+     * 
+     * @return string
+     *
+     */
+    public function getPathEncoded()
+    {
+        return $this->encodePath($this->path);
+    }
+    
+    /**
      * Get the path with the given base path removed.
      *
      * This method is useful in host/location agnostic routing, where
@@ -413,9 +428,8 @@ class HTTPURI implements HTTPURIInterface
         // and trailing slash.
         $basePath = trim($basePath, '/');
         $basePath = '/' . $basePath . '/';
-        
         $basePath = $this->escapePCREMetaCharacters($basePath);
-        $path = $this->PCREReplace("/{$basePath}/u", '', $this->path, 1);
+        $path = $this->PCREReplace("/^{$basePath}/u", '', $this->path);
         
         // Ensures that the returned path always
         // starts with a starting slash before
@@ -633,9 +647,9 @@ class HTTPURI implements HTTPURIInterface
      * Escape all PCRE metacharacters on the given string.
      * 
      * This method Replaces all PCRE meta characters as listed in
-     * {@see http://www.php.net/manual/en/regexp.reference.meta.php}.
-     * It also Replaces the slash '/' character since it is used in
-     * this method as the delimiter.
+     * {@see http://www.php.net/manual/en/regexp.reference.meta.php}
+     * to its escaped counterpart. It also replaces the slash '/'
+     * character since it is used as delimiters.
      * 
      * The reason this method exist is that we have to sidestep the
      * usage of non-multibyte-safe string functions like substr()
@@ -718,11 +732,11 @@ class HTTPURI implements HTTPURIInterface
             return $subject;
         }
         
-        if ($replaced != NULL)
+        if ($replaced === NULL)
         {
-            return $replaced;
+            return $subject;
         }
         
-        return $subject;
+        return $replaced;
     }
 }
