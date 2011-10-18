@@ -300,9 +300,7 @@ class Application
                 </p>
                 
                 <p class=\"message\">
-                    <code>{$class}</code> thrown when handling
-                    exception. Message: '{$message}' on line {$line} in file
-                    <code>{$file}</code>
+                    {$message} on line {$line} in file <code>{$file}</code>
                 </p>";
         }
         

@@ -17,6 +17,9 @@ TRUNK
         - Added support for BindingsConfig and ArrayMapConfig.
         - Added ConstructorInjector, ProviderInjector, and CallbackInjector.
     - Exception handler now more interchangable.
+    - Carrot\Core\Routing added:
+        - Now coded in a way that supports both CLI and HTTP routes.
+    - Carrot\Core\DefaultPage to contain default system pages.
 - Plans added for:
     - Carrot\Core\DebugFilter
     - Carrot\Core\DependencyInjection\Injector\SetterInjector

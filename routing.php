@@ -17,23 +17,21 @@
  *
  */
 
-use Carrot\Core\DependencyInjection\Reference;
+use Carrot\Core\DependencyInjection\Reference,
+    Carrot\Core\Routing\Destination;
 
-$config->addBasicHTTPRoute('Carrot.Sample', array(
+$config->setNoMatchingHTTPRouteDestination(new Destination(
+    new Reference('Carrot\Core\DefaultPages'),
+    'HTTPNoMatchingRoute'
+));
+
+$config->setNoMatchingCLIRouteDestination(new Destination(
+    new Reference('Carrot\Core\DefaultPages'),
+    'CLINoMatchingRoute'
+));
+
+$config->addBasicHTTPRoute('Carrot:Sample', array(
     'pattern' => '/',
     'reference' => new Reference('Sample\Welcome'),
     'method' => 'getWelcomeResponse'
-));
-
-$config->addBasicHTTPRoute('Carrot.Docs.Home', array(
-    'pattern' => '/guides/',
-    'reference' => new Reference('Carrot\Docs\Controller'),
-    'method' => 'getResponse'
-));
-
-$config->addBasicHTTPRoute('Carrot.Docs.Page', array(
-    'pattern' => '/möchter/<topicID>/<r:pageID:(%[A-Fa-f0-9]{2})>/<b:add>',
-    'reference' => new Reference('Carrot\Docs\Controller'),
-    'method' => 'getResponse',
-    'args' => array('<topicID>', '<b:add>')
 ));

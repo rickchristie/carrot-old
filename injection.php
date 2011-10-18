@@ -19,7 +19,8 @@
 
 use Carrot\Core\DependencyInjection\Reference,
     Carrot\Core\DependencyInjection\Config\BindingsConfig,
-    Carrot\Core\DependencyInjection\Injector\ConstructorInjector;
+    Carrot\Core\DependencyInjection\Injector\ConstructorInjector,
+    Carrot\Core\DependencyInjection\Injector\FauxInjector;
 
 /**
  * Use bindings dependency injection configuration object.
@@ -60,8 +61,13 @@ $config->addInjector(new ConstructorInjector(
     new Reference('Carrot\Core\ExceptionHandler\DebugHandler'),
     array(
         new Reference('Carrot\Core\Logbook\LogbookInterface'),
-        $_SERVER
+        new Reference('Carrot\Core\Request\RequestInterface')
     )
+));
+
+$config->addInjector(new FauxInjector(
+    new Reference('Carrot\Core\DefaultPages'),
+    new Carrot\Core\DefaultPages
 ));
 
 /**

@@ -25,7 +25,8 @@ namespace Carrot\Core\ExceptionHandler;
 
 use Exception,
     SplFileObject,
-    Carrot\Core\Logbook\LogbookInterface;
+    Carrot\Core\Logbook\LogbookInterface,
+    Carrot\Core\Request\RequestInterface;
 
 class DebugHandler implements HandlerInterface
 {   
@@ -36,10 +37,10 @@ class DebugHandler implements HandlerInterface
     protected $logbook;
     
     /**
-     * @var string Server protocol to be used when setting the
-     *      response header.
+     * @var RequestInterface Used to get the server protocol and
+     *      determining if the request is CLI or HTTP.
      */
-    protected $serverProtocol;
+    protected $request;
     
     /**
      * @var string Path to template file to display.
@@ -51,15 +52,14 @@ class DebugHandler implements HandlerInterface
      *
      * @param LogbookInterface $logbook Carrot core class's log
      *        container, contains information useful for debugging.
-     * @param string $serverProtocol The server protocol to be used
-     *        when setting the response header. Optional. Defaults to
-     *        'HTTP/1.0'.
+     * @param RequestInterface $request Used to get the server
+     *        protocol and determining if the request is CLI or HTTP.
      *
      */
-    public function __construct(LogbookInterface $logbook, $serverProtocol = 'HTTP/1.0')
+    public function __construct(LogbookInterface $logbook, RequestInterface $request)
     {
         $this->logbook = $logbook;
-        $this->serverProtocol = $serverProtocol;
+        $this->request = $request;
         $this->setTemplateFilePath(
             __DIR__ . DIRECTORY_SEPARATOR . 'Templates' .
             DIRECTORY_SEPARATOR . 'debug.php'
@@ -98,6 +98,13 @@ class DebugHandler implements HandlerInterface
     public function handle(Exception $exception)
     {
         $this->logException($exception);
+        
+        if ($this->request->isCLI())
+        {
+            echo 'Fatal error: Uncaught ', $exception, PHP_EOL;
+            return;
+        }
+        
         $this->setErrorHeader();
         $outputBuffer = $this->getAndCleanOutputBuffer();
         $pageTitle = $this->generatePageTitle($exception);
@@ -139,7 +146,8 @@ class DebugHandler implements HandlerInterface
             return;
         }
         
-        header("{$this->serverProtocol} 500 Internal Server Error");
+        $serverProtocol = $this->request->getServer('SERVER_PROTOCOL', 'HTTP/1.0');
+        header("{$serverProtocol} 500 Internal Server Error");
     }
     
     /**

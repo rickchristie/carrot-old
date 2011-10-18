@@ -316,7 +316,7 @@ class BindingsConfig implements ConfigInterface
             catch (Exception $exception)
             {
                 $message = $exception->getMessage();
-                throw new RuntimeException("BindingsConfig failed to generate a constructor injector for {$id}, {$message}.");
+                throw new RuntimeException("BindingsConfig failed to generate a constructor injector for {$id} because: {$message}.");
             }
             
             if ($dependencyClassReflection instanceof ReflectionClass == FALSE)
