@@ -93,14 +93,7 @@ class Application
      *
     //---------------------------------------------------------------
      * <code>
-     * $config = array(
-     *     'files' => array(
-     *         'autoloader' = $autoloaderFilePath,
-     *         'injectionConfig' => $injectionConfigFilePath,
-     *         'eventDispatcher' => $eventDispatcherFilePath,
-     *         'routeConfig' => $routeConfigurationFilePath
-     *     ),
-     * );
+     * 
      * </code>
      * 
      * @param array $config Configuration array from main configuration file.
@@ -149,6 +142,9 @@ class Application
     /**
     //---------------------------------------------------------------
      * Route the request, instantiate the destination object, and
+     * 
+     * 
+     * @param 
      *
      */
     public function run()

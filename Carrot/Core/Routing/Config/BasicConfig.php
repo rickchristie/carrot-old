@@ -391,7 +391,7 @@ class BasicConfig implements ConfigInterface
             $message = $exception->getMessage();
             $file = $exception->getFile();
             $line = $exception->getLine();
-            throw new RuntimeException("BasicConfig error in instantiating route '{$routeID}': {$message}");
+            throw new RuntimeException("BasicConfig error in instantiating route '{$routeID}': {$message} - {$file} line {$line}");
         }
         
         return $route;

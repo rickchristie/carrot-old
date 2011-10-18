@@ -390,7 +390,7 @@ class HTTPURI implements HTTPURIInterface
      * before matching it against a pattern, therefore making the
      * routing safe and consistent even though the location of the
      * application may be changed.
-     *
+     * 
      * This method needs the given base path to be already decoded
      * from any percent encodings. If the given base path isn't
      * decoded yet, tell the method so it can help you decode it.
@@ -399,11 +399,11 @@ class HTTPURI implements HTTPURIInterface
      * instead of substr() for multibyte safety. This means that the
      * path string sent to the server the base path you use must be
      * encoded in UTF-8. Otherwise this method will fail.
-     *
+     * 
      * The returned path will ALWAYS have a starting slash. If the
      * base path is not found, nothing will be removed from the path.
      * The returned path will not be percent encoded.
-     *
+     * 
      * @param string $basePath The base path to be removed. Must be
      *        in UTF-8 encoding.
      * @param bool $basePathIsAlreadyDecoded If TRUE, this will skip

@@ -398,11 +398,15 @@ class Router implements RouterInterface
     }
     
     /**
-    //---------------------------------------------------------------
      * Loop through the HTTP routes until one of them returns an
      * instance of Destination.
      * 
+    //---------------------------------------------------------------
      * 
+     * 
+     * @throws RuntimeException If while looping, it finds a route
+     *         object that doesn't implement HTTPRouteInterface.
+     * @return Destination
      *
      */
     protected function routeHTTPRequest()
@@ -462,7 +466,7 @@ class Router implements RouterInterface
      * for a CLI request.
      *
     //---------------------------------------------------------------
-     * Will first ask 
+     * If the Config
      * 
      * @return Destination
      *
