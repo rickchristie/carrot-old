@@ -18,16 +18,6 @@
  * __DIR__, DIRECTORY_SEPARATOR, DIRNAME() to create a more
  * platform agnostic format.
  *
- * You will have to define absolute paths to events, routes,
- * autoload and system file. Sample configuration:
- *
- * <code>
- * $config['paths']['events'] = '/absolute/path/to/file.php';
- * $config['paths']['routes'] = '/absolute/path/to/file.php';
- * $config['paths']['autoloader'] = '/absolute/path/to/file.php';
- * $config['paths']['system'] = '/absolute/path/to/file.php';
- * </code>
- *
  */
 
 $config['files']['autoloader'] = __DIR__ . DIRECTORY_SEPARATOR . 'autoloader.php';
@@ -93,15 +83,15 @@ $config['defaults']['exceptionHandler'] = array(
 );
 
 /**
- * Configure which Carrot\Core\Event\Dispatcher implementation is
- * used in this application.
+ * Configure which Carrot\Core\Event\DispatcherInterface
+ * implementation is used in this application.
  * 
  * The event dispatcher provides a simple way to hook your code
  * to Carrot's core processes.
  * 
  * The implementation you chose will have a singleton lifecycle,
  * and can be accessed via the container using an unnamed
- * reference to Carrot\Core\Event\Dispatcher.
+ * reference to Carrot\Core\Event\DispatcherInterface.
  *
  */
 

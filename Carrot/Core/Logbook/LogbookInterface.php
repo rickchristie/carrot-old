@@ -25,6 +25,8 @@ namespace Carrot\Core\Logbook;
 
 interface LogbookInterface
 {
+    // TODO: Finish Logbook
+    
     /**
      * Write a generic log.
      *

@@ -20,7 +20,7 @@
  *
  */
 
-namespace Carrot\Core;
+namespace Carrot\Core\Response;
 
 interface ResponseInterface
 {

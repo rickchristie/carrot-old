@@ -37,14 +37,3 @@ $config->addBasicHTTPRoute('Carrot.Docs.Page', array(
     'method' => 'getResponse',
     'args' => array('<topicID>', '<b:add>')
 ));
-
-/**
- * Return the registrator object back to the caller.
- *
-//---------------------------------------------------------------
- * Carrot\Core\Application expects this file to return the
- * $registrator variable.
- *
- */
-
-return $config;

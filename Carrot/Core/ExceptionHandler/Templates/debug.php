@@ -31,6 +31,7 @@
 </head>
 <body>
     <div id="wrapper">
+    
         <h1><?php echo $pageTitle ?></h1>
         <div class="code-container">
             <ol>
@@ -41,6 +42,7 @@
                 <?php endforeach; ?>
             </ol>
         </div>
+        
         <h2>Stack Trace</h2>
         <div id="stack-trace-wrapper">
             <?php foreach ($stackTrace as $index => $trace): ?>
@@ -67,6 +69,12 @@
             </div>
             <?php endforeach; ?>
         </div>
+        
+        <?php if (!empty($outputBuffer)): ?>
+        <h2>Output Buffer</h2>
+        <pre><?php echo htmlspecialchars($outputBuffer, NULL, 'UTF-8') ?></pre>
+        <?php endif; ?>
+        
     </div>
 </body>
 </html>

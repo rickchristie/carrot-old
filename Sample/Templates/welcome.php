@@ -288,49 +288,13 @@
     <div class="section">
         <h2>Welcome to Carrot, an experimental PHP framework!</h2>
         <p>
-           This is a response returned from a sample routine class, specifically
-           <code>Sample\Welcome::getWelcomeResponse()</code> routine method.
-           It usually means that Carrot is working okay on this machine. This page
-           should give you a very quick introduction to Carrot. I also recommend
-           you <a href="#accessing-the-guide">activate and read the guide</a> for more explanation.
-        </p>
-        
-    </div>
-    <div class="section">
-        <h3>Creating your first routine object</h3>
-        <p>
-            asdf
-        </p>
-    </div>
-    <div class="section">
-        <h3>Binding dependencies of your routine object</h3>
-        <p>
-            asdfsdf
-        </p>
-    </div>
-    <div class="section">
-        <h3>Creating a route that points to your routine method</h3>
-        <p>
-            adasfd
-        </p>
-    </div>
-    <div class="section">
-        <h2 id="accessing-the-guide">Accessing the guide</h2>
-        <p>
-            Carrot comes with a set of documents that can help you understand it.
-            This is not activated by default, since activating it might conflict
-            with your own routes. You will have to manually register the route
-            object reference at your <code>routes.php</code> file to access it.
-            Here is the route registration snippet:
-        </p>
-        <pre>$router->registerRoute('Carrot.Docs.Page', new ObjectReference(
-    'Carrot\Docs\Route{Main:Transient}'
-));</pre>
-        <p>
-            After you register the route, you should be able to access the guide
-            using the <code>/guides/</code> path after your base path. For example,
-            If you install carrot at <code>http://localhost/carrot/</code> you should be
-            able to access the guides at <code>http://localhost/carrot/guides/</code>.
+            If you're seeing this message, most likely Carrot is working okay
+            in this machine. Unfortunately the author cannot offer you any
+            documentation yet, as any effort on documentation so far has
+            been outpaced by the number of API/architecture changes. As the
+            core of Carrot stabilizes, the author will focus on producing
+            documentations - for now, you can learn about Carrot by reading
+            its source code.
         </p>
     </div>
 </div>

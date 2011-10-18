@@ -96,9 +96,10 @@ class DebugHandler implements HandlerInterface
      *
      */
     public function handle(Exception $exception)
-    {   
+    {
         $this->logException($exception);
         $this->setErrorHeader();
+        $outputBuffer = $this->getAndCleanOutputBuffer();
         $pageTitle = $this->generatePageTitle($exception);
         $summaryCode = $this->getSummaryCode($exception->getFile(), $exception->getLine());
         $stackTrace = $this->getFormattedStackTrace($exception);
@@ -367,5 +368,24 @@ class DebugHandler implements HandlerInterface
         }
         
         return '<pre class="grey">No arguments</pre>';
+    }
+    
+    /**
+     * Get all output buffers and clean them.
+     * 
+     * @see handle()
+     * @return string All the output buffer strings, concatenated.
+     *
+     */
+    protected function getAndCleanOutputBuffer()
+    {
+        $string = '';
+        
+        while (ob_get_level())
+        {
+            $string .= ob_get_clean();
+        }
+        
+        return $string;
     }
 }

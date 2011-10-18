@@ -28,7 +28,7 @@
 
 namespace Sample;
 
-use Carrot\Core\Response;
+use Carrot\Core\Request\RequestInterface;
 
 class Welcome
 {   
@@ -45,7 +45,7 @@ class Welcome
     {
         ob_start();
         require __DIR__ . DIRECTORY_SEPARATOR . 'Templates' . DIRECTORY_SEPARATOR . 'welcome.php';
-        $response = new Response(ob_get_clean());
+        $response = ob_get_clean();
         return $response;
     }
 }

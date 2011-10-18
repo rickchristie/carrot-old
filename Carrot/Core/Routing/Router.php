@@ -401,8 +401,9 @@ class Router implements RouterInterface
      * Loop through the HTTP routes until one of them returns an
      * instance of Destination.
      * 
-    //---------------------------------------------------------------
-     * 
+     * If no route returns an instance of Destination, this method
+     * will get the no matching route destination using
+     * {@see getNoMatchingHTTPRoute()}.
      * 
      * @throws RuntimeException If while looping, it finds a route
      *         object that doesn't implement HTTPRouteInterface.
@@ -464,27 +465,42 @@ class Router implements RouterInterface
     /**
      * Get the Destination to return when there is no matching route
      * for a CLI request.
-     *
-    //---------------------------------------------------------------
-     * If the Config
      * 
+     * @throws RuntimeException If the ConfigInterface implementation
+     *         doesn't return a valid Destination instance.
      * @return Destination
      *
      */
     public function getNoMatchingCLIRouteDestination()
     {
+        $destination = $this->config->getNoMatchingCLIRouteDestination();
         
+        if ($destination instanceof Destination == FALSE)
+        {
+            throw new RuntimeException('Router error in routing request. No matching CLI route was found and there is no Destination instance specified for this occasion.');
+        }
+        
+        return $destination;
     }
     
     /**
      * Get the Destination to return when there is no matching route
      * for a HTTP request.
      * 
+     * @throws RuntimeException If the ConfigInterface implementation
+     *         doesn't return a valid Destination instance.
      * @return Destination
      *
      */
     protected function getNoMatchingHTTPRouteDestination()
     {
+        $destination = $this->config->getNoMatchingHTTPRouteDestination();
         
+        if ($destination instanceof Destination == FALSE)
+        {
+            throw new RuntimeException('Router error in routing request. No matching HTTP route was found and there is no Destination instance specified for this occasion.');
+        }
+        
+        return $destination;
     }
 }

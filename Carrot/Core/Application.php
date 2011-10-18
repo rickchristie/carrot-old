@@ -27,6 +27,7 @@ use Exception,
     RuntimeException,
     ErrorException,
     InvalidArgumentException,
+    ReflectionMethod,
     Carrot\Core\Autoloader\AutoloaderInterface,
     Carrot\Core\DependencyInjection\Container,
     Carrot\Core\DependencyInjection\Reference,
@@ -36,8 +37,12 @@ use Exception,
     Carrot\Core\Logbook\LogbookInterface,
     Carrot\Core\ExceptionHandler\HandlerInterface,
     Carrot\Core\Event\DispatcherInterface,
+    Carrot\Core\Routing\Destination,
     Carrot\Core\Routing\Router,
-    Carrot\Core\Routing\Config\ConfigInterface as RoutingConfigInterface;
+    Carrot\Core\Routing\Config\ConfigInterface as RoutingConfigInterface,
+    Carrot\Core\Response\ResponseInterface,
+    Carrot\Core\Response\HTTPResponse,
+    Carrot\Core\Response\CLIResponse;
 
 class Application
 {
@@ -88,13 +93,68 @@ class Application
     /**
      * Constructor.
      * 
-     * Inject a configuration array in construction with the
-     * following structure:
+     * The configuration array consists of $files, $defaults, and
+     * $base sub-configuration.
      *
-    //---------------------------------------------------------------
      * <code>
-     * 
+     * $config = array(
+     *     'files' => $files,
+     *     'defaults' => $defaults,
+     *     'base' => $base
+     * );
      * </code>
+     * 
+     * The $files configuration array contains absolute paths to
+     * other configuration files. Its structure is as follows:
+     *
+     * <code>
+     * $files = array(
+     *     'autoloader' => $autoloaderFilePath,
+     *     'injectionConfig' => $injectionConfigFilePath,
+     *     'eventConfig' => $eventConfigFilePath,
+     *     'routingConfig' => $routingConfigFilePath
+     * );
+     * </code>
+     * 
+     * The $defaults configuration array configures which
+     * implementations of request, logbook, event dispatcher, routing
+     * configuration, and HTTP URI. The structure is as follows:
+     *
+     * <code>
+     * $defaults = array(
+     *     'request' => $requestArray,
+     *     'logbook' => $logbookArray,
+     *     'exceptionHandler' => $handlerArray,
+     *     'eventDispatcher' => $dispatcherArray,
+     *     'routingConfig' => $routingArray,
+     *     'HTTPURI' => $className
+     * );
+     * </code>
+     *
+     * Request, logbook, exception handler, event dispatcher, and
+     * routing config items contains an array that holds information
+     * on the class and instance name of the implementation to be
+     * used, as in:
+     *
+     * <code>
+     * $requestArray = array(
+     *     'class' => 'Carrot\Core\Routing\DefaultRequest',
+     *     'name' => ''
+     * );
+     * </code>
+     *
+     * The $base configuration array configures the base HTTP URI of
+     * the entier application, as in:
+     * 
+     * <code>
+     * $base = array(
+     *     'scheme' => 'http',
+     *     'authority' => 'example.com',
+     *     'path' => '/'
+     * );
+     * </code>
+     *
+     * For more information please see the documentation.
      * 
      * @param array $config Configuration array from main configuration file.
      *
@@ -140,16 +200,55 @@ class Application
     }
     
     /**
-    //---------------------------------------------------------------
      * Route the request, instantiate the destination object, and
+     * return the response.
      * 
+     * The {@see Destination} instance contains information on which
+     * object to instantiate, which method to call, and what
+     * arguments to pass when calling the method. This method will
+     * 'run' the destination method. If it returns an instance of
+     * ResponseInterface, it will be returned. If it returns another
+     * instance of Destination, internal redirection is triggered
+     * and the method will try to run the returned Destination
+     * instance instead.
+     *
+     * If the destination method returns something other than
+     * Destination or ResponseInterface instance, this method will
+     * try to convert it to string and use default response objects.
      * 
-     * @param 
+     * @throws RuntimeException If the destination reached doesn't
+     *         return an instance of ResponseInterface, or if this
+     *         method fails to convert the returned value to string.
+     * @return ResponseInterface
      *
      */
     public function run()
     {
-        $destination = $this->router->routeRequest();
+        $response = $destination = $this->router->routeRequest();
+        
+        while ($response instanceof Destination)
+        {
+            $destination = $response;
+            $object = $this->container->get($destination->getReference());
+            $response = $this->runDestinationMethod(
+                $object,
+                $destination->getMethodName(),
+                $destination->getArgs()
+            );
+            
+            if ($response instanceof ResponseInterface)
+            {
+                return $response;
+            }
+            
+            if ($response instanceof Destination)
+            {
+                continue;
+            }
+            
+            $response = $this->convertToResponseObject($response);
+            return $response;
+        }
     }
     
     /**
@@ -592,5 +691,80 @@ class Application
         $this->router = $this->container->get(new Reference(
             'Carrot\Core\Routing\RouterInterface'
         ));
+    }
+    
+    /**
+     * Run the destination method, we use ugly switch statements in
+     * order to save some performance.
+     * 
+     * @see run()
+     * @param mixed $object The object that contains the destination
+     *        method to be run.
+     * @param string $methodName The name of the method to be run.
+     * @param array $args The arguments to be used when running the
+     *        method.
+     *
+     */
+    protected function runDestinationMethod($object, $methodName, array $args)
+    {
+        $count = count($args);
+        
+        switch ($count)
+        {
+            case 0:
+                return $object->$methodName();
+            break;
+            case 1:
+                return $object->$methodName($args[0]);
+            break;
+            case 2:
+                return $object->$methodName($args[0], $args[1]);
+            break;
+            case 3:
+                return $object->$methodName($args[0], $args[1], $args[2]);
+            break;
+            case 4:
+                return $object->$methodName($args[0], $args[1], $args[2], $args[3]);
+            break;
+            case 5:
+                return $object->$methodName($args[0], $args[1], $args[2], $args[3], $args[4]);
+            break;
+            default:
+                $reflectionMethod = new ReflectionMethod($object, $methodName);
+                return $reflectionMethod->invokeArgs($object, $args);
+            break;
+        }
+    }
+    
+    /**
+     * Converts a variable into a default ResponseInterface
+     * implementation, depending on the nature of the request.
+     * 
+     * @see run()
+     * @param mixed $var The variable to be converted.
+     *
+     */
+    protected function convertToResponseObject($var)
+    {
+        try
+        {
+            $var = (string) $var;
+        }
+        catch (Exception $exception)
+        {
+            $type = is_object($var) ? get_class($var) : gettype($var);
+            throw new RuntimeException("Application error in running destination method. The returned value is not an instance of Carrot\Core\Response\ResponseInterface and conversion effort failed.");
+        }
+        
+        $request = $this->container->get(new Reference(
+            'Carrot\Core\Request\RequestInterface'
+        ));
+        
+        if ($request->isCLI())
+        {
+            return new CLIResponse($var);
+        }
+        
+        return new HTTPResponse($var);
     }
 }

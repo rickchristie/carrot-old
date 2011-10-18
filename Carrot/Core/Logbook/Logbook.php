@@ -10,7 +10,7 @@
  */
 
 /**
- * Carrot's core logbook.
+ * Carrot's default logbook implementation.
  *
  * This class is responsible for storing the log data of
  * dependency injection container, autoloader, event dispatcher
