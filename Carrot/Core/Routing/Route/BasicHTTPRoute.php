@@ -275,8 +275,8 @@ class BasicHTTPRoute implements HTTPRouteInterface
      */
     public function getURI(array $args, HTTPURIInterface $baseHTTPURI, $absolute = FALSE)
     {
-        $patterns = array_fill(0, count($args) -1, '/<[^\\/>]+>/u');
-        $pathToBeAppended = preg_replace($patterns, $args, $this->config['pattern']);
+        $patterns = array_fill(0, count($args), '/<[^\\/>]+>/u');
+        $pathToBeAppended = preg_replace($patterns, $args, $this->config['pattern'], 1);
         
         if ($pathToBeAppended != '')
         {

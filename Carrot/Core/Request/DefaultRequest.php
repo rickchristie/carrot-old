@@ -401,12 +401,12 @@ class DefaultRequest implements RequestInterface
      */
     public function getHeader($index = NULL, $default = NULL)
     {
-        $index = strtoupper($key);
-        
         if ($index == NULL)
         {
             return $this->header;
         }
+        
+        $index = strtoupper($index);
         
         if (array_key_exists($index, $this->header))
         {

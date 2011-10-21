@@ -12,6 +12,7 @@
 /**
  * Database Exception
  * 
+//---------------------------------------------------------------
  * 
  * 
  * @author      Ricky Christie <seven.rchristie@gmail.com>
@@ -21,7 +22,9 @@
 
 namespace Carrot\Database\Exceptions;
 
-class DatabaseException extends Exception
+use RuntimeException;
+
+class DatabaseException extends RuntimeException
 {
     
 }

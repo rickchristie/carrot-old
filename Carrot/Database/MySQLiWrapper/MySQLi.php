@@ -13,35 +13,10 @@
  * MySQLi Wrapper
  * 
  * This class extends the original MySQLi class and adds the
- * buildStatement() method, which acts as the factory method to
- * create Statement objects. Other than that, this class doesn't
- * alter the original MySQLi's behavior at all.
- *
- * <code>
- * $statement = $mysqli->buildStatement(
- *     'SELECT
- *         id, name, balance
- *     FROM
- *         accounts
- *     WHERE
- *         id LIKE :id,
- *         name LIKE :name,
- *         balance > :balance'
- * );
- * </code>
- *
-// ---------------------------------------------------------------
- * You can then execute the statement:
- *
- * <code>
- * $statement->execute(array(
- *     ':id' => $id,
- *     ':balance' => $balance
- * ));
- * </code>
- *
-// ---------------------------------------------------------------
- * 
+ * {@see buildStatement()} method, which acts as the factory
+ * method to create {@see Statement} objects. Other than that,
+ * this class doesn't alter the original MySQLi's behavior at
+ * all, allowing you to use it also as a regular MySQLi class.
  * 
  * @author      Ricky Christie <seven.rchristie@gmail.com>
  * @license     http://www.opensource.org/licenses/mit-license.php MIT License
@@ -50,8 +25,8 @@
 
 namespace Carrot\Database\MySQLiWrapper;
 
-use MySQLi as MySQLi_Parent;
-use RuntimeException;
+use RuntimeException,
+    MySQLi as MySQLi_Parent;
 
 class MySQLi extends MySQLi_Parent
 {   
@@ -74,36 +49,19 @@ class MySQLi extends MySQLi_Parent
      * );
      * </code>
      *
-     * The statement string from above code will be converted to this
-     * query:
-     *
-     * <code>
-     * SELECT
-     *     id, name, balance
-     * FROM
-     *     accounts
-     * WHERE
-     *     id LIKE ?,
-     *     name LIKE ?,
-     *     balance > ?
-     * </code>
-     *
-     * with the following placeholders:
-     *
-     * <code>
-     * :id
-     * :name
-     * :balance
-     * </code>
-     *
-    // ---------------------------------------------------------------
      * So you can execute the statement like this:
-     *
-     * <code>
      * 
+     * <code>
+     * $statement->execute(array(
+     *     ':id' => $id,
+     *     ':name' => $name
+     *     ':balance' => $balance
+     * ));
      * </code>
      * 
-     * @param string $queryWithPlaceholders Statement string with placeholders.
+     * @see Statement
+     * @param string $queryWithPlaceholders Statement string with
+     *        placeholders.
      * @return Statement
      * 
      */

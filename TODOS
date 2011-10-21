@@ -7,23 +7,6 @@ TODO: Start making unit tests!
 CORE FEATURES/CHANGES
 ---------------------
 
-TODO: Inject the DIC and Autoloader to the exception handler for
-      debugging purposes. Have the DIC log which instance names
-      are instantiated (how many times) and providers used
-      (if any). Have the Autoloader load which file is loaded and
-      what class is expected on that file, the time of the load,
-      which file gets loaded first, etc.
-
-TODO: Also for debugging purposes, inject the Router to the
-      ExceptionHandler so that it can read some information from
-      it, like what is the active route ID and which callback was
-      returned from the routing.
-
-TODO: Take a look at Symfony's HTTPKernel for hints to improve
-      your request and response objects.
-
-TODO: Add isAjaxRequest() to the request object.
-
 TODO: Finish the guide pages.
 
 TODO: Fatal error handler in register_shutdown_function?
@@ -35,15 +18,6 @@ TODO: Fix the router class to be flexible, to accept quick regex
       the ability to use provider classes for complex instances.
       Figure out the syntax to be used in quick syntax and API
       for regex mode.
-
-TODO: Fix Autoloader's paranoid handling of class names. No matter
-      if the class is called by \Foo\Bar or Foo\Bar, the argument
-      to the spl autoloader callback is always without a backslash
-      prefix.
-
-TODO: Write Sample\Welcome::get404Response() for default 404
-      response as well as an example for the users on how to set
-      the 404 page.
 
 TODO: Write custom exception classes for core exceptions thrown,
       assign error code for them, and then in the exception
@@ -85,20 +59,6 @@ TODO: Fix comments on Database library (you changed namespaces,
 DONE
 ----
 
-TODO: Carrot\Helper\Template, to be used by view classes. Make the
-      dependency as loose as possible.
-
-TODO: Carrot\Database\MySQLi, extend the original MySQLi class,
-      add factory method to create the StatementWrapper.
-
-TODO: Add a simple temporary error and exception handler so that
-      if an error occurs before the real exception handler is
-      instantiated, user still gets nice error/exception pages.
-      Actually, just set the error handler at the start of
-      everything, then start the temporary exception handler
-      before finally instantiating the real exception handler and
-      handing the handler to the real one.
-
 TODO: Create an core event manager to handle callbacks (see
       Symfony's event handler for inspiration). There would be
       events like 'Carrot\Core\System!Bootstrap',
@@ -110,3 +70,19 @@ TODO: Create an core event manager to handle callbacks (see
       PHP session and setting session save settings/handlers
       before the script is started, for privilege checking after
       routing is done, etc.
+
+
+CANCELLED
+---------
+
+TODO: Inject the DIC and Autoloader to the exception handler for
+      debugging purposes. Have the DIC log which instance names
+      are instantiated (how many times) and providers used
+      (if any). Have the Autoloader load which file is loaded and
+      what class is expected on that file, the time of the load,
+      which file gets loaded first, etc.
+
+TODO: Also for debugging purposes, inject the Router to the
+      ExceptionHandler so that it can read some information from
+      it, like what is the active route ID and which callback was
+      returned from the routing.

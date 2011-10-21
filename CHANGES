@@ -1,5 +1,5 @@
-TRUNK
------
+VERSION 0.2.8 (TRUNK)
+---------------------
 
 - Added Carrot\Form
 - Added Carrot\Validation
@@ -20,11 +20,7 @@ TRUNK
     - Carrot\Core\Routing added:
         - Now coded in a way that supports both CLI and HTTP routes.
     - Carrot\Core\DefaultPage to contain default system pages.
-- Plans added for:
-    - Carrot\Core\DebugFilter
-    - Carrot\Core\DependencyInjection\Injector\SetterInjector
-    - Carrot\Core\Logbook
-    - Carrot\Core\ExceptionHandler\DispatcherHandler
+
 
 VERSION 0.2.7
 -------------
