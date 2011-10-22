@@ -67,13 +67,13 @@ class DefaultPages
         return "<!DOCTYPE HTML PUBLIC \"-//W3C//DTD HTML 4.01//EN\" \"http://www.w3.org/TR/html4/strict.dtd\">
         <html>
         <head>
-        	<title>500 Internal Server Error</title>
+        	<title>Page Not Found</title>
         	<style type=\"text/css\">
         	   body { width: 500px; margin: 150px; font-family: 'Arial', 'Helvetica', sans-serif; font-size: 13px; line-height: 1.5; }
         	   h1 { font-weight: normal; font-size: 25px }
         	   code { font-family: 'Monaco', 'Consolas', 'Courier', 'Courier New', monospace; font-size: 90%; }
         	   p { margin: 15px 0; }
-        	   p.message { background: #EDF0F3; border: 1px solid #cbd3db; -moz-border-radius: 5px; border-radius: 5px; padding: 15px;}
+        	   p.message { background: #f1f7fd; border: 1px solid #aebece; -moz-border-radius: 5px; border-radius: 5px; padding: 15px; overflow-x: auto; }
         	   ul { margin: 15px 0; padding: 0 0 0 0; list-style-type: none; }
         	   ul li { margin: 8px 0; padding: 0 0 0 40px; background: url(data:image/png;base64,iVBORw0KGgoAAAANSUhEUgAAABAAAAAQCAYAAAAf8/9hAAAAGXRFWHRTb2Z0d2FyZQBBZG9iZSBJbWFnZVJlYWR5ccllPAAAAaRJREFUeNqc0l8oQ1EcB/DvuXfW7v4gWY3JrNGWPKiJlELhDSnlAU8elPLiyYNXj548+fO49qgm7/IkL1LTZCzNljQMubYx9x6/W1eNdGd+dfqdfuf26Xd+5zLzqh9amCxV+C1el6IwCkHPzfhnfAH2j0JxGxyLtA9WApj0HLOo5lCxoGwxizABhonwcaKG6s/6Mu6gVrF7q7hpn3Heai4ogyvxm5hk5kk6SkZmrMNlgSdRvhIhBGxcwkL6DqPVucaRPqDbp2hdRAgJlpsBZNvb+VQm09Mvy+iQFCoADU0iOj2qpCMuQ4CGiKHHh2ies9vUJRXShDyp8LgFBFzcrSPST4Cuzb8V6KNeSnvt7x91bfV05qI524HTayBxzzbHQ7l5Q0BHtP9ix5dXgh02le4iAg6GoxTD7SvGCdk1BHREa3fDIyuzLSYVtU4BGUnAYYZlqd5GSNYQKIHmKK0FZKXGb+U4s4qIF1iYgOk/ATqivcC6K6dOermKC5uIe7ABQg7+BJRAYxrke1GbEw7hhPZdFQEls1mitUxrvmKgBHJSyn8KMAD+06jQNTPITwAAAABJRU5ErkJggg==); background-repeat: no-repeat; background-position: 18px 1px; }
         	</style>

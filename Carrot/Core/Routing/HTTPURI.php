@@ -92,7 +92,7 @@ class HTTPURI implements HTTPURIInterface
     {
         $this->setScheme($scheme);
         $this->setAuthority($authority);
-        $this->setPath($path, FALSE);
+        $this->setPath($path, FALSE, TRUE);
         $this->setQuery($query);
         $this->setFragment($fragment, FALSE);
     }
@@ -149,17 +149,17 @@ class HTTPURI implements HTTPURIInterface
      * have a host, which means all HTTP URI has an authority
      * component (RFC 2616, Section 3.2.2).
      * 
-     * NOTE: This method will remove all string coming after the '?'
-     * character ({@see removeQueryStringFromPath()}) This makes it
-     * safe to use this method with $_SERVER['REQUEST_URI'] variable.
-     * 
      * @param string $path The path string to set.
      * @param bool $pathIsAlreadyDecoded If FALSE, this method will
      *        decode percent encodings on each segment of the given
      *        path using urldecode().
+     * @param bool $removeQueryString If TRUE, this method will
+     *        remove the all string coming after the '?' character.
+     *        This makes it safe to use this method with
+     *        $_SERVER['REQUEST_URI'] variable.
      *
      */
-    public function setPath($path, $pathIsAlreadyDecoded = TRUE)
+    public function setPath($path, $pathIsAlreadyDecoded = TRUE, $removeQueryString = FALSE)
     {
         if (empty($path))
         {
@@ -168,7 +168,11 @@ class HTTPURI implements HTTPURIInterface
         
         $path = ltrim($path, '/');
         $path = '/' . $path;
-        $path = $this->removeQueryStringFromPath($path);
+        
+        if ($removeQueryString)
+        {
+            $path = $this->removeQueryStringFromPath($path);
+        }
         
         if ($pathIsAlreadyDecoded == FALSE)
         {
@@ -188,19 +192,22 @@ class HTTPURI implements HTTPURIInterface
      * any percent encodings. If the given path hasn't been decoded
      * yet, tell the method so it can help you decode it.
      * 
-     * NOTE: This method will remove all string coming after the '?'
-     * character ({@see removeQueryStringFromPath()}) This makes it
-     * safe to use this method with $_SERVER['REQUEST_URI'] variable.
-     * 
      * @param string $pathToBeAppended The path to be appended.
      * @param bool $pathIsAlreadyDecoded If FALSE, this method will
      *        decode percent encodings on each segment of the given
      *        path using urldecode().
+     * @param bool $removeQueryString If TRUE, this method will
+     *        remove the all string coming after the '?' character.
+     *        This makes it safe to use this method with
+     *        $_SERVER['REQUEST_URI'] variable.
      *
      */
-    public function appendPath($pathToBeAppended, $pathIsAlreadyDecoded = TRUE)
+    public function appendPath($pathToBeAppended, $pathIsAlreadyDecoded = TRUE, $removeQueryString = FALSE)
     {
-        $pathToBeAppended = $this->removeQueryStringFromPath($pathToBeAppended);
+        if ($removeQueryString)
+        {
+            $pathToBeAppended = $this->removeQueryStringFromPath($pathToBeAppended);
+        }
         
         if ($pathIsAlreadyDecoded == FALSE)
         {
@@ -229,19 +236,22 @@ class HTTPURI implements HTTPURIInterface
      * have a host, which means all HTTP URI has an authority
      * component (RFC 2616, Section 3.2.2).
      *
-     * NOTE: This method will remove all string coming after the '?'
-     * character ({@see removeQueryStringFromPath()}) This makes it
-     * safe to use this method with $_SERVER['REQUEST_URI'] variable.
-     *
      * @param string $pathToBePrepended The path to be prepended.
      * @param bool $pathIsAlreadyDecoded If FALSE, this method will
      *        decode percent encodings on each segment of the given
      *        path using urldecode().
+     * @param bool $removeQueryString If TRUE, this method will
+     *        remove the all string coming after the '?' character.
+     *        This makes it safe to use this method with
+     *        $_SERVER['REQUEST_URI'] variable.
      *
      */
-    public function prependPath($pathToBePrepended, $pathIsAlreadyDecoded = TRUE)
+    public function prependPath($pathToBePrepended, $pathIsAlreadyDecoded = TRUE, $removeQueryString = FALSE)
     {
-        $pathToBePrepended = $this->removeQueryStringFromPath($pathToBePrepended);
+        if ($removeQueryString)
+        {
+            $pathToBePrepended = $this->removeQueryStringFromPath($pathToBePrepended);
+        }
         
         if ($pathIsAlreadyDecoded == FALSE)
         {
@@ -624,7 +634,9 @@ class HTTPURI implements HTTPURIInterface
         
         foreach ($explodedPath as $segment)
         {
-            $encodedPath[] = urlencode($segment);
+            $segment = urlencode($segment);
+            $segment = $this->PCREReplace('/\\?/uD', '', $segment);
+            $encodedPath[] = $segment;
         }
         
         return implode('/', $encodedPath);

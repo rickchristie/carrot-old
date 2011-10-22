@@ -1,0 +1,209 @@
+/**
+ * Main styles for Carrot documentation pages.
+ * 
+ * The author owns the copyright of the design and styles of the
+ * documentation pages, and they must not be reproduced in any
+ * way, unless explicitly stated otherwise with a written
+ * permission from the author.
+ * 
+ * @author Rick Christie <seven.rchristie@gmail.com>
+ *
+ */
+
+
+/* @group Regular */
+
+body {
+    font-family: 'Arial', 'Helvetica', sans-serif;
+    font-size: 13px;
+    line-height: 20px;
+    color: #333;
+    background: #f7fbfe;
+    padding: 50px 0;
+}
+
+h1, h2, h3, h4, h5, h6 {
+    font-weight: normal;
+    color: #202020;
+}
+
+/* @end */
+
+
+/* @group Header */
+
+#header {
+    position: relative;
+    left: 20px;
+    width: 200px;
+    height: 56px;
+}
+
+#header img {
+    margin: 0;
+    padding: 0;
+    display: block;
+    position: absolute;
+}
+
+#header span {
+    margin-left: 110px;
+    padding-top: 25px;
+    display: block;
+    font-family: 'Georgia', 'Palatino', serif;
+    color: #919191;
+    font-size: 12px;
+}
+
+/* @end */
+
+
+/* @group Containers */
+
+#wrapper {
+    width: 890px;
+    margin: 0 auto 0 auto;
+}
+
+#container {
+    border: 1px solid #bdcee4;
+    background: #fff url('sidebar-back.png') repeat-y;
+    
+    /* Box Shadow */
+    -webkit-box-shadow: 0px 0px 0px 6px #eaeef1; /* Saf3.0+, Chrome */
+    -moz-box-shadow: 0px 0px 0px 6px #eaeef1; /* FF3.5 - 3.6 */
+    box-shadow: 0px 0px 0px 6px #eaeef1; /* Opera 10.5, IE9, FF4+, Chrome 10+ */
+    
+    /* Rounded Corner */
+    -webkit-border-radius: 3px; /* Saf3-4, iOS 1-3.2, Android <1.6 */
+    -moz-border-radius: 3px; /* FF1-3.6 */
+    border-radius: 3px; /* Opera 10.5, IE9, Saf5, Chrome, FF4, iOS 4, Android 2.1+ */
+              
+    /* useful if you don't want a bg color from leaking outside the border: */        
+    -moz-background-clip: padding;
+    -webkit-background-clip: padding-box;
+    background-clip: padding-box; 
+}
+
+/* @end */
+
+
+/* @group Sidebar */
+
+#sidebar {
+    width: 209px;
+    float: left;
+}
+
+/* @group Section Parents */
+
+.sectionParents li {
+    display: block;
+    margin: 0;
+    padding: 0;
+    border-bottom: 1px solid #bdcee4;
+    line-height: 1.2;
+    font-size: 14px;
+    
+    background-color: #f3f9ff;
+    background-image: -webkit-gradient(linear, left top, left bottom, from(#fcfdff), to(#f3f9ff)); /* Saf4+, Chrome */
+    background-image: -webkit-linear-gradient(top, #fcfdff, #f3f9ff); /* Chrome 10+, Saf5.1+, iOS 5+ */
+    background-image: -moz-linear-gradient(top, #fcfdff, #f3f9ff); /* FF3.6 */
+    background-image: -ms-linear-gradient(top, #fcfdff, #f3f9ff); /* IE10 */
+    background-image: -o-linear-gradient(top, #fcfdff, #f3f9ff); /* Opera 11.10+ */
+    background-image: linear-gradient(top, #fcfdff, #f3f9ff);
+    filter: progid:DXImageTransform.Microsoft.gradient(startColorStr='#fcfdff', EndColorStr='#f3f9ff'); /* IE6–IE9 */
+}
+
+.sectionParents li:first-child {
+    /* Rounded Corner */
+    -webkit-border-top-left-radius: 3px; /* Saf3-4, iOS 1-3.2, Android <1.6 */
+    -moz-border-radius-topleft: 3px; /* FF1-3.6 */
+    border-top-left-radius: 3px; /* Opera 10.5, IE9, Saf5, Chrome, FF4, iOS 4, Android 2.1+ */
+}
+
+.sectionParents li a {
+    text-decoration: none;
+    display: block;
+    padding: 10px 10px 8px 28px;
+    background: url('favicon.png') 8px 9px no-repeat;
+    color: #333;
+}
+
+.sectionParents li a:active {
+    color: #f06707;
+}
+
+/* @end */
+
+/* @group Navigation */
+
+.navigation {
+    padding: 10px 15px;
+    font-size: 13px;
+}
+
+.navigation li {
+    margin: 5px 0;
+}
+
+.navigation li a {
+    text-decoration: none;
+    color: #666;
+}
+
+.navigation li a:active,
+.navigation li a.current {
+    color: #000;
+}
+
+.navigation li a.current::before {
+    content: '› ';
+}
+
+/* @end */
+
+/* @end */
+
+
+/* @group Content */
+
+#content {
+    width: 600px;
+    margin-left: 245px;
+    margin-top: 35px;
+    margin-bottom: 35px;
+}
+
+/* @group Regular */
+
+#content h1 {
+    font-size: 22px;
+    margin-bottom: 20px;
+}
+
+#content p {
+    margin: 15px 0;
+}
+
+/* @end */
+
+/* @end */
+
+
+/* @group Reusable Classes */
+
+.clearfix:after { 
+    content: "."; 
+    display: block; 
+    height: 0; 
+    clear: both; 
+    visibility: hidden; 
+} 
+.clearfix {display: inline-block;} 
+/* Hides from IE-mac \*/ 
+* html .clearfix {height: 1%;} 
+.clearfix {display: block;} 
+/* End hide from IE-mac */
+
+/* @end */

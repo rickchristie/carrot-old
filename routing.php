@@ -30,6 +30,11 @@ $config->setNoMatchingCLIRouteDestination(new Destination(
     'CLINoMatchingRoute'
 ));
 
+$config->addHTTPRoute(
+    'Carrot:Guides',
+    new Carrot\Docs\HTTPRoute()
+);
+
 $config->addBasicHTTPRoute('Carrot:Sample', array(
     'pattern' => '/',
     'reference' => new Reference('Sample\Welcome'),

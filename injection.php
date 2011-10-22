@@ -70,6 +70,15 @@ $config->addInjector(new FauxInjector(
     new Carrot\Core\DefaultPages
 ));
 
+$config->addInjector(new ConstructorInjector(
+    new Reference('Carrot\Docs\View'),
+    array(
+        new Carrot\Docs\Storage,
+        new Reference('Carrot\Core\Routing\RouterInterface'),
+        'Carrot:Guides'
+    )
+));
+
 /**
  * Return the configuration object to the caller.
  * 
