@@ -16,7 +16,7 @@
         <div id="container" class="clearfix">
             <div id="sidebar">
                 <ul class="sectionParents">
-                    <li><a href="<?php echo $this->getURI() ?>">Table of Contents</a></li>
+                    <li><a href="<?php echo $this->getURI() ?>">Table of contents</a></li>
                     <?php echo $page->renderParentSectionsToList($this->router, $this->routeID) ?>
                 </ul>
                 <ul class="navigation">

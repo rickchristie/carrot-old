@@ -39,7 +39,7 @@ class HTTPRoute implements HTTPRouteInterface
      * @param string $path The path that this route should handle.
      * 
      */
-    public function __construct($path = '/guides/')
+    public function __construct($path = '/docs/')
     {
         $path = trim($path, '/');
         $this->path = '/' . $path . '/';

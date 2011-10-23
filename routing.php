@@ -31,7 +31,7 @@ $config->setNoMatchingCLIRouteDestination(new Destination(
 ));
 
 $config->addHTTPRoute(
-    'Carrot:Guides',
+    'Carrot:Docs',
     new Carrot\Docs\HTTPRoute()
 );
 

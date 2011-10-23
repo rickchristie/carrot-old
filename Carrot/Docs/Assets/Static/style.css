@@ -61,7 +61,7 @@ h1, h2, h3, h4, h5, h6 {
 /* @group Containers */
 
 #wrapper {
-    width: 890px;
+    width: 840px;
     margin: 0 auto 0 auto;
 }
 
@@ -139,12 +139,13 @@ h1, h2, h3, h4, h5, h6 {
 /* @group Navigation */
 
 .navigation {
-    padding: 10px 15px;
+    padding: 6px 15px;
     font-size: 13px;
+    line-height: 1.3;
 }
 
 .navigation li {
-    margin: 5px 0;
+    margin: 8px 0;
 }
 
 .navigation li a {
@@ -169,7 +170,7 @@ h1, h2, h3, h4, h5, h6 {
 /* @group Content */
 
 #content {
-    width: 600px;
+    width: 550px;
     margin-left: 245px;
     margin-top: 35px;
     margin-bottom: 35px;
@@ -182,8 +183,38 @@ h1, h2, h3, h4, h5, h6 {
     margin-bottom: 20px;
 }
 
+#content h2 {
+    font-size: 18px;
+    margin: 20px 0;
+}
+
+#content a {
+    text-decoration: none;
+    color: #d25024;
+    border-bottom: 1px dotted #999;
+}
+
+#content a:visited {
+    color: #af5600;
+}
+
+#content a:hover {
+    color: #ff7e00;
+    border-bottom: none;
+}
+
 #content p {
     margin: 15px 0;
+}
+
+#content ul {
+    margin: 15px 0;
+}
+
+#content ul li {
+    padding-left: 40px;
+    margin: 5px 0;
+    background: url('favicon.png') 18px 1px no-repeat;
 }
 
 /* @end */

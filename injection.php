@@ -75,7 +75,7 @@ $config->addInjector(new ConstructorInjector(
     array(
         new Carrot\Docs\Storage,
         new Reference('Carrot\Core\Routing\RouterInterface'),
-        'Carrot:Guides'
+        'Carrot:Docs'
     )
 ));
 
