@@ -1,0 +1,46 @@
+<h1>Carrot requires you to use its dependency injection container</h1>
+
+<p>
+    You can't use Carrot without utilizing its dependency
+    injection container. Carrot uses the container to instantiate
+    your class and wire its dependencies, so without it, there's
+    no Carrot. Using dependency injection container right at the
+    core is what allows you to use plain old PHP objects for all
+    your classes. There are of course drawbacks for this
+    decision, but I think the benefits far outweigh them.
+</p>
+
+<h2>Do I need to run the container for unit testing?</h2>
+
+<p>
+    As long as 
+</p>
+
+<h2>Guarding against abuse</h2>
+
+<p>
+    As a general rule, the classes you wrote must not know that
+    it is being instantiated and managed by a container. Breaking
+    this rule is 
+</p>
+
+<h2>Relationship between your classes and the container</h2>
+
+<p>
+    It depends on how you write your classes. Strictly speaking,
+    unless you are up to something mischievous, your classes
+    shouldn't have the need to access the dependency injection
+    container directly. When it does, it's usually a sign
+    of poor design. So as a general rule, 
+</p>
+
+<p>
+    Strictly speaking, unless you are up to something mischievous, you
+    shouldn't need 
+</p>
+
+<h3>Do I need to instantiate the dependency injection container to test?</h3>
+
+<p>
+    No.
+</p>

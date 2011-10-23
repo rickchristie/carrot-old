@@ -12,6 +12,16 @@
 /**
  * Tests for HTTPURI.
  * 
+ * TODO: Several changes has been applied to HTTPURI class,
+ *       including the addition of HTTPURI::getPathEncoded()
+ *       and $removeQueryString boolean parameter in path
+ *       operation methods. Update this class to reflect this
+ *       change!
+ *
+ * TODO: Better organize the class according to 3A, arrange,
+ *       action, assert. Create atomic test methods instead of
+ *       big methods for better readability and maintainability.
+ * 
  * @author      Ricky Christie <seven.rchristie@gmail.com>
  * @license     http://www.opensource.org/licenses/mit-license.php MIT License
  *

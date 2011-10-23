@@ -371,7 +371,7 @@ class Storage
      */
     protected function getNavigationItemFromFile($fileName, $realPath, array $rootPathSegments)
     {
-        $fileNamePattern = '/^([A-Za-z0-9]\\. (.+))\.html$/uD';
+        $fileNamePattern = '/^([A-Za-z0-9]+\\. (.+))\.html$/uD';
         $replaceDotAndSpacesPattern = '/[\\. ]+/u';
         
         if (preg_match($fileNamePattern, $fileName, $matches))
@@ -405,7 +405,7 @@ class Storage
      */
     protected function getNavigationItemFromDirectory($directoryName, $realPath, array $rootPathSegments)
     {
-        $directoryPattern = '/^([A-Za-z0-9]\\. (.+))$/uD';
+        $directoryPattern = '/^([A-Za-z0-9]+\\. (.+))$/uD';
         $replaceDotAndSpacesPattern = '/[\\. ]+/u';
         
         if (preg_match($directoryPattern, $directoryName, $matches))

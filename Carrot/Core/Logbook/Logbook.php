@@ -31,21 +31,5 @@ namespace Carrot\Core\Logbook;
 
 class Logbook implements LogbookInterface
 {
-    // TODO: Finish Logbook
-    
-    /**
-    //---------------------------------------------------------------
-     * @var array Contains logs
-     */
-    protected $logs = array();
-    
-    public function write($class, $message)
-    {
-        
-    }
-    
-    public function getAll()
-    {
-        
-    }
+    // TODO: Finish Logbook package
 }

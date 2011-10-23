@@ -162,13 +162,17 @@ class Page
      * Example of a rendering:
      * 
      * <code>
-     * <li>
+     * <li class="section">
      *     <a href="http://example.com/guides/1-Introduction/">
      *         Introduction
      *     </a>
      * </li>
      * ...
      * </code>
+     * 
+     * The <li> tag will have either 'section' or 'doc' class based
+     * the navigation item's type. The <a> tag will have 'current'
+     * class if the navigation item is the one currently active.
      * 
      * The class 'current' will be added to the <a> tag if the
      * navigation item is the currently displayed page.
@@ -187,7 +191,8 @@ class Page
         
         foreach ($this->navigation as $navItem)
         {
-            $class = '';
+            $anchorClass = '';
+            $listClass = 'doc';
             $title = $navItem->getTitle();
             $uri = $router->getURI(
                 $routeID,
@@ -196,22 +201,17 @@ class Page
             
             if ($navItem->isCurrent())
             {
-                $class .= 'current ';
+                $anchorClass = 'current';
             }
             
             if ($navItem->isSection())
             {
-                $class .= 'section ';
-            }
-            
-            if ($navItem->isDoc())
-            {
-                $class .= 'page ';
+                $listClass = 'section';
             }
             
             $string .= "
-                <li>
-                    <a href=\"{$uri}\" class=\"{$class}\">
+                <li class=\"{$listClass}\">
+                    <a href=\"{$uri}\" class=\"{$anchorClass}\">
                         {$title}
                     </a>
                 </li>";

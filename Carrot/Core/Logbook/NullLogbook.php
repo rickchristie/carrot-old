@@ -23,7 +23,7 @@
 
 namespace Carrot\Core\Logbook;
 
-class NullLogbook
+class NullLogbook implements LogbookInterface
 {
-    
+    // TODO: Finish Logbook package
 }

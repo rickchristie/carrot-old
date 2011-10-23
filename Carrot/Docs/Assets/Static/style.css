@@ -19,12 +19,17 @@ body {
     line-height: 20px;
     color: #333;
     background: #f7fbfe;
-    padding: 50px 0;
+    padding: 20px 0 45px 0;
 }
 
 h1, h2, h3, h4, h5, h6 {
     font-weight: normal;
     color: #202020;
+}
+
+code, pre {
+    font-family: 'Monaco', 'Consolas', 'Courier', 'Courier New', monospace;
+    font-size: 90%;
 }
 
 /* @end */
@@ -126,7 +131,7 @@ h1, h2, h3, h4, h5, h6 {
     text-decoration: none;
     display: block;
     padding: 10px 10px 8px 28px;
-    background: url('favicon.png') 8px 9px no-repeat;
+    background: url('folder-icon.png') 10px 13px no-repeat;
     color: #333;
 }
 
@@ -139,13 +144,13 @@ h1, h2, h3, h4, h5, h6 {
 /* @group Navigation */
 
 .navigation {
-    padding: 6px 15px;
+    padding: 4px 15px;
     font-size: 13px;
     line-height: 1.3;
 }
 
 .navigation li {
-    margin: 8px 0;
+    margin: 10px 0;
 }
 
 .navigation li a {
@@ -153,13 +158,18 @@ h1, h2, h3, h4, h5, h6 {
     color: #666;
 }
 
-.navigation li a:active,
+.navigation li a:hover,
 .navigation li a.current {
     color: #000;
 }
 
 .navigation li a.current::before {
     content: '› ';
+}
+
+.navigation li.section {
+    padding-left: 18px;
+    background: url('folder-icon.png') 0px 2px no-repeat;
 }
 
 /* @end */
@@ -173,7 +183,7 @@ h1, h2, h3, h4, h5, h6 {
     width: 550px;
     margin-left: 245px;
     margin-top: 35px;
-    margin-bottom: 35px;
+    margin-bottom: 40px;
 }
 
 /* @group Regular */
@@ -181,11 +191,16 @@ h1, h2, h3, h4, h5, h6 {
 #content h1 {
     font-size: 22px;
     margin-bottom: 20px;
+    line-height: 1.2;
 }
 
 #content h2 {
     font-size: 18px;
-    margin: 20px 0;
+    margin: 20px 0 15px 0;
+}
+
+#content h3 {
+    font-size: 15px;
 }
 
 #content a {
@@ -215,6 +230,49 @@ h1, h2, h3, h4, h5, h6 {
     padding-left: 40px;
     margin: 5px 0;
     background: url('favicon.png') 18px 1px no-repeat;
+}
+
+#content ol {
+    padding-left: 40px;
+    margin: 15px 0;
+}
+
+#content ol li {
+    list-style-type: decimal;
+}
+
+#content cite {
+    font-style: normal;
+}
+
+#content sup {
+    vertical-align: super;
+    font-size: 10px;
+    line-height: 1;
+}
+
+#content code {
+    background: #f8fbfe;
+}
+
+#content pre {
+    display: block;
+    overflow: auto;
+    background: #f1f7fd;
+    border: 1px solid #aebece;
+    line-height: 17px;
+    padding: 15px;
+    margin: 15px 0;
+    
+    /* Rounded corners */
+    -webkit-border-radius: 5px; /* Saf3-4, iOS 1-3.2, Android <1.6 */
+    -moz-border-radius: 5px; /* FF1-3.6 */
+    border-radius: 5px; /* Opera 10.5, IE9, Saf5, Chrome, FF4, iOS 4, Android 2.1+ */
+              
+    /* useful if you don't want a bg color from leaking outside the border: */        
+    -moz-background-clip: padding;
+    -webkit-background-clip:padding-box;
+    background-clip: padding-box; 
 }
 
 /* @end */
