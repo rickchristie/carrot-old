@@ -145,7 +145,7 @@ class Storage
     {
         $parentSections = array();
         $navigation = $this->getNavigationItemsFromDirectory($this->rootDirectory, array());
-        $title = 'Documentation Index';
+        $title = '';
         $content = $this->getSectionIndexContent($this->rootDirectory);
         return new Page(
             $title,

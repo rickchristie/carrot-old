@@ -80,13 +80,25 @@ class Page
     
     /**
      * Get the page title, escaped for HTML output.
+     * 
+     * You can pass title to print if it's empty, along with prefix
+     * and suffix to display. They will be concatenated before
+     * being escaped. The prefix and suffix would not be displayed
+     * if the title is empty, the $titleIfEmpty argument will be
+     * displayed instead on that occasion.
      *
      * @return string
      *
      */
-    public function getTitle()
+    public function getTitle($titleIfEmpty = '', $prefix = '', $suffix = '')
     {
-        return htmlspecialchars($this->title, ENT_QUOTES, 'UTF-8');
+        if (empty($this->title))
+        {
+            return htmlspecialchars($titleIfEmpty, ENT_QUOTES, 'UTF-8');
+        }
+        
+        $title = $prefix . $this->title . $suffix;
+        return htmlspecialchars($title, ENT_QUOTES, 'UTF-8');
     }
     
     /**

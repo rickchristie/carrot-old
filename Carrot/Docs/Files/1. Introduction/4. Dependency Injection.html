@@ -4,43 +4,28 @@
     You can't use Carrot without utilizing its dependency
     injection container. Carrot uses the container to instantiate
     your class and wire its dependencies, so without it, there's
-    no Carrot. Using dependency injection container right at the
-    core is what allows you to use plain old PHP objects for all
-    your classes. There are of course drawbacks for this
+    no framework. Using dependency injection container right at
+    the core is what allows you to use plain old PHP objects for
+    all your classes. There are of course drawbacks for this
     decision, but I think the benefits far outweigh them.
 </p>
 
-<h2>Do I need to run the container for unit testing?</h2>
+<h2>Your classses and the container</h2>
 
 <p>
-    As long as 
-</p>
-
-<h2>Guarding against abuse</h2>
-
-<p>
-    As a general rule, the classes you wrote must not know that
-    it is being instantiated and managed by a container. Breaking
-    this rule is 
-</p>
-
-<h2>Relationship between your classes and the container</h2>
-
-<p>
-    It depends on how you write your classes. Strictly speaking,
-    unless you are up to something mischievous, your classes
-    shouldn't have the need to access the dependency injection
-    container directly. When it does, it's usually a sign
-    of poor design. So as a general rule, 
+    Carrot does not give your classes access to the container
+    (well, not that I know of anyway), so the classes you wrote
+    will not be aware that it is being managed and instantiated
+    by a depedency injection container. This is the preferred way
+    of doing things, since having access to the container masks
+    the API of your classes - it will no different than having
+    globals and statics in your code.
 </p>
 
 <p>
-    Strictly speaking, unless you are up to something mischievous, you
-    shouldn't need 
-</p>
-
-<h3>Do I need to instantiate the dependency injection container to test?</h3>
-
-<p>
-    No.
+    By not being aware of the dependency injection container,
+    all of your classes, as a result, will be completely
+    oblivious to the fact that they are called by a framework.
+    This also means that you don't have go through Carrot if
+    you want to unit test your classes.
 </p>

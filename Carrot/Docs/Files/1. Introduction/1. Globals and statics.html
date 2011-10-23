@@ -9,15 +9,22 @@
     statics.
 </p>
 
-<h2>Globals and statics are evil</h2>
+<h2>Globals and statics are harmful</h2>
+
+<p class="note">
+    If you're already familiar with the reasons why globals and
+    statics are harmful, you can skip to the next page. The
+    following paragraphs are written to explain it to people
+    who does not have any idea about why they should be avoided.
+</p>
 
 <p>
-    If you're already familiar with the reasons why globals and
-    statics are harmful, you can skip to the next page. If you
-    don't have any idea why globals and statics should be
-    avoided, I've compiled various resources on the subject.
-    Please read on to their respective sources and decide for
-    yourself.
+    The reason Carrot doesn't use globals and statics and
+    encourages you to also discard them, is that they are very
+    dangerous. I've compiled various reasons why globals and
+    statics will harm your code, if you haven't already, please
+    read them to their sources. Only after that you can make an
+    informed opinion.
 </p>
 
 <h3>They make your code hard to understand</h3>
@@ -39,7 +46,7 @@
     have to read the source code line-by-line to figure it out.
     You thought <code>Foo</code> class doesn't need
     <code>Bar</code> when in fact, it accesses <code>Bar</code>
-    using globals or static reference.
+    using globals or static references in some obscure method.
     <a href="#source-c2"><sup>[1]</sup></a>
     <a href="#source-misko-singleton-liars"><sup>[2]</sup></a>
 </p>
@@ -55,7 +62,7 @@
     though it is not supposed to have access to it. This couples
     <code>Foo</code> with the global state, and if there is a bug
     related to <code>Bar</code>, you'll have to hunt the entire
-    source code because you don't know which part of the code
+    source code because you don't know which part of your code
     actually uses it.
     <a href="#source-misko-globals-flaw"><sup>[4]</sup></a>
 </p>
@@ -71,7 +78,8 @@
     isolated, but an action occurs in distant locations of the
     system which you did not tell the object about. When this
     happens, it forces developers to read every line of code to
-    understand potential interactions.
+    understand potential interactions that occurs when a method
+    is called.
     <a href="#source-misko-globals-flaw"><sup>[4]</sup></a>
 </p>
 
@@ -79,10 +87,10 @@
 
 <p>
     When you're using static methods, you are creating a static
-    dependency that you might not be able to replace by any
-    means other than editing the source. Let's say <code>Foo</code>
-    has a static dependency to <code>Bar::baz()</code>, and you
-    need to switch <code>Baz</code> implementation to
+    dependency that will be difficult to replace by means other
+    than editing the source. Let's say <code>Foo</code> has a
+    static dependency to <code>Bar::baz()</code>, and you need
+    to switch <code>Baz</code> implementation to
     <code>Bar</code>. You won't be able to do that without
     editing <code>Foo</code>'s source. In OOP with dependency
     injection, you should be able to do this simply by injecting
@@ -145,10 +153,10 @@
 
 <p>
     Please note that there are actually lots of positions in this
-    issue. There are people who try to stay away from globals but
-    is okay with statics since they don't pollute the namespace.
-    There are people who are okay with both of them despite heavy
-    arguments against them. Also, there are people who try to
+    issue. There are those who try to stay away from globals but
+    feel statics are okay since they don't pollute the namespace.
+    There are those who are okay with both of them despite heavy
+    arguments against them. Also, there are those who try to
     stay away from it at all costs. I guess Carrot belongs to the
     latter camp.
 </p>

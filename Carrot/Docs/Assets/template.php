@@ -1,7 +1,7 @@
 <!DOCTYPE html PUBLIC "-//W3C//DTD XHTML 1.0 Strict//EN" "http://www.w3.org/TR/xhtml1/DTD/xhtml1-strict.dtd">
 <html xmlns="http://www.w3.org/1999/xhtml">
 <head>
-	<title><?php echo $page->getTitle() ?></title>
+	<title><?php echo $page->getTitle('Carrot Documentation » Index', 'Carrot Documentation » ') ?></title>
 	<link rel="icon" type="image/png" href="<?php echo $this->getStaticAssetURI('favicon.png') ?>" />
 	<link rel="stylesheet" media="screen" href="<?php echo $this->getStaticAssetURI('reset.css') ?>" type="text/css" />
 	<link rel="stylesheet" media="screen" href="<?php echo $this->getStaticAssetURI('style.css') ?>" type="text/css" />

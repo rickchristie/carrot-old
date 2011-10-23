@@ -144,7 +144,7 @@ code, pre {
 /* @group Navigation */
 
 .navigation {
-    padding: 4px 15px;
+    padding: 4px 17px;
     font-size: 13px;
     line-height: 1.3;
 }
@@ -277,6 +277,25 @@ code, pre {
 
 /* @end */
 
+/* @group Special Classes */
+
+#content p.note {
+    padding: 10px 13px;
+    background-color: #fefeee;
+    border: 1px solid #dede87;
+    
+    -webkit-border-radius: 5px; /* Saf3-4, iOS 1-3.2, Android <1.6 */
+    -moz-border-radius: 5px; /* FF1-3.6 */
+    border-radius: 5px; /* Opera 10.5, IE9, Saf5, Chrome, FF4, iOS 4, Android 2.1+ */
+              
+    /* useful if you don't want a bg color from leaking outside the border: */        
+    -moz-background-clip: padding;
+    -webkit-background-clip: padding-box;
+    background-clip: padding-box; 
+}
+
+/* @end */
+
 /* @end */
 
 
@@ -288,7 +307,10 @@ code, pre {
     height: 0; 
     clear: both; 
     visibility: hidden; 
-} 
+}
+
+/* @end */
+
 .clearfix {display: inline-block;} 
 /* Hides from IE-mac \*/ 
 * html .clearfix {height: 1%;} 
