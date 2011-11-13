@@ -1,0 +1,170 @@
+<h1>Carrot does not use globals and statics</h1>
+
+<p>
+    It's not going to change. Almost all code in Carrot is
+    written so that the user don't have to resort to globals and
+    statics to solve their problems. You can think of Carrot as
+    an academic experiment on whether or not we can build a
+    fully functional framework in PHP without using globals and
+    statics.
+</p>
+
+<h2>Globals and statics are harmful</h2>
+
+<p class="note">
+    If you're already familiar with the reasons why globals and
+    statics are harmful, you can skip to the next page. The
+    following paragraphs are written to explain it to people
+    who does not have any idea about why they should be avoided.
+</p>
+
+<p>
+    The reason Carrot doesn't use globals and statics and
+    encourages you to also discard them, is that they are very
+    dangerous. I've compiled various reasons why globals and
+    statics will harm your code, if you haven't already, please
+    read them to their sources. Only after that you can make an
+    informed opinion.
+</p>
+
+<h3>They make your code hard to understand</h3>
+
+<p>
+    Your code will be easier to understand if it were to use
+    variables with limited scope. Global variables can be read or
+    modified by any part of the program, making it difficult to
+    remember or reason about every possible use.
+    <a href="#source-c2"><sup>[1]</sup></a>
+    <a href="#source-so-gordon-globals"><sup>[3]</sup></a>
+</p>
+
+<h3>They mask dependencies</h3>
+
+<p>
+    If you use globals or statics, you can never tell real
+    dependencies of a class just by reading it's public API. You
+    have to read the source code line-by-line to figure it out.
+    You thought <code>Foo</code> class doesn't need
+    <code>Bar</code> when in fact, it accesses <code>Bar</code>
+    using globals or static references in some obscure method.
+    <a href="#source-c2"><sup>[1]</sup></a>
+    <a href="#source-misko-singleton-liars"><sup>[2]</sup></a>
+</p>
+
+<h3>They encourage tight coupling</h3>
+
+<p>
+    In an ideal world, an object should only be able to interact
+    only with other objects which are directly passed into it,
+    either through a constructor or method call. With the
+    existence of globals and statics, object <code>Foo</code> can
+    get a hold of globally accessible <code>Bar</code> even
+    though it is not supposed to have access to it. This couples
+    <code>Foo</code> with the global state, and if there is a bug
+    related to <code>Bar</code>, you'll have to hunt the entire
+    source code because you don't know which part of your code
+    actually uses it.
+    <a href="#source-misko-globals-flaw"><sup>[4]</sup></a>
+</p>
+
+<h3>They create &lsquo;spooky action at a distance&rsquo;</h3>
+
+<p>
+    Whenever you use globals or statics, you are creating secret
+    communications channel that are not exposed in the API.
+    This allows
+    <a href="http://en.wikipedia.org/wiki/Action_at_a_distance_%28computer_science%29">spooky action at a distance</a>
+    to happen. It's when you run a method that is supposed to be
+    isolated, but an action occurs in distant locations of the
+    system which you did not tell the object about. When this
+    happens, it forces developers to read every line of code to
+    understand potential interactions that occurs when a method
+    is called.
+    <a href="#source-misko-globals-flaw"><sup>[4]</sup></a>
+</p>
+
+<h3>They create static dependencies</h3>
+
+<p>
+    When you're using static methods, you are creating a static
+    dependency that will be difficult to replace by means other
+    than editing the source. Let's say <code>Foo</code> has a
+    static dependency to <code>Bar::baz()</code>, and you need
+    to switch <code>Baz</code> implementation to
+    <code>Bar</code>. You won't be able to do that without
+    editing <code>Foo</code>'s source. In OOP with dependency
+    injection, you should be able to do this simply by injecting
+    another class, adhering to
+    <a href="http://en.wikipedia.org/wiki/Liskov_substitution_principle">Liskov's subtitution principle</a>.
+    <a href="#source-kore-static-harmful"><sup>[5]</sup></a>
+</p>
+
+<h3>They make testing very difficult</h3>
+
+<p>
+    Unit testing needs seams. It's where the execution of normal
+    code is prevented and the class being tested is isolated.
+    Without isolation, there is no unit test. Usually to do this,
+    polymorphism and dependency injection is utilized. An
+    interface is overridden/implemented and injected to the
+    class. This is not possible to do with statics. The usage of
+    global state also means that every test must start in an
+    expected state, or the test will fail.
+    <a href="#source-misko-globals-flaw"><sup>[4]</sup></a>
+    <a href="#source-misko-statics-testability"><sup>[6]</sup></a>
+</p>
+
+<h3>Sources</h3>
+
+<ol>
+    <li id="source-c2">
+        <cite>
+            <a href="http://c2.com/cgi/wiki?GlobalVariablesAreBad">Global Variables are Bad</a>, c2.com.
+        </cite>
+    </li>
+    <li id="source-misko-singleton-liars">
+        <cite>
+            <a href="http://misko.hevery.com/2008/08/17/singletons-are-pathological-liars/">Singletons are Pathological Liars</a>, by Misko Hevery.
+        </cite>
+    </li>
+    <li id="source-so-gordon-globals">
+        <cite>
+            <a href="http://stackoverflow.com/questions/5166087/php-global-in-functions/5166527#5166527">Globals are Evil</a>, by Gordon Oheim.
+        </cite>
+    </li>
+    <li id="source-misko-globals-flaw">
+        <cite>
+            <a href="http://misko.hevery.com/code-reviewers-guide/flaw-brittle-global-state-singletons/">Flaw: Brittle Global State and Singletons</a>, by Misko Hevery.
+        </cite>
+    </li>
+    <li id="source-kore-static-harmful">
+        <cite>
+            <a href="http://kore-nordmann.de/blog/0103_static_considered_harmful.html">Static Considered Harmful</a>, by Kore Nordmann.
+        </cite>
+    </li>
+    <li id="source-misko-statics-testability">
+        <cite>
+            <a href="http://googletesting.blogspot.com/2008/12/static-methods-are-death-to-testability.html">Static Methods are Death to Testability</a>, by Misko Hevery.
+        </cite>
+    </li>
+</ol>
+
+<h2>Final notes</h2>
+
+<p>
+    Please note that there are actually lots of positions in this
+    issue. There are those who try to stay away from globals but
+    feel statics are okay since they don't pollute the namespace.
+    There are those who are okay with both of them despite heavy
+    arguments against them. Also, there are those who try to
+    stay away from it at all costs. I guess Carrot belongs to the
+    latter camp.
+</p>
+
+<p>
+    For me, writing without globals and statics makes things much
+    cleaner and forces me to really think about design early on,
+    with the side effect of the code being easier to test. If
+    this does not appeal to you, then Carrot probably is not
+    going to interest you.
+</p>

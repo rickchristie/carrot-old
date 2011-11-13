@@ -1,0 +1,320 @@
+/**
+ * Main styles for Carrot documentation pages.
+ * 
+ * The author owns the copyright of the design and styles of the
+ * documentation pages, and they must not be reproduced in any
+ * way, unless explicitly stated otherwise with a written
+ * permission from the author.
+ * 
+ * @author Rick Christie <seven.rchristie@gmail.com>
+ *
+ */
+
+
+/* @group Regular */
+
+body {
+    font-family: 'Arial', 'Helvetica', sans-serif;
+    font-size: 13px;
+    line-height: 20px;
+    color: #333;
+    background: #f7fbfe;
+    padding: 20px 0 45px 0;
+}
+
+h1, h2, h3, h4, h5, h6 {
+    font-weight: normal;
+    color: #202020;
+}
+
+code, pre {
+    font-family: 'Monaco', 'Consolas', 'Courier', 'Courier New', monospace;
+    font-size: 90%;
+}
+
+/* @end */
+
+
+/* @group Header */
+
+#header {
+    position: relative;
+    left: 20px;
+    width: 200px;
+    height: 56px;
+}
+
+#header img {
+    margin: 0;
+    padding: 0;
+    display: block;
+    position: absolute;
+}
+
+#header span {
+    margin-left: 110px;
+    padding-top: 25px;
+    display: block;
+    font-family: 'Georgia', 'Palatino', serif;
+    color: #919191;
+    font-size: 12px;
+}
+
+/* @end */
+
+
+/* @group Containers */
+
+#wrapper {
+    width: 840px;
+    margin: 0 auto 0 auto;
+}
+
+#container {
+    border: 1px solid #bdcee4;
+    background: #fff url('sidebar-back.png') repeat-y;
+    
+    /* Box Shadow */
+    -webkit-box-shadow: 0px 0px 0px 6px #eaeef1; /* Saf3.0+, Chrome */
+    -moz-box-shadow: 0px 0px 0px 6px #eaeef1; /* FF3.5 - 3.6 */
+    box-shadow: 0px 0px 0px 6px #eaeef1; /* Opera 10.5, IE9, FF4+, Chrome 10+ */
+    
+    /* Rounded Corner */
+    -webkit-border-radius: 3px; /* Saf3-4, iOS 1-3.2, Android <1.6 */
+    -moz-border-radius: 3px; /* FF1-3.6 */
+    border-radius: 3px; /* Opera 10.5, IE9, Saf5, Chrome, FF4, iOS 4, Android 2.1+ */
+              
+    /* useful if you don't want a bg color from leaking outside the border: */        
+    -moz-background-clip: padding;
+    -webkit-background-clip: padding-box;
+    background-clip: padding-box; 
+}
+
+/* @end */
+
+
+/* @group Sidebar */
+
+#sidebar {
+    width: 209px;
+    float: left;
+}
+
+/* @group Section Parents */
+
+.sectionParents li {
+    display: block;
+    margin: 0;
+    padding: 0;
+    border-bottom: 1px solid #bdcee4;
+    line-height: 1.2;
+    font-size: 14px;
+    
+    background-color: #f3f9ff;
+    background-image: -webkit-gradient(linear, left top, left bottom, from(#fcfdff), to(#f3f9ff)); /* Saf4+, Chrome */
+    background-image: -webkit-linear-gradient(top, #fcfdff, #f3f9ff); /* Chrome 10+, Saf5.1+, iOS 5+ */
+    background-image: -moz-linear-gradient(top, #fcfdff, #f3f9ff); /* FF3.6 */
+    background-image: -ms-linear-gradient(top, #fcfdff, #f3f9ff); /* IE10 */
+    background-image: -o-linear-gradient(top, #fcfdff, #f3f9ff); /* Opera 11.10+ */
+    background-image: linear-gradient(top, #fcfdff, #f3f9ff);
+    filter: progid:DXImageTransform.Microsoft.gradient(startColorStr='#fcfdff', EndColorStr='#f3f9ff'); /* IE6–IE9 */
+}
+
+.sectionParents li:first-child {
+    /* Rounded Corner */
+    -webkit-border-top-left-radius: 3px; /* Saf3-4, iOS 1-3.2, Android <1.6 */
+    -moz-border-radius-topleft: 3px; /* FF1-3.6 */
+    border-top-left-radius: 3px; /* Opera 10.5, IE9, Saf5, Chrome, FF4, iOS 4, Android 2.1+ */
+}
+
+.sectionParents li a {
+    text-decoration: none;
+    display: block;
+    padding: 10px 10px 8px 28px;
+    background: url('folder-icon.png') 10px 13px no-repeat;
+    color: #333;
+}
+
+.sectionParents li a:active {
+    color: #f06707;
+}
+
+/* @end */
+
+/* @group Navigation */
+
+.navigation {
+    padding: 4px 17px;
+    font-size: 13px;
+    line-height: 1.3;
+}
+
+.navigation li {
+    margin: 10px 0;
+}
+
+.navigation li a {
+    text-decoration: none;
+    color: #666;
+}
+
+.navigation li a:hover,
+.navigation li a.current {
+    color: #000;
+}
+
+.navigation li a.current::before {
+    content: '› ';
+}
+
+.navigation li.section {
+    padding-left: 18px;
+    background: url('folder-icon.png') 0px 2px no-repeat;
+}
+
+/* @end */
+
+/* @end */
+
+
+/* @group Content */
+
+#content {
+    width: 550px;
+    margin-left: 245px;
+    margin-top: 35px;
+    margin-bottom: 40px;
+}
+
+/* @group Regular */
+
+#content h1 {
+    font-size: 22px;
+    margin-bottom: 20px;
+    line-height: 1.2;
+}
+
+#content h2 {
+    font-size: 18px;
+    margin: 20px 0 15px 0;
+}
+
+#content h3 {
+    font-size: 15px;
+}
+
+#content a {
+    text-decoration: none;
+    color: #d25024;
+    border-bottom: 1px dotted #999;
+}
+
+#content a:visited {
+    color: #af5600;
+}
+
+#content a:hover {
+    color: #ff7e00;
+    border-bottom: none;
+}
+
+#content p {
+    margin: 15px 0;
+}
+
+#content ul {
+    margin: 15px 0;
+}
+
+#content ul li {
+    padding-left: 40px;
+    margin: 5px 0;
+    background: url('favicon.png') 18px 1px no-repeat;
+}
+
+#content ol {
+    padding-left: 40px;
+    margin: 15px 0;
+}
+
+#content ol li {
+    list-style-type: decimal;
+}
+
+#content cite {
+    font-style: normal;
+}
+
+#content sup {
+    vertical-align: super;
+    font-size: 10px;
+    line-height: 1;
+}
+
+#content code {
+    background: #f8fbfe;
+}
+
+#content pre {
+    display: block;
+    overflow: auto;
+    background: #f1f7fd;
+    border: 1px solid #aebece;
+    line-height: 17px;
+    padding: 15px;
+    margin: 15px 0;
+    
+    /* Rounded corners */
+    -webkit-border-radius: 5px; /* Saf3-4, iOS 1-3.2, Android <1.6 */
+    -moz-border-radius: 5px; /* FF1-3.6 */
+    border-radius: 5px; /* Opera 10.5, IE9, Saf5, Chrome, FF4, iOS 4, Android 2.1+ */
+              
+    /* useful if you don't want a bg color from leaking outside the border: */        
+    -moz-background-clip: padding;
+    -webkit-background-clip:padding-box;
+    background-clip: padding-box; 
+}
+
+/* @end */
+
+/* @group Special Classes */
+
+#content p.note {
+    padding: 10px 13px;
+    background-color: #fefeee;
+    border: 1px solid #dede87;
+    
+    -webkit-border-radius: 5px; /* Saf3-4, iOS 1-3.2, Android <1.6 */
+    -moz-border-radius: 5px; /* FF1-3.6 */
+    border-radius: 5px; /* Opera 10.5, IE9, Saf5, Chrome, FF4, iOS 4, Android 2.1+ */
+              
+    /* useful if you don't want a bg color from leaking outside the border: */        
+    -moz-background-clip: padding;
+    -webkit-background-clip: padding-box;
+    background-clip: padding-box; 
+}
+
+/* @end */
+
+/* @end */
+
+
+/* @group Reusable Classes */
+
+.clearfix:after { 
+    content: "."; 
+    display: block; 
+    height: 0; 
+    clear: both; 
+    visibility: hidden; 
+}
+
+/* @end */
+
+.clearfix {display: inline-block;} 
+/* Hides from IE-mac \*/ 
+* html .clearfix {height: 1%;} 
+.clearfix {display: block;} 
+/* End hide from IE-mac */
+
+/* @end */

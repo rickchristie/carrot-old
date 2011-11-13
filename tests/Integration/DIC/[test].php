@@ -1,11 +1,11 @@
 <?php
 
-use Carrot\Core\DependencyInjection\Reference,
-    Carrot\Core\DependencyInjection\Injector\ConstructorInjector,
-    Carrot\Core\DependencyInjection\Injector\ProviderInjector,
-    Carrot\Core\DependencyInjection\Injector\CallbackInjector;
+use Carrot\DependencyInjection\Reference,
+    Carrot\DependencyInjection\Injector\ConstructorInjector,
+    Carrot\DependencyInjection\Injector\ProviderInjector,
+    Carrot\DependencyInjection\Injector\CallbackInjector;
 
-use Carrot\Core\Routing\HTTPURI;
+use Carrot\Routing\HTTPURI;
 
 # Set up autoloader
 
@@ -66,7 +66,7 @@ echo $uri->get();
 # Test dependency injection container
 
 $config = require 'injection.php';
-$container = new Carrot\Core\DependencyInjection\Container($config);
+$container = new Carrot\DependencyInjection\Container($config);
 
 $config->addInjector(
     new ProviderInjector(

@@ -10,20 +10,19 @@
  */
 
 /**
- * Load the configuration file. Most of configurations in Carrot
- * are done with dependency injection. The configuration values
- * loaded from the configuration file are the configuration
- * values that are needed before the injector is ready.
- *
- * Both index.php and config.php are the only files that need to
- * stay on the site's root. Other files can be moved, provided
- * that you write the paths correctly in config.php. The name of
- * this file (index.php) must not change, otherwise base path
- * guessing might not work correctly.
+ * Load the configuration file.
+ * 
+ * This file (index.php) is the only file that must stay in the
+ * site's root. Other files can be moved, provided you write the
+ * paths correctly in config.php and this file. The name of this
+ * file (index.php) must not change, otherwise base path guessing
+ * will not work.
  *
  */
 
-$config = require 'config.php';
+$config = require __DIR__ . DIRECTORY_SEPARATOR .
+                  'config' . DIRECTORY_SEPARATOR .
+                  'config.php';
 
 /**
  * Require the file that contains Carrot\Core\Application class,

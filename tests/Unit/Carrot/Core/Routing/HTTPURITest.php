@@ -22,17 +22,17 @@
  *       action, assert. Create atomic test methods instead of
  *       big methods for better readability and maintainability.
  * 
- * @author      Ricky Christie <seven.rchristie@gmail.com>
- * @license     http://www.opensource.org/licenses/mit-license.php MIT License
+ * @author  Ricky Christie <seven.rchristie@gmail.com>
+ * @license http://www.opensource.org/licenses/mit-license.php MIT License
  *
  */
 
-namespace Carrot\Core\Routing\Tests;
+namespace Carrot\Routing\Tests;
 
 use Exception,
     InvalidArgumentException,
     PHPUnit_Framework_TestCase,
-    Carrot\Core\Routing\HTTPURI;
+    Carrot\Routing\HTTPURI;
 
 class HTTPURITest extends PHPUnit_Framework_TestCase
 {

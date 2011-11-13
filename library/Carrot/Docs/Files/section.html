@@ -1,0 +1,67 @@
+<h1>Welcome to Carrot!</h1>
+
+<p>
+    Carrot is yet another PHP framework. It was created as a
+    learning project from an amateur programmer, hence it is
+    experimental in nature. Probably the most defining
+    characteristics of Carrot is the abolition of globals and
+    statics, along with the requirement to use its built-in
+    dependency injection container to wire dependencies into your
+    classes. Carrot is still unstable, with many changes and
+    features planned.
+</p>
+
+<h2>Requirements</h2>
+
+<ul>
+    <li>
+        PHP 5.3+ (Carrot uses namespaces and anonymous functions).
+    </li>
+    <li>
+        Apache2 web server (Carrot is not tested in other web
+        servers).
+    </li>
+</ul>
+
+<h2>Framework objectives</h2>
+
+<ul>
+    <li>
+        Create a framework without using the keyword global or
+        static. Fully recognize the dangerous nature of global
+        state and avoid it at all costs.
+    </li>
+    <li>
+        Relying on dependency injection container to manage the
+        dependencies of user classes, thus eliminating the need
+        for a global objects and registry.
+    </li>
+    <li>
+        Build and make use of decoupled classes, avoid inheritance
+        whenever possible. This would allow the user's classes
+        to be written as a plain old PHP object managed by the
+        dependency injection container.
+    </li>
+    <li>
+        Make the core as small and focused as possible. Carrot's
+        main goal is to be the front controller, routing the
+        request, wiring the dependencies of the user's classes,
+        and setting up a comfortable development environment for
+        the user.
+    </li>
+    <li>
+        Continue the development by adding libraries, which are
+        essentially just decoupled classes with proper namespace.
+        Each library must not know that it is being used inside
+        a framework, people should be able to just copy and paste
+        the library files to use it.
+    </li>
+</ul>
+
+<h2>Feedback</h2>
+
+<p>
+    The author welcomes all types of constructive feedback and/or
+    criticisms. Please send them all to 
+    <a href="mailto:seven.rchristie@gmail.com">seven.rchristie@gmail.com</a>.
+</p>

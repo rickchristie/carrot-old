@@ -1,0 +1,34 @@
+<h1>Carrot has no notion of packages or modules</h1>
+
+<p>
+    Some frameworks divide classes into modules, packages, or
+    bundles. Users of said framework are to adhere to the
+    structure of its class-packaging method. By doing this, they
+    ensure uniformity across the framework and the user's code.
+    It allows them to make lots of assumptions on the user's
+    code, which they use to provide things that make developer's
+    life easier. While this certainly has many advantage, Carrot
+    uses a different approach.
+</p>
+
+<h2>Everything is plain old PHP objects</h2>
+
+<p>
+    There are no package structure for you to learn because
+    Carrot doesn't have the notion of packages or modules.
+    Everything is just plain old PHP objects with namespace,
+    wired by Carrot's dependency injection container. Unless
+    you're using third party library that requires you to do so,
+    there is no need to extend any class, and your classes will
+    still be first class citizens, since that's how Carrot's
+    designed to work.
+</p>
+
+<p>
+    If you ask why, I suppose I assume that it would give more
+    freedom for the user. Since your classes don't have any
+    notable dependencies to the framework, theoretically, you
+    should be able to code more freely, as if you were coding
+    PHP from scratch. However, as I have said, this framework
+    is an experiment, so we will see if it works or not.
+</p>

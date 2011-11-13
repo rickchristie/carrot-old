@@ -21,14 +21,14 @@
  * routine method returns an instance of Response to the front
  * controller.
  *
- * @author      Ricky Christie <seven.rchristie@gmail.com>
- * @license     http://www.opensource.org/licenses/mit-license.php MIT License
+ * @author  Ricky Christie <seven.rchristie@gmail.com>
+ * @license http://www.opensource.org/licenses/mit-license.php MIT License
  *
  */
 
 namespace Sample;
 
-use Carrot\Core\Request\RequestInterface;
+use Carrot\Request\RequestInterface;
 
 class Welcome
 {   
@@ -44,7 +44,7 @@ class Welcome
     public function getWelcomeResponse()
     {
         ob_start();
-        require __DIR__ . DIRECTORY_SEPARATOR . 'Templates' . DIRECTORY_SEPARATOR . 'welcome.php';
+        require __DIR__ . DIRECTORY_SEPARATOR . 'templates' . DIRECTORY_SEPARATOR . 'welcome.php';
         $response = ob_get_clean();
         return $response;
     }
