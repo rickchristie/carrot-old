@@ -1,10 +1,10 @@
 <?php
 
-namespace Carrot\Injection;
+namespace Carrot\Autopilot;
 
 /**
- * Refers to a specific object that is instantiated with a
- * specific dependency injection configuration.
+ * Refers to a specific instance that is instantiated with
+ * Autopilot's container.
  * 
  * @author  Ricky Christie <seven.rchristie@gmail.com>
  *
@@ -13,18 +13,21 @@ class Reference
 {
     /**
      * Fully qualified class name of the referenced instance.
+     *
      * @var string $className
      */
     private $className;
     
     /**
      * Configuration name of the referenced instance.
+     *
      * @var string $configurationName
      */
     private $configurationName;
     
     /**
      * Lifecycle setting of the referenced instance.
+     *
      * @var string $lifecycle
      */
     private $lifecycle;

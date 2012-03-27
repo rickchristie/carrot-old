@@ -305,7 +305,12 @@ function get(Reference $reference)
  * we don't have to worry about thread or request scoping of
  * objects - each request builds its own instances, which in turn
  * means that wiring dependencies in PHP is much more simpler
- * than wiring dependencies in other languages. With Autopilot,
+ * than wiring dependencies in other languages.
+ * 
+//---------------------------------------------------------------
+ * Autopilot aims to be an automatic 
+ * 
+ * With Autopilot,
  * you can define a set of rules and your classes' dependencies
  * will be resolved on the fly. You don't need to manually
  * configure each and every object in your application (although
@@ -324,35 +329,87 @@ function get(Reference $reference)
  *
  */
 
-$autopilot->
+/**
+ * Tells the autopilot which default values and instances to use
+ * when automatically generating constructor injectors.
+ * 
+ * These values are only used when Autopilot is trying to
+ * automatically resolving constructor parameters. If there is
+ * a predefined instantiator for the instance in question, then
+ * the instantiator will be used instead.
+ *
+ */
 
-$autopilot->resolve(
-    
-);
-
-
-$resolver->
-
-$resolver->getAutopilot()->resolve(
+$autopilot->set(
     'App\*',
     'version',
     '0.78'
 );
 
-$resolver->getAutopilot()->resolveObject(
-    'App\Log\LoggableInterface',
+$autopilot->set(
+    '*',
+    'version',
+    '0.78'
+);
+
+/**
+//---------------------------------------------------------------
+ * Tells the 
+ *
+ */
+
+$autopilot->sub(
+    'App\Log\LoggableInterface!',
     'App\Log\LoggerInterface',
     'App\Log\FileLogger@Main'
 );
 
-$resolver->getAutopilot()->set(
-    'App\Controller\Site\*',
-    'setterMethod'
-    new Reference('')
-    new Reference('')
+/**
+//---------------------------------------------------------------
+ * You can tell Autopilot to run setter methods after
+ * instantiation with runSetter() method. 
+ *
+ */
+
+$autopilot->setter(
+    
 );
 
-$autopilot->
+/**
+//---------------------------------------------------------------
+ * You can tell Autopilot to use specific instantiator for
+ * specific references
+ * 
+ * 
+ *
+ */
+
+$autopilot->useCtor(
+    
+);
+
+$autopilot->useCallback(
+    
+);
+
+$autopilot->useProvider(
+    
+);
+
+
+/**
+ * Users can manually set injectors using the setInjector()
+ * method. Injectors set using this method has the highest
+ * priority level, other rules will be ignored if an injector
+ * is specifically set using this method.
+ *
+ */
+
+$autopilot->setInstantiator(
+    'App\Log\FileLogger@Main',
+    $customInjector
+);
+
 
 /**
 //---------------------------------------------------------------
@@ -365,12 +422,6 @@ $autopilot->
  *
  */
 
-if (!$autopilot->loadCache('/path/to/cacheFile.php'))
-{
-    // Define fallback rules.
+$autopilot->loadCache(array(
     
-}
-
-$autopilot->loadArray(
-    ''
-);
+));
