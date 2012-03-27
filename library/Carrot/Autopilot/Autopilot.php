@@ -19,7 +19,10 @@ use Carrot\Autopilot\Rulebook\ReflectionRulebook,
 class Autopilot
 {
     /**
-     * Used to store already instantiated instantiators and setters.
+     * Used to store already resolved instantiators and setters. Each
+     * time getInstantiator() or getSetter() has a result, it is
+     * saved in this runtime cache so that we don't have to consult
+     * the rulebook again next time.
      * 
      * @var Cache $cache
      */
@@ -81,13 +84,43 @@ class Autopilot
     }
     
     /**
-    //---------------------------------------------------------------
+     * Sets a default value to use when generating instantiator via
+     * ReflectionRulebook.
      * 
+     * @see ReflectionRulebook
+     * @param string $contextString The context to use the default value.
+     * @param string $varName The constructor argument name.
+     * @param mixed $value The value to use.
      *
      */
-    public function set($contextString, )
+    public function set($contextString, $varName, $value)
     {
-        
+        $this->reflectionRulebook->setDefaultValue(
+            $contextString,
+            $varName,
+            $value
+        );
+    }
+    
+    /**
+     * Similar to set(), but used for setting many default values
+     * in one call.
+     * 
+     * @see ReflectionRulebook
+     * @param string $contextString The context to use the default values.
+     * @param string $varName The constructor argument name.
+     *
+     */
+    public function setMany($contextString, array $args)
+    {
+        foreach ($args as $varName => $value)
+        {
+            $this->reflectionRulebook->setDefaultValue(
+                $contextString,
+                $varName,
+                $value
+            );
+        }
     }
     
     public function sub()
@@ -116,6 +149,32 @@ class Autopilot
     }
     
     public function setInstantiator()
+    {
+        
+    }
+    
+    /**
+    //---------------------------------------------------------------
+     * 
+     *
+     */
+    public function getInstantiator(
+        Reference $reference,
+        Reference $contextReference
+    )
+    {
+        
+    }
+    
+    /**
+    //---------------------------------------------------------------
+     * 
+     *
+     */
+    public function getSetter(
+        Reference $reference,
+        Reference $contextReference
+    )
     {
         
     }

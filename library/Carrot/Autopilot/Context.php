@@ -95,6 +95,8 @@ class Context
      */
     public function __construct($string)
     {
+        $this->string = $string;
+        
         if ($string == '*')
         {
             $this->isWildcard = TRUE;
@@ -178,5 +180,91 @@ class Context
         }
         
         return FALSE;
+    }
+    
+    /**
+     * Get the string that represents the context.
+     * 
+     * The context string acts like an ID. If two Context instance
+     * has the same context string, both instance represents the
+     * same context.
+     * 
+     * @return string
+     *
+     */
+    public function getString()
+    {
+        return $this->string;
+    }
+    
+    /**
+     * Checks if this context is a wildcard context.
+     * 
+     * @return bool
+     *
+     */
+    public function isWildcard()
+    {
+        return $this->isWildcard;
+    }
+    
+    /**
+     * Checks if this context is a class type context that doesn't
+     * includes its children.
+     * 
+     * @return bool
+     *
+     */
+    public function isClass()
+    {
+        return ($this->isNamespace === FALSE AND $this->isIncludingChildren === FALSE);
+    }
+    
+    /**
+     * Checks if this context is a class type context that includes
+     * its child classes.
+     * 
+     * @return bool
+     *
+     */
+    public function isGreedyClass()
+    {
+        return ($this->isNamespace === FALSE AND $this->isIncludingChildren === TRUE);
+    }
+    
+    /**
+     * Checks if this context is a namespace type context that only
+     * includes direct members.
+     * 
+     * @return bool
+     *
+     */
+    public function isNamespace()
+    {
+        return ($this->isNamespace === TRUE AND $this->isIncludingChildren === FALSE);
+    }
+    
+    /**
+     * Checks if this context is a namespace type context that
+     * includes all its members, regardless of the depth.
+     * 
+     * @return bool
+     *
+     */
+    public function isGreedyNamespace()
+    {
+        return ($this->isNamespace === TRUE AND $this->isIncludingChildren === TRUE);
+    }
+    
+    /**
+    //---------------------------------------------------------------
+     * 
+     * 
+     * @return Context The one with 
+     *
+     */
+    public function clash(Context $context)
+    {
+        
     }
 }
