@@ -93,7 +93,7 @@ class Reference
             throw new InvalidArgumentException("Reference ID '{$referenceId}' is not valid.");
         }
         
-        $this->className = trim($matches[0][0], '\\');
+        $this->className = trim($matches[1][0], '\\');
         $this->configurationName = $matches[3][0];
         $this->lifecycle = 'Singleton';
         

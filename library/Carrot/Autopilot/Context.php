@@ -117,6 +117,10 @@ class Context
     /**
      * Checks if this context includes the given Autopilot reference.
      * 
+     * If the context is a class, and the class doesn't exist, then
+     * this method will immediately return FALSE.
+     * 
+     * @throws RuntimeException 
      * @param Reference $reference
      * @return bool
      *
