@@ -1,0 +1,28 @@
+<phpunit backupGlobals="true"
+         backupStaticAttributes="false"
+         bootstrap="bootstrap.php"
+         colors="false"
+         convertErrorsToExceptions="true"
+         convertNoticesToExceptions="true"
+         convertWarningsToExceptions="true"
+         forceCoversAnnotation="false"
+         mapTestClassNameToCoveredClassName="false"
+         processIsolation="false"
+         stopOnError="false"
+         stopOnFailure="false"
+         stopOnIncomplete="false"
+         stopOnSkipped="false"
+         syntaxCheck="false"
+         testSuiteLoaderClass="PHPUnit_Runner_StandardTestSuiteLoader"
+         strict="false"
+         verbose="false">
+    
+    <testsuite name="unit">
+        <directory>unit/</directory>
+    </testsuite>
+    
+    <testsuite name="integration">
+        <directory>integration/</directory>
+    </testsuite>
+    
+</phpunit>

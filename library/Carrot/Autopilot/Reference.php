@@ -2,6 +2,8 @@
 
 namespace Carrot\Autopilot;
 
+use InvalidArgumentException;
+
 /**
  * Refers to a specific instance that is instantiated with
  * Autopilot's container.
@@ -88,7 +90,7 @@ class Reference
         
         if ($result <= 0)
         {
-            throw new RuntimeException('Reference ID is not valid.');
+            throw new InvalidArgumentException("Reference ID '{$referenceId}' is not valid.");
         }
         
         $this->className = trim($matches[0][0], '\\');

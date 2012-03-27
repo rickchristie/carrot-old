@@ -371,7 +371,7 @@ $autopilot->sub(
  *
  */
 
-$autopilot->setter(
+$autopilot->addSetter(
     
 );
 
