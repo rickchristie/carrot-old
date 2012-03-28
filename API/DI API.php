@@ -323,11 +323,187 @@ function get(Reference $reference)
  * 
  * 
  * 
+ * Autopilot 
  * 
+ * Instantiator:
+ * -> Cache
+ * -> SubstitutionRulebook (Subs)
+ * -> StandardRulebook (Ctor, Callback, Provider)
+ * -> ReflectionRulebook (Ctor)
  * 
+ * Setter:
+ * -> Cache
+ * -> StandardRulebook (Regular)
  * 
+ * Autopilot\Setter\SetterInterface
+ * Autopilot\Setter\RegularSetter
+ * Autopilot\Setter\Rulebook\SetterRulebookInterface
+ * Autopilot\Setter\Rulebook\StandardRulebook
+ * 
+ * Autopilot\Instantiator\InstantiatorInterface
+ * Autopilot\Instantiator\CtorInstantiator
+ * Autopilot\Instantiator\CallbackInstantiator
+ * Autopilot\Instantiator\ProviderInstantiator
+ * Autopilot\Instantiator\SubstitutionInstantiator
+ * Autopilot\Instantiator\Rulebook\InstantiatorRulebookInterface
+ * Autopilot\Instantiator\Rulebook\StandardRulebook
+ * Autopilot\Instantiator\Rulebook\SubstitutionRulebook
+ * Autopilot\Instantiator\Rulebook\ReflectionRulebook
  *
  */
+
+// Comes with default rulebooks.
+$autopilot = new Autopilot;
+
+// Let's not worry about performance, we can improve that LATER.
+// Right now let's worry about API design and capabilities.
+
+//---------------------------------------------------------------
+
+// ReflectionRulebook (instantiator)
+// Less magic, but clearer.
+$autopilot->getInstantiatorRulebook('reflection')->setDefaultCtorArg(
+    'Namespace:App*', // Context string
+    'version', // Variable name
+    'blah' // Value
+);
+
+// Shortcut method for the above:
+$autopilot->def(
+    'Namespace:App*', // Context String
+    'mysqli', // Variable Name
+    new Reference('Carrot\MySQLi\MySQLi') // This works too, due to the nature of CtorInstantiator
+);
+
+$autopilot->defBatch(
+    'Namespace:App*', // Context String
+    $batch // Batch array
+);
+
+// If you can def batch like this, why bother
+// setting constructor injector via StandardRulebook?
+// CtorInstantiator can inject *by reference*
+// The below should work if you need only one MySQLi, if you have
+// two or more MySQLi instances, you're going to need
+// StandardRulebook.
+$autopilot->defBatch(
+    'Class:MySQLi',
+    array(
+        'hostname' => $hostname,
+        'password' => $password,
+        'database' => $database,
+        'hostname' => $hostname
+    );
+);
+
+//---------------------------------------------------------------
+
+// SubstitutionRulebook (instantiator)
+// Less magic, but clearer
+$autopilot->getInstantiatorRulebook('substitution')->substitute(
+    'App\LoggerInterface',
+    'App\FileLogger'
+);
+
+// Shortcut method for the above:
+$autopilot->sub(
+    'App\LoggerInterface',
+    'App\FileLogger'
+);
+
+//---------------------------------------------------------------
+
+// StandardRulebook (instantiator)
+// Less magic, but clearer
+$autopilot->getInstantiatorRulebook('standard')->addCtorInstantiator(
+    'App\Controller\PostController',
+    array(
+        new Reference('Carrot\MySQLi\PostMapper'),
+        new Reference('Carrot\Pagination\Pagination'),
+        new Reference('Carrot\SearchParameters\SearchParameters')
+    )
+);
+
+$autopilot->getInstantiatorRulebook('standard')->addCallbackInstantiator(
+    'App\Controller\PostController',
+    $function, // anonymous function or array callback, used to create Carrot\Type\Callback
+    array(
+        new Reference('Carrot\MySQLi\MySQLi'),
+        new Reference('App\Pagination')
+    )
+);
+
+$autopilot->getInstantiatorRulebook('standard')->addProviderInstantiator(
+    'App\Controller\PostController@Main',
+    'App\Controller\PostConrollerProvider',
+    'methodName',
+    array(
+        new Reference('Carrot\MySQLi\MySQLi')
+    );
+);
+
+// Shortcut method for the above:
+$autopilot->useCtor('App\Controller\PostController', array(
+    new Reference('Carrot\MySQLi\PostMapper'),
+    new Reference('Carrot\Pagination\Pagination'),
+    new Reference('Carrot\SearchParameters\SearchParameters')
+));
+
+$autopilot->useCallback('Carrot\MySQLi\MySQLi@Main',
+    $function,
+    $args
+);
+
+$autopilot->useProvider('App\Controller\PostController@Main',
+    'App\Controller\PostConrollerProvider', // reference string
+    'methodName',
+    array(
+        new Reference('Carrot\MySQLi\MySQLi')
+    );
+);
+
+//---------------------------------------------------------------
+
+// StandardRulebook (setter)
+// Less magic, but clearer
+$autopilot->getSetterRulebook('standard')->addDirectSetter(
+    'Namespace:App*', // context of the setter
+    ''
+)
+
+//---------------------------------------------------------------
+
+// ADVANCED USER ONLY
+// Full rulebook customization
+$autopilot->clearDefaultRulebooks();
+
+// User can add their own rulebooks, but
+// here be dragons - make sure you know
+// what you're doing:
+$autopilot->addInstantiatorRulebook($customRulebook, 'customRulebookName');
+$autopilot->addSetterRulebook($customRulebok, 'customRulebookName');
+
+// Certain names are reserved, these two calls
+// will throw exception.
+$autopilot->addInstantiatorRulebook($customRulebook, 'reflection');
+$autopilot->addSetterRulebook($customRulebook, 'standard');
+
+
+$autopilot->reflection()->ignoreClassIfOptional(TRUE);
+
+$autopilot->substitution()->sub(
+    '*',
+    'App\Log\LoggerInterface',
+    'App\Log\FileLogger'
+);
+
+$autopilot->setter()->set(
+    'Class:App\Log\LoggableInterface',
+    'methodName',
+    'App\Log\LoggerInterface'
+);
+
+$autopilot->callback()->
 
 /**
  * Tells the autopilot which default values and instances to use
@@ -337,6 +513,8 @@ function get(Reference $reference)
  * automatically resolving constructor parameters. If there is
  * a predefined instantiator for the instance in question, then
  * the instantiator will be used instead.
+ * 
+ * If the rule clashes, the ones with mo
  *
  */
 
@@ -385,7 +563,10 @@ $autopilot->addSetter(
  */
 
 $autopilot->useCtor(
-    
+    'App\Controller\PostController',
+    new Reference('Carrot\MySQLi\PostMapper'),
+    new Reference('Carrot\Pagination\Pagination'),
+    new Reference('Carrot\SearchParameters\SearchParameters')
 );
 
 $autopilot->useCallback(

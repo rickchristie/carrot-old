@@ -10,7 +10,7 @@ namespace Carrot\Autopilot\Rulebook;
  * @author  Ricky Christie <seven.rchristie@gmail.com>
  *
  */
-class SubstituteRulebook
+class SubstitutionRulebook
 {
     
 }
