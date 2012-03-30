@@ -23,12 +23,20 @@ class ReferenceTest extends PHPUnit_Framework_TestCase
         $this->assertEquals('Main', $reference->getConfigurationName());
         $this->assertEquals(TRUE, $reference->isSingleton());
         $this->assertEquals('Carrot\MySQLi\MySQLi@Main:Singleton', $reference->getId());
+        $this->assertEquals(TRUE, $reference->isLifecycle('Singleton'));
+        $this->assertEquals(FALSE, $reference->isLifecycle('Transient'));
+        $this->assertEquals(TRUE, $reference->isConfigurationName('Main'));
+        $this->assertEquals(FALSE, $reference->isConfigurationName('Backup'));
         
         $reference = new Reference('Carrot\MySQLi\MySQLi@Backup:Transient');
         $this->assertEquals('Carrot\MySQLi\MySQLi', $reference->getClassName());
         $this->assertEquals('Backup', $reference->getConfigurationName());
         $this->assertEquals(FALSE, $reference->isSingleton());
         $this->assertEquals('Carrot\MySQLi\MySQLi@Backup:Transient', $reference->getId());
+        $this->assertEquals(FALSE, $reference->isLifecycle('Singleton'));
+        $this->assertEquals(TRUE, $reference->isLifecycle('Transient'));
+        $this->assertEquals(FALSE, $reference->isConfigurationName('Main'));
+        $this->assertEquals(TRUE, $reference->isConfigurationName('Backup'));
     }
     
     /**
@@ -42,6 +50,10 @@ class ReferenceTest extends PHPUnit_Framework_TestCase
         $this->assertEquals('Backup', $reference->getConfigurationName());
         $this->assertEquals(TRUE, $reference->isSingleton());
         $this->assertEquals('Carrot\MySQLi\MySQLi@Backup:Singleton', $reference->getId());
+        $this->assertEquals(TRUE, $reference->isLifecycle('Singleton'));
+        $this->assertEquals(FALSE, $reference->isLifecycle('Transient'));
+        $this->assertEquals(FALSE, $reference->isConfigurationName('Main'));
+        $this->assertEquals(TRUE, $reference->isConfigurationName('Backup'));
     }
     
     /**
@@ -55,12 +67,20 @@ class ReferenceTest extends PHPUnit_Framework_TestCase
         $this->assertEquals('', $reference->getConfigurationName());
         $this->assertEquals(TRUE, $reference->isSingleton());
         $this->assertEquals('Carrot\MySQLi\MySQLi@:Singleton', $reference->getId());
+        $this->assertEquals(TRUE, $reference->isLifecycle('Singleton'));
+        $this->assertEquals(FALSE, $reference->isLifecycle('Transient'));
+        $this->assertEquals(TRUE, $reference->isConfigurationName(''));
+        $this->assertEquals(FALSE, $reference->isConfigurationName('Backup'));
         
-        $reference = new Reference('Carrot\MySQLi\MySQLi:Transient');
+        $reference = new Reference('Carrot\MySQLi\MySQLi@:Transient');
         $this->assertEquals('Carrot\MySQLi\MySQLi', $reference->getClassName());
         $this->assertEquals('', $reference->getConfigurationName());
         $this->assertEquals(FALSE, $reference->isSingleton());
         $this->assertEquals('Carrot\MySQLi\MySQLi@:Transient', $reference->getId());
+        $this->assertEquals(FALSE, $reference->isLifecycle('Singleton'));
+        $this->assertEquals(TRUE, $reference->isLifecycle('Transient'));
+        $this->assertEquals(TRUE, $reference->isConfigurationName(''));
+        $this->assertEquals(FALSE, $reference->isConfigurationName('Backup'));
     }
     
     /**
@@ -75,6 +95,10 @@ class ReferenceTest extends PHPUnit_Framework_TestCase
         $this->assertEquals('', $reference->getConfigurationName());
         $this->assertEquals(TRUE, $reference->isSingleton());
         $this->assertEquals('Carrot\MySQLi\MySQLi@:Singleton', $reference->getId());
+        $this->assertEquals(TRUE, $reference->isLifecycle('Singleton'));
+        $this->assertEquals(FALSE, $reference->isLifecycle('Transient'));
+        $this->assertEquals(TRUE, $reference->isConfigurationName(''));
+        $this->assertEquals(FALSE, $reference->isConfigurationName('Backup'));
     }
     
     /**

@@ -21,7 +21,7 @@ class Context
      * 
      * @var string $regex
      */
-    private $regex = '/^(Namespace|Class):([A-Za-z_\\\\0-9]+)(\\*)?$/';
+    private $regex = '/^(Namespace|Class):([A-Za-z_\\\\0-9]+)(\\*)?(@([A-Za-z_0-9]+)?)?(:(Singleton|Transient))?$/';
     
     /**
      * The class name or the namespace, depending on the context type,
@@ -53,6 +53,38 @@ class Context
      * @var bool $isIncludingChildren
      */
     private $isIncludingChildren;
+    
+    /**
+     * If TRUE, then this context includes a configuration name that
+     * must be checked against the reference.
+     * 
+     * @var bool $hasConfigurationName
+     */
+    private $hasConfigurationName;
+    
+    /**
+     * Contains the configuration name to be checked against Autopilot
+     * references if $hasConfigurationName is TRUE.
+     * 
+     * @var string $configurationName
+     */
+    private $configurationName;
+    
+    /**
+     * If TRUE, then this context includes a lifecycle setting that
+     * must be checked against the reference.
+     * 
+     * @var bool $hasLifecycleSetting
+     */
+    private $hasLifecycleSetting;
+    
+    /**
+     * Contains the lifecycle setting to be checked against Autopilot
+     * references if $lifecycleSetting is TRUE.
+     * 
+     * @var string $lifecycleSetting
+     */
+    private $lifecycleSetting;
     
     /**
      * Constructor.
@@ -143,72 +175,19 @@ class Context
         $this->context = trim($matches[2][0], '\\');
         $this->isIncludingChildren = ($matches[3][0] == '*');
         $this->isNamespace = ($matches[1][0] == 'Namespace');
-    }
-    
-    /**
-     * Checks if this context includes the given Autopilot reference.
-     * 
-     * If the context is a class, and the class doesn't exist, then
-     * this method will immediately return FALSE.
-     * 
-     * @throws RuntimeException 
-     * @param Reference $reference
-     * @return bool
-     *
-     */
-    public function includes(Reference $reference)
-    {
-        $class = $reference->getClassName();
-        $contextLength = strlen($this->context);
-        $classFirstPart = substr($class, 0, $contextLength);
-        $classRemainingPart = substr($class, $contextLength);
-        
-        if ($this->isWildcard)
-        {
-            return TRUE;
-        }
         
         if ($this->isNamespace)
-        {
-            if ($this->isIncludingChildren)
-            {
-                return (
-                    $this->context == $classFirstPart AND
-                    preg_match('/^\\\\/', $classRemainingPart) > 0
-                );
-            }
-            else
-            {
-                return (
-                    $this->context == $classFirstPart AND
-                    preg_match('/^\\\\[^\\\\]+$/', $classRemainingPart) > 0
-                );
-            }
+        {   
+            $this->hasConfigurationName = FALSE;
+            $this->hasLifecycleSetting = FALSE;
         }
         else
-        {
-            if (
-                class_exists($this->context) == FALSE OR
-                class_exists($class) == FALSE
-            )
-            {
-                return FALSE;
-            }
-            
-            if ($this->isIncludingChildren)
-            {   
-                return (
-                    $this->context == $class OR
-                    is_subclass_of($class, $this->context)
-                );
-            }
-            else
-            {
-                return ($this->context == $class);
-            }
+        {   
+            $this->hasConfigurationName = (empty($matches[4][0]) == FALSE);
+            $this->configurationName = $matches[5][0];
+            $this->hasLifecycleSetting = (empty($matches[7][0]) == FALSE);
+            $this->lifecycleSetting = $matches[7][0];
         }
-        
-        return FALSE;
     }
     
     /**
@@ -238,13 +217,22 @@ class Context
     }
     
     /**
-     * Checks if this context is a class type context that doesn't
-     * includes its children.
+     * Checks if this context is a class type context.
      * 
      * @return bool
      *
      */
     public function isClass()
+    {
+        return ($this->isNamespace === FALSE);
+    }
+    
+    /**
+     * Checks if this context is a class type context that only
+     * includes the class, and not its children.
+     *
+     */
+    public function isNonGreedyClass()
     {
         return ($this->isNamespace === FALSE AND $this->isIncludingChildren === FALSE);
     }
@@ -262,13 +250,24 @@ class Context
     }
     
     /**
+     * Checks if this context is a namespace type context.
+     * 
+     * @return bool
+     *
+     */
+    public function isNamespace()
+    {
+        return ($this->isNamespace === TRUE);
+    }
+    
+    /**
      * Checks if this context is a namespace type context that only
      * includes direct members.
      * 
      * @return bool
      *
      */
-    public function isNamespace()
+    public function isNonGreedyNamespace()
     {
         return ($this->isNamespace === TRUE AND $this->isIncludingChildren === FALSE);
     }
@@ -283,6 +282,48 @@ class Context
     public function isGreedyNamespace()
     {
         return ($this->isNamespace === TRUE AND $this->isIncludingChildren === TRUE);
+    }
+    
+    /**
+     * Checks if this context has a configuration name rule to check.
+     * 
+     * @return bool
+     *
+     */
+    public function hasConfigurationName()
+    {
+        return $this->hasConfigurationName;
+    }
+    
+    /**
+     * Checks if this context has a lifecycle setting to check.
+     * 
+     * @return bool
+     *
+     */
+    public function hasLifecycleSetting()
+    {
+        return $this->hasLifecycleSetting;
+    }
+    
+    /**
+     * Checks if this context is an atomic one, meaning that it only
+     * applies to one specific Autopilot reference.
+     * 
+     * Atomic contexts has the highest priority. An atomic context
+     * is a non greey class typed context with both configuration
+     * name and lifecycle setting declared.
+     * 
+     * @return bool
+     *
+     */
+    public function isAtomic()
+    {
+        return (
+            $this->isNonGreedyClass() AND
+            $this->hasLifecycleSetting() AND
+            $this->hasConfigurationName()
+        );
     }
     
     /**
@@ -301,24 +342,62 @@ class Context
     }
     
     /**
+     * Checks if this context includes the given Autopilot reference.
+     * 
+     * If the context given is a class typed context and the class
+     * doesn't exist, then this method will immediately return FALSE.
+     * 
+     * @throws RuntimeException 
+     * @param Reference $reference
+     * @return bool
+     *
+     */
+    public function includes(Reference $reference)
+    {
+        if ($this->isWildcard)
+        {
+            return TRUE;
+        }
+        
+        if ($this->isNamespace)
+        {
+            return $this->namespaceContextIncludes($reference);
+        }
+        else
+        {
+            return $this->classContextIncludes($reference);
+        }
+        
+        return FALSE;
+    }
+    
+    /**
      * Check if this context is more specific than the given Context.
      * 
      * Specificity in contexts has this hierarchy (lowest to highest):
      * 
      * - Wildcard
      * - Greedy namespace
+     * - Greedy namespace with deeper namespace level
      * - Namespace
      * - Greedy class
+     * - Greedy class with lifecycle setting
+     * - Greedy class with configuration name
+     * - Greedy class with both lifecycle setting & configuration name
      * - Class
+     * - Class with lifecycle setting
+     * - Class with configuration name
+     * - Class with both lifecycle setting & configuration name
+     * - Atomic class (points to a single Autopilot reference only)
      * 
      * For two greedy namespaces, the deeper one wins (the ones that
      * has more namespace entries). However, no level comparison
      * is performed on other cases.
      * 
      * Note that this method does not check whether or not both
-     * contexts points to the same class, it just checks whether this
+     * contexts points to a same class, it just checks whether this
      * context is more specific than another context based on the
-     * above rules.
+     * said rules.
      * 
      * @param Context $context
      * @return bool
@@ -328,54 +407,182 @@ class Context
     {
         if ($context->isWildcard())
         {
+            // Everything else is more specific than wildcard.
             return ($this->isWildcard() == FALSE);
         }
         
         if ($context->isGreedyNamespace())
         {
-            return $this->isMoreSpecificThanGreedyNamespace($context);
+            if ($this->isGreedyNamespace() == FALSE)
+            {
+                // Anything other than wildcard and greedy namespace
+                // is more specific than a greedy namespace.
+                return ($this->isWildcard() == FALSE);
+            }
+            
+            return ($this->getLevel() > $context->getLevel());
         }
         
-        if ($context->isNamespace())
-        {
-            return (
-                $this->isGreedyClass() OR
-                $this->isClass()
-            );
+        if ($context->isNonGreedyNamespace())
+        {   
+            return ($this->isClass());
         }
         
         if ($context->isGreedyClass())
-        {   
-            return $this->isClass();
+        {
+            if ($this->isClass() == FALSE)
+            {
+                return FALSE;
+            }
+            
+            if ($this->isNonGreedyClass())
+            {
+                return TRUE;
+            }
+            
+            if (
+                $context->hasConfigurationName() AND
+                $this->hasConfigurationName == FALSE
+            )
+            {
+                return FALSE;
+            }
+            
+            if (
+                $this->hasConfigurationName AND
+                $context->hasConfigurationName() == FALSE
+            )
+            {
+                return TRUE;
+            }
+            
+            if (
+                $this->hasLifecycleSetting AND
+                $context->hasLifecycleSetting() == FALSE
+            )
+            {
+                return TRUE;
+            }
+            
+            return FALSE;
         }
         
-        if ($context->isClass())
+        if ($context->isNonGreedyClass())
         {
-            // There is nothing more specific than a
-            // class typed context.
+            if ($this->isNonGreedyClass() == FALSE)
+            {
+                return FALSE;
+            }
+            
+            if (
+                $context->hasConfigurationName() AND
+                $this->hasConfigurationName == FALSE
+            )
+            {
+                return FALSE;
+            }
+            
+            if (
+                $this->hasConfigurationName AND
+                $context->hasConfigurationName() == FALSE
+            )
+            {
+                return TRUE;
+            }
+            
+            if (
+                $this->hasLifecycleSetting AND
+                $context->hasLifecycleSetting() == FALSE
+            )
+            {
+                return TRUE;
+            }
+            
+            // There is nothing more specific than an
+            // atomic class.
             return FALSE;
         }
     }
     
     /**
-     * Check if this context is more specific than the provided
-     * greedy namespace context.
+     * Check if this namespace context includes the given Autopilot
+     * reference.
      * 
-     * We count the number of backslashes in the context to
-     * determine which is more specific if both contexts are
-     * greedy namespace type.
-     * 
-     * @param Context $context
+     * @see includes()
+     * @param Reference $reference
      * @return bool
      *
      */
-    private function isMoreSpecificThanGreedyNamespace(Context $context)
+    private function namespaceContextIncludes(Reference $reference)
     {
-        if ($this->isGreedyNamespace() == FALSE)
+        $class = $reference->getClassName();
+        $contextLength = strlen($this->context);
+        $classFirstPart = substr($class, 0, $contextLength);
+        $classRemainingPart = substr($class, $contextLength);
+        
+        if ($this->isIncludingChildren)
         {
-            return ($this->isWildcard() == FALSE);
+            return (
+                $this->context == $classFirstPart AND
+                preg_match('/^\\\\/', $classRemainingPart) > 0
+            );
+        }
+        else
+        {
+            return (
+                $this->context == $classFirstPart AND
+                preg_match('/^\\\\[^\\\\]+$/', $classRemainingPart) > 0
+            );
+        }
+    }
+    
+    /**
+     * See if this class context includes the given Autopilot reference.
+     * 
+     * @see includes()
+     * @param Reference $reference
+     *
+     */
+    private function classContextIncludes(Reference $reference)
+    {
+        $class = $reference->getClassName();
+        
+        if (
+            class_exists($this->context) == FALSE OR
+            class_exists($class) == FALSE
+        )
+        {
+            // If the class does not exist, we cannot check
+            // for inheritance, so it's pointless anyway.
+            return FALSE;
         }
         
-        return ($this->getLevel() > $context->getLevel());
+        if (
+            $this->hasConfigurationName() AND
+            $reference->isConfigurationName($this->configurationName) == FALSE
+        )
+        {
+            return FALSE;
+        }
+        
+        if (
+            $this->hasLifecycleSetting() AND
+            $reference->isLifecycle($this->lifecycleSetting) == FALSE
+        )
+        {
+            return FALSE;
+        }
+        
+        if ($this->isIncludingChildren)
+        {
+            return (
+                $this->context == $class OR
+                is_subclass_of($class, $this->context)
+            );
+        }
+        else
+        {
+            return ($this->context == $class);
+        }
     }
 }

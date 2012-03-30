@@ -40,7 +40,7 @@ class Reference
      * 
      * @var string $regex
      */
-    private $regex = '/^([A-Za-z\\\\_0-9]+)(@([A-Za-z_0-9]+))?(:(Singleton|Transient))?$/';
+    private $regex = '/^([A-Za-z\\\\_0-9]+)(@([A-Za-z_0-9]+)?)?(:(Singleton|Transient))?$/';
     
     /**
      * Constructor.
@@ -135,6 +135,32 @@ class Reference
     public function isSingleton()
     {
         return ($this->lifecycle == 'Singleton');
+    }
+    
+    /**
+     * Check if this Autopilot reference is configured with the
+     * given lifecycle setting or not.
+     * 
+     * @param string $lifecycle
+     * @return bool
+     *
+     */
+    public function isLifecycle($lifecycle)
+    {
+        return ($this->lifecycle === $lifecycle);
+    }
+    
+    /**
+     * Check if this Autopilot reference has the given configuration
+     * name or not.
+     * 
+     * @param string $configurationName
+     * @return bool
+     *
+     */
+    public function isConfigurationName($configurationName)
+    {
+        return ($this->configurationName === $configurationName);
     }
     
     /**
