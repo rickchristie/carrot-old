@@ -1,6 +1,6 @@
 <?php
 
-namespace Carrot\Autopilot\Rulebook;
+namespace Carrot\Autopilot\Instantiator\Rulebook;
 
 use ReflectionClass,
     Carrot\Autopilot\Context,
@@ -14,7 +14,7 @@ use ReflectionClass,
  * @author  Ricky Christie <seven.rchristie@gmail.com>
  *
  */
-class ReflectionRulebook
+class ReflectionRulebook implements InstantiatorRulebookInterface
 {
     /**
      * List of default values, with context strings as its index.
@@ -79,6 +79,12 @@ class ReflectionRulebook
      * Generate default constructor arguments for the given Autopilot
      * reference.
      * 
+     * If there is a conflict in regards to which value we must use
+     * for a constructor parameter name, the first one defined goes
+     * has more priority, unless if the later one has more specific
+     * context than the other.
+     * 
+     * @see Context::isMoreSpecificThan()
      * @param Reference $reference
      * @return array
      *

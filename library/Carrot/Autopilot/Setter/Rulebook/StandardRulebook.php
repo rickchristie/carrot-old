@@ -3,13 +3,13 @@
 namespace Carrot\Autopilot\Rulebook;
 
 /**
- * Rulebook that handles setter rules, which heavily depends on
- * the context.
+ * Rulebook that handles standard rules, which heavily depends
+ * on contexts.
  * 
  * @author  Ricky Christie <seven.rchristie@gmail.com>
  *
  */
-class SetterRulebook
+class StandardRulebook
 {
     
 }

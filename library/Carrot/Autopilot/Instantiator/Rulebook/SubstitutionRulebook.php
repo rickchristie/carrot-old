@@ -10,7 +10,7 @@ namespace Carrot\Autopilot\Rulebook;
  * @author  Ricky Christie <seven.rchristie@gmail.com>
  *
  */
-class SubstitutionRulebook
+class SubstitutionRulebook implements InstantiatorRulebookInterface
 {
     
 }

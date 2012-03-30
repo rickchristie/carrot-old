@@ -9,7 +9,7 @@ namespace Carrot\Autopilot\Rulebook;
  * @author  Ricky Christie <seven.rchristie@gmail.com>
  *
  */
-class StandardRulebook
+class StandardRulebook implements InstantiatorRulebookInterface
 {
     
 }

@@ -84,11 +84,40 @@ class Context
      * Namespace:Carrot\MySQLi*
      * </pre>
      * 
-     * To define a context that includes everything:
+     * Use asterisk to define a context that includes everything:
      * 
      * <pre>
      * *
      * </pre>
+     *
+     * To define a context that includes only classes with the given
+     * Autopilot configuration name:
+     * 
+     * <pre>
+     * // This will apply to both instances with transient
+     * // and singleton lifecycle setting.
+     * Class:Carrot\MySQLi\MySQLi@Main
+     * </pre>
+     * 
+     * To define a context that includes classes plus its childrens
+     * with the given Autopilot configuration name:
+     * 
+     * <pre>
+     * // This will apply to the class and its children
+     * // that has the configuration name 'Database'.
+     * Class:App\Logging\LoggerInterface*@Database
+     * </pre>
+     * 
+     * To define a context that includes only the class with the
+     * given Autopilot reference:
+     * 
+     * <pre>
+     * // This will apply to only a specific Autopilot reference.
+     * Class:Carrot\MySQLi\MySQLi@Main:Singleton
+     * </pre>
+     * 
+     * The configuration name lifecycle setting in the context string
+     * will be ignored if the type is not 'Class'.
      * 
      * @param string $string
      *
@@ -257,14 +286,96 @@ class Context
     }
     
     /**
-    //---------------------------------------------------------------
+     * Get the namespace level of this context.
      * 
+     * By level, we mean the number of namespace in the context.
+     * <code>Carrot\MySQLi</code> will be 1, while
+     * <code>Carrot\MySQLi\MySQLi</code> will be 2.
      * 
-     * @return Context The one with 
+     * @return int
      *
      */
-    public function clash(Context $context)
+    public function getLevel()
     {
+        return preg_match_all('/\\\\/', $this->context, $matches);
+    }
+    
+    /**
+     * Check if this context is more specific than the given Context.
+     * 
+     * Specificity in contexts has this hierarchy (lowest to highest):
+     * 
+     * - Wildcard
+     * - Greedy namespace
+     * - Namespace
+     * - Greedy class
+     * - Class
+     * 
+     * For two greedy namespaces, the deeper one wins (the ones that
+     * has more namespace entries). However, no level comparison
+     * is performed on other cases.
+     * 
+     * Note that this method does not check whether or not both
+     * contexts points to the same class, it just checks whether this
+     * context is more specific than another context based on the
+     * above rules.
+     * 
+     * @param Context $context
+     * @return bool
+     *
+     */
+    public function isMoreSpecificThan(Context $context)
+    {
+        if ($context->isWildcard())
+        {
+            return ($this->isWildcard() == FALSE);
+        }
         
+        if ($context->isGreedyNamespace())
+        {
+            return $this->isMoreSpecificThanGreedyNamespace($context);
+        }
+        
+        if ($context->isNamespace())
+        {
+            return (
+                $this->isGreedyClass() OR
+                $this->isClass()
+            );
+        }
+        
+        if ($context->isGreedyClass())
+        {   
+            return $this->isClass();
+        }
+        
+        if ($context->isClass())
+        {
+            // There is nothing more specific than a
+            // class typed context.
+            return FALSE;
+        }
+    }
+    
+    /**
+     * Check if this context is more specific than the provided
+     * greedy namespace context.
+     * 
+     * We count the number of backslashes in the context to
+     * determine which is more specific if both contexts are
+     * greedy namespace type.
+     * 
+     * @param Context $context
+     * @return bool
+     *
+     */
+    private function isMoreSpecificThanGreedyNamespace(Context $context)
+    {
+        if ($this->isGreedyNamespace() == FALSE)
+        {
+            return ($this->isWildcard() == FALSE);
+        }
+        
+        return ($this->getLevel() > $context->getLevel());
     }
 }

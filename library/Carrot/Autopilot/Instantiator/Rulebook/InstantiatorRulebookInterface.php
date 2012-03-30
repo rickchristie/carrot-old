@@ -1,9 +1,9 @@
 <?php
 
-namespace Carrot\Autopilot\Rulebook\Ins;
+namespace Carrot\Autopilot\Instantiator\Rulebook;
 
 use Carrot\Autopilot\Reference,
-    Carrot\Autopilot\Instantiator;
+    Carrot\Autopilot\Instantiator\InstantiatorInterface;
 
 /**
  * Each rulebook objects acts as a container for specific rules,
@@ -19,8 +19,11 @@ interface InstantiatorRulebookInterface
      * Try to see if you can get the instantiator for the given
      * Autopilot reference.
      * 
+     * Should return an instance of InstantiatorInterface or FALSE
+     * if the rulebook can't get it.
+     * 
      * @param Reference $reference
-     * @return InstantiatorInterface
+     * @return InstantiatorInterface|FALSE
      *
      */
     public function getInstantiator(Reference $reference);

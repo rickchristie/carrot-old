@@ -40,254 +40,8 @@
  * feature, which improves performance by making configuration
  * static.
  * 
- * DIC configuration object in Carrot can be extended if the user
- * wanted to add new injectors. The framework part of Carrot can
- * be configured to use another DIC configuration class. This
- * means easier development and usage by the user.
  *
  */
-
-/**
- * References.
- * 
- * Reference IDs refer to a specific dependency injection
- * configuration. A full reference ID consists of full class
- * name, configuration name, and lifecycle setting:
- * 
- * <pre>
- * Carrot\MySQLi\MySQLi@Main.Singleton
- * </pre>
- * 
- * The lifecycle setting can be either Transient or Singleton,
- * is optional and defaults to Singleton, so the above reference
- * name can be simplified as such:
- * 
- * <pre>
- * Carrot\MySQLi\MySQLi@Main
- * </pre>
- * 
- * The configuration name is specific to each class, and is also
- * optional. If you don't have more than one injection
- * configuration for the class, you might want to consider
- * leaving the configuration name out, creating an 'unnamed
- * reference' (a fancy name for reference with empty
- * configuration name string):
- * 
- * <pre>
- * Carrot\MySQLi\MySQLi
- * </pre>
- * 
- * The above reference name essentially is the same as:
- * 
- * <pre>
- * Carrot\MySQLi\MySQLi@.Singleton
- * </pre>
- *
- */
-
-$reference = new Reference('Carrot\Request\Request');
-$reference = new Reference('Carrot\MySQLi\MySQLi@Backup');
-$reference = new Reference('Carrot\MySQLi\MySQLi@Backup.Transient');
-$reference = new Reference('Carrot\MySQLi\PathProcessor.Transient');
-
-/**
- * You can use the DIC to add constants that can later be
- * referenced in dependency injection configuration.
- *
- */
-
-$diConfig->addConstant('hostname', 'localhost');
-$diConfig->addConstant('database', 'stockbrokers');
-$diConfig->addConstant('username', 'stockbrokers');
-$diConfig->addConstant('password', 'password');
-$diConfig->getConstant('hostname');
-
-/**
- * Adding the constructor injector.
- * 
- * Parameters after the reference IDs are treated as constructor
- * arguments. Reference objects in the constructor arguments
- * will be resolved recursively.
- *
- */
-
-$diConfig->addConstructorInjector(
-    'App\Controller\PostController',
-    new Reference('Carrot\MySQLi\PostMapper'),
-    new Reference('Carrot\Pagination\Pagination'),
-    new Reference('Carrot\SearchParameters\SearchParameters')
-);
-
-$diConfig->addConstructorInjector(
-    'Carrot\MySQLi\MySQLi@Main',
-    $diConfig->getConstant('hostname'),
-    $diConfig->getConstant('database'),
-    $diConfig->getConstant('username'),
-    $diConfig->getConstant('password')
-);
-
-/**
- * Callback injectors means using anonymous functions to contain
- * injection logic.
- * 
- * Parameters after the anonymous functions are treated as
- * arguments to the function.
- *
- */
-
-$diConfig->addCallbackInjector(
-    'App\Controller\PostController',
-    function(MySQLi $mysqli)
-    {
-        return new PostController($mysqli);
-    },
-    new Reference('Carrot\MySQLi\MySQLi')
-);
-
-/**
- * You can encapsulate the object creation logic inside provider
- * classes, which can then be assigned to a specific reference ID.
- * 
- * Your provider class must implement ProviderInterface. Specify
- * the reference ID to your provider class, which will also be
- * instantiated by the DIC.
- * 
- * Providers are basically factory classes which are instantiated
- * by the DIC.
- *
- */
-
-$diConfig->addProviderInjector(
-    'Carrot\MySQLi\MySQLi',
-    'App\Provider\MySQLiProvider'
-);
-
-/**
- * Users can create their own custom injectors and add them using
- * this method. Alternatively, they should be also be able to
- * extend the configuration class to add helper methods that
- * use their custom injectors.
- *
- */
-
-$diConfig->addInjector(
-    'Carrot\MySQLi\MySQLi',
-    new CustomInjector
-);
-
-/**
- * You can bind a reference ID to another one. For example, you
- * can bind an interface to a concrete implementation. Bindings
- * are only resolved when there are no specific injectors.
- * 
- * You can also use the bind method to bind an already
- * instantiated object to the DIC. If the second parameter is
- * an object, it will be the one returned by the container when
- * the reference ID is needed.
- * 
- * Bindings are only evaluated when Carrot's DIC tries to resolve
- * dependencies automatically.
- *
- */
-
-$diConfig->pointTo(
-    'Carrot\Session\SessionStorageInterface',
-    'Carrot\Session\NativeSessionStorage'
-);
-
-$diConfig->pointTo(
-    'Carrot\Session\SessionStorageInterface',
-    $nativeSessionStorage
-);
-
-/**
- * You can tell the DIC to perform setter injection to specific
- * classes and/or namespaces.
- * 
- * Setter injections will be done immediately after the object
- * has been created. This applies to objects resolved automatically
- * or via a specific injector. Simply specify the method you
- * want to be called, and the arguments for that method, which
- * will also be resolved recursively.
- *
- */
-
-$diConfig->set(
-    'App\Controller\Site\*',
-    'setLogger',
-    $diConfig->getConstant('loggerConfig'),
-    new Reference('App\Logger\AppLogger')
-);
-
-/**
- * The configuration object can load static configurations in
- * a PHP array map structure, which help speeds things up a bit.
- *
- */
-
-$diConfig->loadArrayMap($filepath);
-
-/**
- * Injection implementation, with PointerList and SetterList.
- *
- */
-
-function get(Reference $reference)
-{
-    // Start the stack, clears it first.
-    $this->stack->start($reference);
-    
-    while ($this->stack->isNotEmpty())
-    {
-        $stackItem = $this->stack->peek();
-        $reference = $stackItem->getReference();
-        $pointerReference = NULL;
-        
-        // Run object pool.
-        if ($this->objectPool->has($reference))
-        {
-            $instance = $this->objectPool->get($reference);
-            $shouldReturn = $this->stack->pop($instance);
-            
-            if ($shouldReturn)
-            {
-                return $instance;
-            }
-            
-            continue;
-        }
-        
-        // Run the direct object pointers.
-        if ($this->pointerList->canResolveToObject($reference))
-        {
-            $instance = $this->pointerList->resolveToObject($reference);
-            $this->objectPool->pool($instance, $reference);
-            $shouldReturn = $this->stack->pop($instance);
-            
-            if ($shouldReturn)
-            {
-                return $instance;
-            }
-            
-            continue;
-        }
-        
-        // Run reference pointers.
-        if ($this->pointerList->canResolveToReference($reference))
-        {
-            // From now on we work on the pointed reference
-            // instead of the pointer reference.
-            $pointerReference = $reference;
-            $reference = $this->pointerList->resolveToReference($pointedReference);
-        }
-        
-        // Instantiate using injector if dependencies are fulfilled,
-        // otherwise, add 
-        
-        
-    }
-}
-
 
 /**
  * Dependency injection configuration is done through the
@@ -353,7 +107,12 @@ function get(Reference $reference)
  */
 
 // Comes with default rulebooks.
-$autopilot = new Autopilot;
+$instantiatorRulebookList = new InstantiatorRulebookList;
+$setterRulebookList = new SetterRulebookList;
+$autopilot = new Autopilot(
+    $instantiatorRulebookList,
+    $setterRulebookList
+);
 
 // Let's not worry about performance, we can improve that LATER.
 // Right now let's worry about API design and capabilities.
@@ -370,7 +129,7 @@ $autopilot->getInstantiatorRulebook('reflection')->setDefaultCtorArg(
 
 // Shortcut method for the above:
 $autopilot->def(
-    'Namespace:App*', // Context String
+    'Namespace:App(greedy)', // Context String
     'mysqli', // Variable Name
     new Reference('Carrot\MySQLi\MySQLi') // This works too, due to the nature of CtorInstantiator
 );
@@ -387,7 +146,7 @@ $autopilot->defBatch(
 // two or more MySQLi instances, you're going to need
 // StandardRulebook.
 $autopilot->defBatch(
-    'Class:MySQLi',
+    'Class:MySQLi@Main:Singleton',
     array(
         'hostname' => $hostname,
         'password' => $password,
@@ -464,12 +223,52 @@ $autopilot->useProvider('App\Controller\PostController@Main',
 
 //---------------------------------------------------------------
 
+/**
+ * People will need to:
+ * 
+ * - Run specific setter methods on specific contexts
+ * - Run specific setter methods on specific Autopilot reference.
+ * 
+ * What if both overlap?
+ * 
+ * - ReferenceRulebook
+ * - ContextRulebook
+ * - ReflectionRulebook
+ * 
+//---------------------------------------------------------------
+ * Each of the rulebook can result in more than one setter (maybe
+ * setter list?).
+ * 
+ * 
+ * Setters will:
+ * 
+ * - Throw RuntimeException if method does not exist.
+ *
+ */
+
+// ContextRulebook
+// Less magic, but clearer
+$autopilot->getSetterRulebook('standard')->add
+
+//---------------------------------------------------------------
+
+// Should setter support multiple setter calls for one
+// method on an instance.
+
 // StandardRulebook (setter)
 // Less magic, but clearer
-$autopilot->getSetterRulebook('standard')->addDirectSetter(
-    'Namespace:App*', // context of the setter
-    ''
+$autopilot->getSetterRulebook('standard')->addReferenceSetter(
+    'Class:App\LoggableInterface*', // context of the setter
+    'methodName',
+    array(new Reference('App\Logger\FileLogger'))
 )
+
+// Shortcut method for the above:
+$autopilot->set(
+    'Class:App\LoggableInterface*', // context of the setter
+    'methodName',
+    array(new Reference('App\Logger\FileLogger'))
+);
 
 //---------------------------------------------------------------
 
@@ -488,121 +287,89 @@ $autopilot->addSetterRulebook($customRulebok, 'customRulebookName');
 $autopilot->addInstantiatorRulebook($customRulebook, 'reflection');
 $autopilot->addSetterRulebook($customRulebook, 'standard');
 
-
-$autopilot->reflection()->ignoreClassIfOptional(TRUE);
-
-$autopilot->substitution()->sub(
-    '*',
-    'App\Log\LoggerInterface',
-    'App\Log\FileLogger'
-);
-
-$autopilot->setter()->set(
-    'Class:App\Log\LoggableInterface',
-    'methodName',
-    'App\Log\LoggerInterface'
-);
-
-$autopilot->callback()->
-
-/**
- * Tells the autopilot which default values and instances to use
- * when automatically generating constructor injectors.
- * 
- * These values are only used when Autopilot is trying to
- * automatically resolving constructor parameters. If there is
- * a predefined instantiator for the instance in question, then
- * the instantiator will be used instead.
- * 
- * If the rule clashes, the ones with mo
- *
- */
-
-$autopilot->set(
-    'App\*',
-    'version',
-    '0.78'
-);
-
-$autopilot->set(
-    '*',
-    'version',
-    '0.78'
-);
-
-/**
 //---------------------------------------------------------------
- * Tells the 
- *
- */
 
-$autopilot->sub(
-    'App\Log\LoggableInterface!',
-    'App\Log\LoggerInterface',
-    'App\Log\FileLogger@Main'
-);
+// LOADING CACHE
+$autopilot->getCache()->loadSerialized($serializedArray);
+
 
 /**
-//---------------------------------------------------------------
- * You can tell Autopilot to run setter methods after
- * instantiation with runSetter() method. 
- *
- */
-
-$autopilot->addSetter(
-    
-);
-
-/**
-//---------------------------------------------------------------
- * You can tell Autopilot to use specific instantiator for
- * specific references
- * 
  * 
  *
  */
 
-$autopilot->useCtor(
-    'App\Controller\PostController',
-    new Reference('Carrot\MySQLi\PostMapper'),
-    new Reference('Carrot\Pagination\Pagination'),
-    new Reference('Carrot\SearchParameters\SearchParameters')
+$autopilot->for('Class:Carrot\MySQLi\MySQLi')->def(
+    'hostname',
+    'localhost'
 );
 
-$autopilot->useCallback(
-    
-);
-
-$autopilot->useProvider(
-    
-);
-
-
-/**
- * Users can manually set injectors using the setInjector()
- * method. Injectors set using this method has the highest
- * priority level, other rules will be ignored if an injector
- * is specifically set using this method.
- *
- */
-
-$autopilot->setInstantiator(
-    'App\Log\FileLogger@Main',
-    $customInjector
-);
-
-
-/**
-//---------------------------------------------------------------
- * Cache mechanism.
- * 
- * Automatic dependency resolution, while nice, is not really
- * good performance wise, because it uses reflection heavily.
- * 
- * Autopilot can generate a 
- *
- */
-
-$autopilot->loadCache(array(
-    
+$autopilot->for('Class:Carrot\MySQLi\MySQLi')->defBatch(array(
+    'hostname' => 'localhost',
+    'database' => 'carrot_test_db',
+    'username' => 'carrot',
+    'password' => 'awesome'
 ));
+
+
+$autopilot->for('Namespace:App(greedy)')->sub(
+    'App\Logger\LoggerInterface',
+    'App\Logger\FileLogger@App'
+);
+
+$autopilot->for('Class:App\Logger\FileLogger@App')->useCtor(
+    $filenamePrefix,
+    $filenameExtension,
+    $loggingLevel,
+    new Reference('App\Config')
+);
+
+$autopilot->for('Class:Carrot\MySQLi\MySQLi@:Singleton')->useCallback(
+    function(Config $config)
+    {
+        return new Carrot\MySQLi\MySQLi(
+            $config->getHostname(),
+            $config->getUsername(),
+            $config->getPassword(),
+            $config->getDatabase()
+        );
+    },
+    new Reference('App\Config')
+);
+
+$autopilot->for('Class:Carrot\MySQLi\MySQLi*@Main:Singleton')->useProvider(
+    'App\ServiceFactory@MainApp',
+    'methodName',
+    array(new Reference('App\Config'))
+);
+
+// This works, but it's awfully too broad if you want to use
+// more than one instance of MySQLi. The StandardRulebook
+// will parse this as: all instance of Carrot\MySQLi\MySQLi
+// as opposed to just Carrot\MySQLi\MySQLi@:Singleton.
+$autopilot->for('Class:Carrot\MySQLi\MySQLi')->useProvider(
+    'App\ServiceFactory@MainApp',
+    'methodName',
+    array(new Reference('App\Config'))
+);
+
+// Throws an exception, to use StandardRulebook the context
+// must be a class, not a namespace
+$autopilot->for('Namespace:Carrot\MySQLi\MySQLi')->useProvider(
+    'App\ServiceFactory@MainApp',
+    'methodName',
+    array(new Reference('App\Config'))
+);
+
+$autopilot->for('Class:App\Logging\LoggableInterface*')->set(
+    'methodName',
+    array(
+         $primitiveVariable,
+         new Reference('Carrot\Application\Blah')   
+    )
+);
+
+
+/**
+ * Class:Carrot\MySQLi\MySQLi*@Main:Singleton
+ *
+ */

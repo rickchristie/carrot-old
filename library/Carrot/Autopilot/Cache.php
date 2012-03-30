@@ -16,6 +16,11 @@ use Carrot\Autopilot\Setter\SetterInterface,
  */
 class Cache
 {
+    /**
+     * 
+     * 
+     * @var array $data
+     */
     private $data = array();
     
     private $serialized = array();
