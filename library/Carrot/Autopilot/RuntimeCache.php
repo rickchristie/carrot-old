@@ -14,7 +14,7 @@ use Carrot\Autopilot\Setter\SetterInterface,
  * @author  Ricky Christie <seven.rchristie@gmail.com>
  *
  */
-class Cache
+class RuntimeCache implements CacheInterface
 {
     /**
      * 

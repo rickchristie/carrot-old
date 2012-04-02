@@ -240,6 +240,7 @@ $autopilot->useProvider('App\Controller\PostController@Main',
  * setter list?).
  * 
  * 
+ * 
  * Setters will:
  * 
  * - Throw RuntimeException if method does not exist.
@@ -270,40 +271,18 @@ $autopilot->set(
     array(new Reference('App\Logger\FileLogger'))
 );
 
-//---------------------------------------------------------------
-
-// ADVANCED USER ONLY
-// Full rulebook customization
-$autopilot->clearDefaultRulebooks();
-
-// User can add their own rulebooks, but
-// here be dragons - make sure you know
-// what you're doing:
-$autopilot->addInstantiatorRulebook($customRulebook, 'customRulebookName');
-$autopilot->addSetterRulebook($customRulebok, 'customRulebookName');
-
-// Certain names are reserved, these two calls
-// will throw exception.
-$autopilot->addInstantiatorRulebook($customRulebook, 'reflection');
-$autopilot->addSetterRulebook($customRulebook, 'standard');
-
-//---------------------------------------------------------------
-
-// LOADING CACHE
-$autopilot->getCache()->loadSerialized($serializedArray);
-
 
 /**
  * 
  *
  */
 
-$autopilot->for('Class:Carrot\MySQLi\MySQLi')->def(
+$autopilot->on('Class:Carrot\MySQLi\MySQLi')->def(
     'hostname',
     'localhost'
 );
 
-$autopilot->for('Class:Carrot\MySQLi\MySQLi')->defBatch(array(
+$autopilot->on('Class:Carrot\MySQLi\MySQLi')->defBatch(array(
     'hostname' => 'localhost',
     'database' => 'carrot_test_db',
     'username' => 'carrot',
@@ -311,19 +290,19 @@ $autopilot->for('Class:Carrot\MySQLi\MySQLi')->defBatch(array(
 ));
 
 
-$autopilot->for('Namespace:App(greedy)')->sub(
+$autopilot->on('Namespace:App(greedy)')->sub(
     'App\Logger\LoggerInterface',
     'App\Logger\FileLogger@App'
 );
 
-$autopilot->for('Class:App\Logger\FileLogger@App')->useCtor(
+$autopilot->on('Class:App\Logger\FileLogger@App')->useCtor(
     $filenamePrefix,
     $filenameExtension,
     $loggingLevel,
     new Reference('App\Config')
 );
 
-$autopilot->for('Class:Carrot\MySQLi\MySQLi@:Singleton')->useCallback(
+$autopilot->on('Class:Carrot\MySQLi\MySQLi@:Singleton')->useCallback(
     function(Config $config)
     {
         return new Carrot\MySQLi\MySQLi(
@@ -336,7 +315,7 @@ $autopilot->for('Class:Carrot\MySQLi\MySQLi@:Singleton')->useCallback(
     new Reference('App\Config')
 );
 
-$autopilot->for('Class:Carrot\MySQLi\MySQLi*@Main:Singleton')->useProvider(
+$autopilot->on('Class:Carrot\MySQLi\MySQLi*@Main:Singleton')->useProvider(
     'App\ServiceFactory@MainApp',
     'methodName',
     array(new Reference('App\Config'))
@@ -346,7 +325,7 @@ $autopilot->for('Class:Carrot\MySQLi\MySQLi*@Main:Singleton')->useProvider(
 // more than one instance of MySQLi. The StandardRulebook
 // will parse this as: all instance of Carrot\MySQLi\MySQLi
 // as opposed to just Carrot\MySQLi\MySQLi@:Singleton.
-$autopilot->for('Class:Carrot\MySQLi\MySQLi')->useProvider(
+$autopilot->on('Class:Carrot\MySQLi\MySQLi')->useProvider(
     'App\ServiceFactory@MainApp',
     'methodName',
     array(new Reference('App\Config'))
@@ -354,13 +333,13 @@ $autopilot->for('Class:Carrot\MySQLi\MySQLi')->useProvider(
 
 // Throws an exception, to use StandardRulebook the context
 // must be a class, not a namespace
-$autopilot->for('Namespace:Carrot\MySQLi\MySQLi')->useProvider(
+$autopilot->on('Namespace:Carrot\MySQLi\MySQLi')->useProvider(
     'App\ServiceFactory@MainApp',
     'methodName',
     array(new Reference('App\Config'))
 );
 
-$autopilot->for('Class:App\Logging\LoggableInterface*')->set(
+$autopilot->on('Class:App\Logging\LoggableInterface*')->set(
     'methodName',
     array(
          $primitiveVariable,
@@ -368,8 +347,122 @@ $autopilot->for('Class:App\Logging\LoggableInterface*')->set(
     )
 );
 
+/* 
 
-/**
- * Class:Carrot\MySQLi\MySQLi*@Main:Singleton
- *
- */
+Example of an Autopilot log output:
+
+#0: App\Controller\PostController@:Singleton
+    Getting Instantiator: (toggle)
+        Cache: Carrot\Autopilot\RuntimeCache: Nothing found.
+        Consult: Carrot\Autopilot\Instantiator\Rulebook\SubstitutionRulebook: No matching rules.
+        Consult: Carrot\Autopilot\Instantiator\Rulebook\StandardRulebook: No matching rules.
+        Consult: Carrot\Autopilot\Instantiator\Rulebook\ReflectionRulebook: Found!
+        Using: Carrot\Autopilot\Instantiator\CtorInstantiator
+        Using: CtorArg: 'varName': 'varContents'
+        Using: CtorArg: App\DataSource\PostDataSource@:Singleton (link)
+    Getting Setter:
+        Cache: Carrot\Autopilot\RuntimeCache: Nothing found.
+        Consult: Carrot\Autopilot\Setter\Rulebook\ContextRulebook: Found!
+        Using: Carrot\Autopilot\Setter\RegularSetter
+        Method: setLogger()
+        Method: Arg: 'argumentValue'
+        Method: Arg: App\Logger\FileLogger@Controller:Singleton (link)
+        Method: setVersion()
+        Method: Arg: '0.2.8'
+
+#2: App\Controller\PostDataSource@:Singleton
+    Getting Instantiator:
+        Cache: Carrot\Autopilot\RuntimeCache: Nothing found.
+        Consult: Carrot\Autopilot\Instantiator\Rulebook\SubstitutionRulebook: No matching rules.
+        Consult: Carrot\Autopilot\Instantiator\Rulebook\StandardRulebook: Found!
+        Using: Carrot\Autopilot\Instantiator\ProviderInstantiator
+        Using: Provider: App\Factory\DataSourceFactory@:Singleton
+        Using: Method: 'getPostDataSource'
+        Using: DependencyList: App\DataSource\PostDataSource@:Singleton (link)
+        Using: DependencyList: App\View\PostView@:Singleton (link)
+    Getting Setter:
+        Cache: Carrot\Autopilot\RuntimeCache: Nothing found.
+        Consult: Carrot\Autopilot\Setter\Rulebook\ContextRulebook: Nothing found.
+
+Here's what a cache log will look like:
+
+#1: App\Controller\PostController@:Singleton
+    Getting Instantiator:
+        Cache: Carrot\Autopilot\RuntimeCache: Found!
+        Using: Carrot\Autopilot\Instantiator\CtorInstantiator
+        Using: CtorArg: 'varName': 'varContents'
+        Using: CtorArg: App\DataSource\PostDataSource@:Singleton (link)
+    Getting Setter:
+        Cache: Carrot\Autopilot\RuntimeCache: Found!
+        Using: Carrot\Autopilot\Setter\RegularSetter
+        Method: setLogger()
+        Method: Arg: 'argumentValue'
+        Method: Arg: App\Logger\FileLogger@Controller:Singleton (link)
+        Method: setVersion()
+        Method: Arg: '0.2.8'
+
+*/
+
+// DRAFT OF CONTAINER LOGIC
+// USING STACK OBJECT
+
+public function get(Reference $reference)
+{
+    $stack = new Stack(
+        $this->autopilot,
+        $reference
+    );
+    
+    while ($stack->isNotEmpty())
+    {
+        $item = $stack->peek();
+        $reference = $item->getReference();
+        
+        if ($item->isInstantiated() == FALSE)
+        {
+            // Get it from object pool
+            if ($this->objectPool->has($reference))
+            {
+                $instance = $this->objectPool->get($reference);
+                $item->register->($instance);
+                continue;
+            }
+            
+            // Instantiate it if we have fulfilled its dependencies.
+            if ($item->hasFulfilledInstantiatorDependencies())
+            {
+                $instance = $item->instantiate();
+                $this->objectPool->set(
+                    $reference,
+                    $instance
+                );
+                
+                continue;
+            }
+            
+            // If we can't, add its dependencies to the stack.
+            $stack->push($item->getInstantiatorDependencyList());
+            continue;
+        }
+        
+        if ($item->isSet() == FALSE)
+        {
+            // Set it if we have fulfilled its dependencies.
+            if ($item->hasFulfilledSetterDependencies())
+            {
+                $item->set();
+                continue;
+            }
+            
+            // Otherwise, add its dependencies to the stack.
+            $stack->push($item->getSetterDependencyList());
+        }
+        
+        if ($item->isLast())
+        {
+            return $item->getInstance();
+        }
+        
+        $stack->pop();
+    }
+}

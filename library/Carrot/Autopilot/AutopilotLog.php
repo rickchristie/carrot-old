@@ -6,25 +6,135 @@ namespace Carrot\Autopilot;
  * Responsible for logging all operations on Autopilot.
  * 
  * Automatic dependency injection, although convenient, will be
- * harder to debug than hard wired dependency injection.
- * Extensive logging is done to make debugging Autopilot
- * rules easier. This log instance can then be printed out or
- * mailed when an exception occurs.
- * 
- * What is being logged when calling the container's get method:
- * 
- * - Which reference is being instantiated by the Container.
- * - Which instantiator rulebook is responsible for creating the
- *   instantiator for the reference.
- * - Which instantiator is being used.
- * - Instantiator dependencies to be instantiated on the stack.
- * - List of setters generated (and from which rulebook).
- * - Setter dependencies to be instantiated on the stack.
+ * harder to debug than hard wired dependency injection. To help
+ * make debugging rules easier, Autopilot automatically logs
+ * its actions with this object.
  * 
  * @author  Ricky Christie <seven.rchristie@gmail.com>
  *
  */
 class AutopilotLog
 {
+    /**
+     * List of reference IDs that has been logged.
+     * 
+     * @var array $referenceIds
+     */
+    private $referenceIds;
     
+    /**
+     * Holds all of the logs messages.
+     * 
+     * Has the following structure:
+     * 
+     * <pre>
+     * $data = array(
+     *     0 => array(
+     *         'reference' => 'Carrot\MySQLi\MySQLi@:Singleton',
+     *         'instantiator' => array(
+     *             'Cache: Carrot\Autopilot\RuntimeCache: Nothing found.',
+     *             ...
+     *         ),
+     *         'setter' => array(
+     *             
+     *         )
+     *     ),
+     *     ...
+     * )
+     * </pre>
+     * 
+     * 
+     * @var array $data
+     */
+    private $data = array();
+    
+    /**
+    //---------------------------------------------------------------
+     * Used to make sure messages go into the right index.
+     * 
+     * @var int $currentIndex
+     */
+    private $currentIndex = -1;
+    
+    /**
+     * @var bool 
+     */
+    private $isLoggingExtraInfo = TRUE;
+    
+    /**
+    //---------------------------------------------------------------
+     * 
+     *
+     */
+    public function logExtraInfo($isLoggingExtraInfo)
+    {
+        $this->isLoggingExtraInfo = $isLoggingExtraInfo;
+    }
+    
+    public function logInstantiatorCacheNotFound($referenceId)
+    {
+        
+    }
+    
+    public function logInstantiatorCacheFound()
+    {
+        
+    }
+    
+    public function logSetterCacheNotFound($referenceId)
+    {
+        
+    }
+    
+    public function logSetterCacheFound()
+    {
+        
+    }
+    
+    public function logConsultInstantiatorRulebookNotFound()
+    {
+        
+    }
+    
+    public function logConsultInstantiatorRulebookFound()
+    {
+        
+    }
+    
+    public function logConsultSetterRulebookNotFound()
+    {
+        
+    }
+    
+    public function logConsultSetterRulebookFound()
+    {
+        
+    }
+    
+    public function logUsingInstantiator()
+    {
+        
+    }
+    
+    public function logUsingSetter()
+    {
+        
+    }
+    
+    /**
+     * Renders the logging messages into HTML string, ready to be
+     * printed.
+     * 
+     * @return string
+     *
+     */
+    public function renderToHtml()
+    {
+        
+    }
+    
+    public function renderToText()
+    {
+        
+    }
 }

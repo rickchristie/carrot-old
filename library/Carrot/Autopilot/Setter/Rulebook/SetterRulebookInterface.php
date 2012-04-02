@@ -26,5 +26,5 @@ interface SetterRulebookInterface
      * @return SetterInterface|FALSE
      *
      */
-    public function getSetter(Reference $reference);
+    public function resolve(Reference $reference);
 }

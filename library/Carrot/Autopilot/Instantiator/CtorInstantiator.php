@@ -2,7 +2,14 @@
 
 namespace Carrot\Autopilot\Instantiator;
 
-class CtorInstantiator
+/**
+//---------------------------------------------------------------
+ * Instantiates 
+ * 
+ * @author  Ricky Christie <seven.rchristie@gmail.com>
+ *
+ */
+class CtorInstantiator implements InstantiatorInterface
 {
     
 }

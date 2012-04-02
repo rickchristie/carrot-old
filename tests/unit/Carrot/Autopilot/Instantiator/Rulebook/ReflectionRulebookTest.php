@@ -1,6 +1,6 @@
 <?php
 
-namespace Carrot\Autopilot\Rulebook;
+namespace Carrot\Autopilot\Instantiator\Rulebook;
 
 use PHPUnit_Framework_TestCase,
     InvalidArgumentException;

@@ -3,6 +3,7 @@
 namespace Carrot\Autopilot\Instantiator\Rulebook;
 
 use Carrot\Autopilot\Reference,
+    Carrot\Autopilot\AutopilotLog,
     Carrot\Autopilot\Instantiator\InstantiatorInterface;
 
 /**
@@ -26,5 +27,5 @@ interface InstantiatorRulebookInterface
      * @return InstantiatorInterface|FALSE
      *
      */
-    public function getInstantiator(Reference $reference);
+    public function resolve(Reference $reference, AutopilotLog $log);
 }

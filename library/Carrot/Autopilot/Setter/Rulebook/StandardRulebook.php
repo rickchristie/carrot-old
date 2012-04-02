@@ -1,6 +1,6 @@
 <?php
 
-namespace Carrot\Autopilot\Rulebook;
+namespace Carrot\Autopilot\Setter\Rulebook;
 
 /**
  * Rulebook that handles standard rules, which heavily depends
@@ -9,7 +9,7 @@ namespace Carrot\Autopilot\Rulebook;
  * @author  Ricky Christie <seven.rchristie@gmail.com>
  *
  */
-class StandardRulebook
+class StandardRulebook implements SetterRulebookInterface
 {
     
 }

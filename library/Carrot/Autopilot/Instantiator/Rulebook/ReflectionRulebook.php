@@ -35,6 +35,9 @@ class ReflectionRulebook implements InstantiatorRulebookInterface
      * Sets a default constructor argument to use, if we are in the
      * provided context.
      * 
+     * You can use autopilot reference as a value - it will be
+     * resolved recursively by the container.
+     * 
      * @param string $contextString The context to use the default value.
      * @param string $varName The constructor argument name.
      * @param mixed $value The value to use.
