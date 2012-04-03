@@ -7,5 +7,5 @@
  *
  */
 
-$autoloader = require dirname(__DIR__) . DIRECTORY_SEPARATOR . 'autoloader.php';
+$autoloader = require dirname(__DIR__) . DIRECTORY_SEPARATOR . 'config' . DIRECTORY_SEPARATOR . 'autoloader.php';
 $autoloader->register();

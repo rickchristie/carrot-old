@@ -24,6 +24,84 @@ TODO: Write custom exception classes for core exceptions thrown,
       handler, you can try to dynamically load pointers and hints
       of how the problem began and how to solve it.
 
+TODO: BindingsConfig should be the default behavior for the DIC,
+      the user should not need to instantiate it and assign it
+      manually. Let's just make BindingsConfig the fallback, i.e.
+      executed only if there is no user configuration for the
+      particular class.
+
+TODO: BindingsConfig should not only read arguments, but also
+      read default values. If BindingsConfig is in 'auto' mode,
+      and the object in question has non-object constructor
+      parameter, then it should also check if it can bypass the
+      non-object parameter. If it can, it should bypass it.
+
+TODO: BindingsConfig should also have events/special rules.
+      For example, I want every class implementing LoggerInterface
+      to be injected with instance of Logger, or maybe I want
+      every class that uses LoggerTrait to be setter injected with
+      Logger object, or maybe I want every class that extends
+      AbstractCanDoLogging class be setter injected with Logger
+      class. The rules can be about inheritance, traits, interface,
+      or it can be about namespace (in this namespace, not in this
+      namespace, in this namespace but not its child), or the class
+      name (fully qualified or just the class name).
+
+TODO: Make everything easier to use by removing some of the
+      unnecessary considerations/modifications list:
+      - Request doesn't need an interface, since it is just used
+        by our default route classes.
+      - User can create their own request object and have it
+        injected to the classes that uses them.
+      - Refactor routing, think on more simple object design
+        for routes, router, and URIs.
+
+TODO: Finish the hassle on multibyte routing by forcing some rules
+      and lowering the requirements:
+      - Require all PHP files to be written in UTF-8.
+      - Treat the 'path' part of the URI as UTF-8, as per W3C
+        specification. There might be isolated cases where the path
+        part gets sent as Windows-1552, but let's worry about that
+        later.
+      - Do not mess with the query strings since the encoding is
+        more mercurial. Simply do not add default routing capabilities
+        that makes use of query strings - they are not supposed to
+        be used as routing anyway, since they are not part of the
+        'path' part of the URI - you should be able to find some
+        pointers from W3C recommendations or RFCs on URLs about
+        the semantics of it.
+      - If the user wants to deal with non UTF-8 path strings he/she
+        can use the multibyte routing classes (make one), or they
+        can create their own route classes.
+
+TODO: The autoloader file should be independent, as in, it should
+      be able to register autoloading on its own, even though it should
+      still return the instance of AutoloaderInterface to the caller.
+      The AutoloaderInterface::register() method should already be
+      called by the user.
+
+TODO: The configuration object (RouteConfig, InjectionConfig), the
+      action object (RouteInterface, InjectorInterface) and the mother
+      object (Router, Container) triad should be used? It seems to be
+      good OO-design. The configuration object translates the user
+      configuration into multiple action objects, which is then used
+      and managed by the mother object.
+
+TODO: Simplify things by hiding advanced configurations?
+
+TODO: Finish the logging part! Find out what is the difference/relationship
+      between logger and profiler, and see if you can have both in
+      your framework.
+
+TODO: Don't worry about caching, just finish the architecture first.
+      Caching should be easily achieved using a good event dispatcher
+      system. You just need to build the library then.
+
+TODO: Design and code a better Event Dispatcher/Handling system, where
+      the called method can return something, according to a contract
+      (an interface?), which can then alter the flow of another part
+      of the system.
+
 
 NEW MODULES/CLASSES
 -------------------

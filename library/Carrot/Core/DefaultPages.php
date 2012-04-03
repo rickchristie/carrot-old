@@ -87,7 +87,7 @@ class DefaultPages
                 <code>Ask and it shall be given to you.</code><br />
                 <code>Seek and you will find.</code><br />
                 <code>Knock and the door will be opened to you.</code>
-            </pre>
+            </p>
         </body>
         </html>";
     }
