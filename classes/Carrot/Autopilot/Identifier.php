@@ -14,6 +14,12 @@ use InvalidArgumentException;
 class Identifier
 {
     /**
+     * @see __construct()
+     * @var string $pattern
+     */
+    private $pattern = '/^(([a-zA-Z0-9_\x7f-\xff\\\\]+\\\\)*([a-zA-Z0-9_\x7f-\xff]+))@([A-Za-z0-9_.]+)$/uD';
+    
+    /**
      * @see get()
      * @var string $identifier
      */
@@ -52,7 +58,17 @@ class Identifier
     public function __construct($identifier)
     {
         $this->identifier = trim($identifier, '\\');
-        $this->initialize();
+        $result = preg_match($this->pattern, $this->identifier, $matches);
+        
+        if ($result == FALSE)
+        {
+            throw new InvalidArgumentException("Invalid Autopilot Identifier: {$this->identifier}.");
+        }
+        
+        $this->class = trim($matches[1], '\\');
+        $this->namespace = trim($matches[2], '\\');
+        $this->className = $matches[3];
+        $this->name = $matches[4];
     }
     
     /**
@@ -148,27 +164,5 @@ class Identifier
     {
         $namespace = trim($namespace, '\\');
         return ($this->namespace == $namespace);
-    }
-    
-    /**
-     * Slices the identifier string to various parts.
-     * 
-     * @see __construct()
-     *
-     */
-    private function initialize()
-    {
-        $pattern = '/^(([a-zA-Z0-9_\x7f-\xff\\\\]+\\\\)*([a-zA-Z0-9_\x7f-\xff]+))@([A-Za-z0-9_.]+)$/uD';
-        $result = preg_match($pattern, $this->identifier, $matches);
-        
-        if ($result == FALSE)
-        {
-            throw new InvalidArgumentException("Invalid Autopilot Identifier: {$this->identifier}.");
-        }
-        
-        $this->class = trim($matches[1], '\\');
-        $this->namespace = trim($matches[2], '\\');
-        $this->className = $matches[3];
-        $this->name = $matches[4];
     }
 }
