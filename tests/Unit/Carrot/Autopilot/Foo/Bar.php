@@ -32,13 +32,47 @@ class Bar
     private $string;
     
     /**
+     * @see getStringOne()
+     * @var string $stringOne
+     */
+    private $stringOne;
+    
+    /**
+     * @see getStringTwo()
+     * @var string $stringTwo
+     */
+    private $stringTwo;
+    
+    /**
+     * @see getStringThree()
+     * @var string $stringThree
+     */
+    private $stringThree;
+    
+    /**
+     * @see getStringDefault()
+     * @var string $stringDefault
+     */
+    private $stringDefault;
+    
+    /**
      * Used to test setter injector.
      * 
      * @param Baz $baz
      *
      */
-    public function setBaz(Baz $baz)
+    public function setBaz(
+        $stringOne,
+        Baz $baz,
+        $stringTwo,
+        $stringThree,
+        $stringDefault = 'default'
+    )
     {
+        $this->stringOne = $stringOne;
+        $this->stringTwo = $stringTwo;
+        $this->stringThree = $stringThree;
+        $this->stringDefault = $stringDefault;
         $this->baz = $baz;
     }
     
@@ -104,5 +138,53 @@ class Bar
     public function emptySetter()
     {
         // San cai, san cai.
+    }
+    
+    /**
+     * Used to test setter injector.
+     * 
+     * @see setBaz()
+     * @return string|NULL
+     *
+     */
+    public function getStringOne()
+    {
+        return $this->stringOne;
+    }
+    
+    /**
+     * Used to test setter injector.
+     * 
+     * @see setBaz()
+     * @return string|NULL
+     *
+     */
+    public function getStringTwo()
+    {
+        return $this->stringTwo;
+    }
+    
+    /**
+     * Used to test setter injector.
+     * 
+     * @see setBaz()
+     * @return string|NULL
+     *
+     */
+    public function getStringThree()
+    {
+        return $this->stringThree;
+    }
+    
+    /**
+     * Used to test setter injector.
+     * 
+     * @see setBaz()
+     * @return string|NULL
+     *
+     */
+    public function getStringDefault()
+    {
+        return $this->stringDefault;
     }
 }

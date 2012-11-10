@@ -31,7 +31,7 @@ interface InstantiatorInterface
     /**
      * Runs the instantiation process.
      * 
-     * @return $object
+     * @return mixed
      *
      */
     public function instantiate();

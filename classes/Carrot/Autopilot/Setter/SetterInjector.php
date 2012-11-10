@@ -133,8 +133,9 @@ class SetterInjector implements SetterInterface
             $method = $inject['method'];
             $args = $inject['args'];
             $invokeArgs = array();
+            $class = $this->identifier->getClass();
             $reflectionMethod = new ReflectionMethod(
-                $this->identifier->getClass(),
+                $class,
                 $method
             );
             
@@ -169,6 +170,26 @@ class SetterInjector implements SetterInterface
                         // Just pass the argument.
                         $invokeArgs[] = $args[$paramName];
                     }
+                }
+                else
+                {
+                    // The parameter is not specified on the argument
+                    // list. If default value is available use it.
+                    if ($param->isDefaultValueAvailable())
+                    {
+                        $invokeArgs[] = $param->getDefaultValue();
+                        continue;
+                    }
+                    
+                    // Otherwise, if it's optional, set it to NULL.
+                    if ($param->isOptional())
+                    {
+                        $invokeArgs[] = NULL;
+                        continue;
+                    }
+                    
+                    // Houston, we have a problem.
+                    throw new RuntimeException("Setter injection failed for class {$class}, method {$method}. There is no value for parameter '\${$paramName}'.");
                 }
             }
             

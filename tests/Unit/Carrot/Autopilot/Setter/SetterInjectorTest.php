@@ -40,6 +40,9 @@ class SetterInjectorTest extends PHPUnit_Framework_TestCase
         $baz = new Baz;
         $objectIdentifier = new Identifier('StdClass@Default');
         $bazIdentifier = new Identifier('Carrot\Autopilot\Foo\Egg\Baz@Default');
+        $stringOne = 'One';
+        $stringTwo = 'Two';
+        $stringThree = 'Three';
         
         $setter->addToInjectionList(
             'setObject',
@@ -48,7 +51,12 @@ class SetterInjectorTest extends PHPUnit_Framework_TestCase
         
         $setter->addToInjectionList(
             'setBaz',
-            array('baz' => $bazIdentifier)
+            array(
+                'stringThree' => $stringThree,
+                'stringOne' => $stringOne,
+                'baz' => $bazIdentifier,
+                'stringTwo' => $stringTwo
+            )
         );
         
         $setter->addToInjectionList(
@@ -78,5 +86,9 @@ class SetterInjectorTest extends PHPUnit_Framework_TestCase
         $this->assertEquals(TRUE, $baz === $bar->getBaz());
         $this->assertEquals(TRUE, $object === $bar->getObject());
         $this->assertEquals('Test', $bar->getString()); 
+        $this->assertEquals($stringOne, $bar->getStringOne());
+        $this->assertEquals($stringTwo, $bar->getStringTwo());
+        $this->assertEquals($stringThree, $bar->getStringThree());
+        $this->assertEquals('default', $bar->getStringDefault());
     }
 }
