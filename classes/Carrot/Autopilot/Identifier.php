@@ -165,4 +165,19 @@ class Identifier
         $namespace = trim($namespace, '\\');
         return ($this->namespace == $namespace);
     }
+    
+    /**
+     * Returns TRUE is the given object is the same class as this
+     * identifier's class.
+     * 
+     * Will also return TRUE in the case of child classes.
+     * 
+     * @param mixed $object
+     * @return bool
+     *
+     */
+    public function checkClass($object)
+    {
+        return ($object instanceof $this->class);
+    }
 }

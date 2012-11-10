@@ -112,13 +112,95 @@ class ContextTest extends PHPUnit_Framework_TestCase
     }
     
     /**
-     * Test the includes method of the context.
+     * Test the includes() method for class type contexts.
      * 
-     * @uses Identifier
+     * @use Carrot\Autopilot\Identifier
      *
      */
-    public function testIncludesMethod()
+    public function testIncludesClass()
     {
-        $identifier = new Identifier('Foo\Bar@Main');
+        $identifier = new Identifier('Carrot\Autopilot\Foo\Bar@Main');
+        $context = new Context('Class:Carrot\Autopilot\Foo\Bar');
+        $this->assertEquals(TRUE, $context->includes($identifier));
+        
+        $context = new Context('Class:Carrot\Autopilot');
+        $this->assertEquals(FALSE, $context->includes($identifier));
+    }
+    
+    /**
+     * Test the includes() method for greedy class type contexts.
+     * 
+     * @use Carrot\Autopilot\Identifier
+     *
+     */
+    public function testIncludesClassGreedy()
+    {
+        $identifier = new Identifier('Carrot\Autopilot\Foo\Egg\Baz@Main');
+        $context = new Context('Class:Carrot\Autopilot\Foo\Bar*');
+        $this->assertEquals(TRUE, $context->includes($identifier));
+        
+        $context = new Context('Class:Carrot\Autopilot\Foo\Egg\Baz');
+        $this->assertEquals(TRUE, $context->includes($identifier));
+        
+        $context = new Context('Class:Carrot\Autopilot');
+        $this->assertEquals(FALSE, $context->includes($identifier));
+    }
+    
+    /**
+     * Test the includes() method for namespace type contexts.
+     * 
+     * @use Carrot\Autopilot\Identifier
+     *
+     */
+    public function testIncludesNamespace()
+    {
+        $identifier = new Identifier('Carrot\Autopilot\Foo\Bar@Main');
+        $context = new Context('Namespace:Carrot\Autopilot');
+        $this->assertEquals(FALSE, $context->includes($identifier));
+        
+        $context = new Context('Namespace:Carrot\Autopilot\Foo');
+        $this->assertEquals(TRUE, $context->includes($identifier));
+        
+        $context = new Context('Namespace:\\');
+        $identifier = new Identifier('MySQLi@Main');
+        $this->assertEquals(TRUE, $context->includes($identifier));
+        
+        $identifier = new Identifier('Carrot\Autopilot\Autopilot@Main');
+        $this->assertEquals(FALSE, $context->includes($identifier));
+    }
+    
+    /**
+     * Test the includes() method for greedy namespace type contexts.
+     * 
+     * @use Carrot\Autopilot\Identifier
+     *
+     */
+    public function testIncludesNamespaceGreedy()
+    {
+        $context = new Context('Namespace:Carrot\Autopilot\Foo*');
+        $identifier = new Identifier('Carrot\Autopilot\Autopilot@Main');
+        $this->assertEquals(FALSE, $context->includes($identifier));
+        
+        $identifier = new Identifier('Carrot\Autopilot\Foo\Bar@Main');
+        $this->assertEquals(TRUE, $context->includes($identifier));
+        
+        $identifier = new Identifier('Carrot\Autopilot\Foo\Egg\Baz@Main');
+        $this->assertEquals(TRUE, $context->includes($identifier));
+    }
+    
+    /**
+     * Test the includes() method of the identifier type contexts.
+     * 
+     * @use Carrot\Autopilot\Identifier
+     *
+     */
+    public function testIncludesIdentifier()
+    {
+        $context = new Context('Identifier:Carrot\Autopilot\Foo\Bar@Default');
+        $identifier = new Identifier('Carrot\Autopilot\Foo\Bar@Default');
+        $this->assertEquals(TRUE, $context->includes($identifier));
+        
+        $identifier = new Identifier('Carrot\Autopilot\Foo\Bar@Main');
+        $this->assertEquals(FALSE, $context->includes($identifier));
     }
 }

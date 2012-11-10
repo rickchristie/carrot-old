@@ -289,7 +289,15 @@ class Context
             $class = $identifier->getClass();
             
             if ($this->isGreedy)
-            {
+            {   
+                if (
+                    class_exists($class) == FALSE OR
+                    class_exists($this->content) == FALSE
+                )
+                {
+                    return FALSE;
+                }
+                
                 return (
                     $this->content == $class OR
                     is_subclass_of($class, $this->content)

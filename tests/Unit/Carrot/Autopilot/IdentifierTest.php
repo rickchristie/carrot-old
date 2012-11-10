@@ -47,4 +47,19 @@ class IdentifierTest extends PHPUnit_Framework_TestCase
         $this->assertEquals(TRUE, $ident->isInNamespace('Foo\Bar\\'));
         $this->assertEquals(FALSE, $ident->isInNamespace('Baz'));
     }
+    
+    /**
+     * Tests the check class capabilities of Identifier objects.
+     *
+     */
+    public function testCheckClass()
+    {
+        $ident = new Identifier('Carrot\Autopilot\Foo\Bar@Default');
+        $bar = new Foo\Bar;
+        $baz = new Foo\Egg\Baz;
+        $mysqli = new \MySQLi;
+        $this->assertEquals(TRUE, $ident->checkClass($bar));
+        $this->assertEquals(TRUE, $ident->checkClass($baz));
+        $this->assertEquals(FALSE, $ident->checkClass($mysqli));
+    }
 }
