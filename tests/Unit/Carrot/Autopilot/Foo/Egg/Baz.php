@@ -12,5 +12,13 @@ use Carrot\Autopilot\Foo\Bar;
  */
 class Baz extends Bar
 {
-    
+    /**
+     * Empty constructor to test the behavior of constructor
+     * injector.
+     *
+     */
+    public function __construct()
+    {
+        
+    }
 }

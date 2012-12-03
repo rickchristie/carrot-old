@@ -145,7 +145,7 @@ class SetterInjector implements SetterInterface
             {
                 // Setter that receives no arguments? Eh?
                 // Run the method anyway, then continue.
-                $reflectionMethod->invoke($object);
+                $object->$method();
                 continue;
             }
             
@@ -194,7 +194,134 @@ class SetterInjector implements SetterInterface
             }
             
             // Invoke it already!
-            $reflectionMethod->invokeArgs($object, $invokeArgs);
+            
+            $this->callMethod(
+                $object,
+                $method,
+                $invokeArgs,
+                $reflectionMethod
+            );
         }
+    }
+    
+    /**
+     * Calls the setter method.
+     * 
+     * NOTE: Yes yes, I know this is ugly, but unfortunately
+     * reflection is slow. So bear the ugliness.
+     * 
+     * @param mixed $object
+     * @param string $method
+     * @param array $invokeArgs
+     * @param ReflectionMethod $reflectionMethod
+     *
+     */
+    private function callMethod(
+        $object,
+        $method,
+        array $invokeArgs,
+        ReflectionMethod $reflectionMethod
+    )
+    {
+        $count = count($invokeArgs);
+        
+        switch ($count)
+        {
+            case 0:
+                $object->$method();
+            break;
+            case 1:
+                $object->$method($invokeArgs[0]);
+            break;
+            case 2:
+                $object->$method($invokeArgs[0], $invokeArgs[1]);
+            break;
+            case 3:
+                $object->$method(
+                    $invokeArgs[0],
+                    $invokeArgs[1],
+                    $invokeArgs[2]
+                );
+            break;
+            case 4:
+                $object->$method(
+                    $invokeArgs[0],
+                    $invokeArgs[1],
+                    $invokeArgs[2],
+                    $invokeArgs[3]
+                );
+            break;
+            case 5:
+                $object->$method(
+                    $invokeArgs[0],
+                    $invokeArgs[1],
+                    $invokeArgs[2],
+                    $invokeArgs[3],
+                    $invokeArgs[4]
+                );
+            break;
+            case 6:
+                $object->$method(
+                    $invokeArgs[0],
+                    $invokeArgs[1],
+                    $invokeArgs[2],
+                    $invokeArgs[3],
+                    $invokeArgs[4],
+                    $invokeArgs[5]
+                );
+            break;
+            case 7:
+                $object->$method(
+                    $invokeArgs[0],
+                    $invokeArgs[1],
+                    $invokeArgs[2],
+                    $invokeArgs[3],
+                    $invokeArgs[4],
+                    $invokeArgs[5],
+                    $invokeArgs[6]
+                );
+            break;
+            case 8:
+                $object->$method(
+                    $invokeArgs[0],
+                    $invokeArgs[1],
+                    $invokeArgs[2],
+                    $invokeArgs[3],
+                    $invokeArgs[4],
+                    $invokeArgs[5],
+                    $invokeArgs[6],
+                    $invokeArgs[7]
+                );
+            break;
+            case 9:
+                $object->$method(
+                    $invokeArgs[0],
+                    $invokeArgs[1],
+                    $invokeArgs[2],
+                    $invokeArgs[3],
+                    $invokeArgs[4],
+                    $invokeArgs[5],
+                    $invokeArgs[6],
+                    $invokeArgs[7],
+                    $invokeArgs[8]
+                );
+            break;
+            case 10:
+                $object->$method(
+                    $invokeArgs[0], 
+                    $invokeArgs[1],
+                    $invokeArgs[2],
+                    $invokeArgs[3],
+                    $invokeArgs[4],
+                    $invokeArgs[5],
+                    $invokeArgs[6],
+                    $invokeArgs[7],
+                    $invokeArgs[8],
+                    $invokeArgs[9]
+                );
+            break;
+        }
+        
+        $reflectionMethod->invokeArgs($object, $invokeArgs);
     }
 }

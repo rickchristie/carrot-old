@@ -2,12 +2,12 @@
 
 namespace Carrot\Autopilot\Instantiator;
 
-use MySQLi,
-    ReflectionMethod,
-    ReflectionClass,
-    PHPUnit_Framework_TestCase,
+use PHPUnit_Framework_TestCase,
     Carrot\Autopilot\Identifier,
-    Carrot\Autopilot\DependencyList;
+    Carrot\Autopilot\DependencyList,
+    Carrot\Autopilot\Foo\Bar,
+    Carrot\Autopilot\Foo\Ham,
+    Carrot\Autopilot\Foo\Egg\Baz;
 
 /**
  * Unit test for the Autopilot CtorInjector class.
@@ -16,16 +16,84 @@ use MySQLi,
  *
  */
 class CtorInjectorTest extends PHPUnit_Framework_TestCase
-{
-    public function testReflectionMethod()
-    {
-        $reflectionClass = new ReflectionClass('MySQLi');
-        $constructor = $reflectionClass->getConstructor();
-        $parameters = $constructor->getParameters();
-    }
-    
+{   
+    /**
+     * Test normal constructor injection on user class.
+     * 
+     * @use Carrot\Autopilot\Identifier
+     * @use Carrot\Autopilot\DependencyList
+     *
+     */
     public function testNormalInjection()
     {
+        $identifier = new Identifier('Carrot\Autopilot\Foo\Ham@Default');
+        $list = new DependencyList;
+        $barIdentifier = new Identifier('Carrot\Autopilot\Foo\Bar@Default');
+        $bazIdentifier = new Identifier('Carrot\Autopilot\Foo\Egg\Baz@Default');
+        $stringOne = 'One';
+        $stringTwo = 'Twofer';
+        $args = array(
+            'stringTwo' => $stringTwo,
+            'stringOne' => $stringOne,
+            'baz' => $bazIdentifier,
+            'bar' => $barIdentifier
+        );
         
+        $ctorInjector = new CtorInjector(
+            $identifier,
+            $list,
+            $args
+        );
+        
+        $baz = new Baz;
+        $bar = new Bar;
+        $this->assertEquals(TRUE, $list === $ctorInjector->getDependencyList());
+        $this->assertEquals(TRUE, $identifier === $ctorInjector->getIdentifier());
+        $this->assertEquals(FALSE, $ctorInjector->isReadyForInjection());
+        
+        $list->setObject(
+            $bazIdentifier->get(),
+            $baz
+        );
+        
+        $list->setObject(
+            $barIdentifier->get(),
+            $bar
+        );
+        
+        $this->assertEquals(TRUE, $ctorInjector->isReadyForInjection());
+        $ham = $ctorInjector->instantiate();
+        $this->assertEquals(TRUE, $ham instanceof Ham);
+        $this->assertEquals($stringOne, $ham->getStringOne());
+        $this->assertEquals($stringTwo, $ham->getStringTwo());
+        $this->assertEquals(TRUE, $ham->getBaz() === $baz);
+        $this->assertEquals(TRUE, $ham->getBar() === $bar);
+    }
+    
+    /**
+     * Test constructor injection on empty constructor.
+     * 
+     * @use Carrot\Autopilot\Identifier
+     * @use Carrot\Autopilot\DependencyList
+     *
+     */
+    public function testEmptyConstructor()
+    {
+        $identifier = new Identifier('Carrot\Autopilot\Foo\Egg\Baz@Default');
+        $list = new DependencyList;
+        $args = array(
+            'random' => 466,
+            'things' => 678
+        );
+        
+        $ctorInjector = new CtorInjector(
+            $identifier,
+            $list,
+            $args
+        );
+        
+        $this->assertEquals(TRUE, $ctorInjector->isReadyForInjection());
+        $baz = $ctorInjector->instantiate();
+        $this->assertEquals(TRUE, $baz instanceof Baz);
     }
 }

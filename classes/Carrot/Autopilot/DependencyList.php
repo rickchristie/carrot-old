@@ -98,7 +98,7 @@ class DependencyList
     {
         if (array_key_exists($identifierString, $this->objects) == FALSE)
         {
-            throw new InvalidArgumentException("Dependency list does not contain {$identifierString}.");
+            throw new InvalidArgumentException("Error: Either dependency list does not contain {$identifierString} or it hasn't been set yet.");
         }
         
         return $this->objects[$identifierString];

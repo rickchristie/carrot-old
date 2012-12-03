@@ -21,6 +21,15 @@ interface InstantiatorInterface
     public function getDependencyList();
     
     /**
+     * Returns the Identifier instance of the object this
+     * instantiator is supposed to instantiate.
+     * 
+     * @return Identifier
+     *
+     */
+    public function getIdentifier();
+    
+    /**
      * Returns TRUE if the dependencies has been fulfilled.
      * 
      * @return bool

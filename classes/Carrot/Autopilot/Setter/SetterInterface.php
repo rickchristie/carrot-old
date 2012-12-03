@@ -21,6 +21,15 @@ interface SetterInterface
     public function getDependencyList();
     
     /**
+     * Get the identifier of the object to be setter-injected by
+     * this class.
+     * 
+     * @return Identifier
+     *
+     */
+    public function getIdentifier();
+    
+    /**
      * Returns TRUE if the dependencies has been fulfilled.
      * 
      * @return bool
