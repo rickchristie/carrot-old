@@ -2,7 +2,8 @@
 
 namespace Carrot\Autopilot\Instantiator;
 
-use ReflectionClass,
+use StdClass,
+    ReflectionClass,
     Carrot\Autopilot\Identifier,
     Carrot\Autopilot\DependencyList;
 
@@ -154,7 +155,8 @@ class CtorInjector implements InstantiatorInterface
                 }
                 
                 // Houston, we have a problem.
-                throw new RuntimeException("Constructor injection failed for class {$class}. There is no value for constructor parameter '\${$paramName}'.");
+                $identifier = $this->identifier->get();
+                throw new RuntimeException("Constructor injection failed for class {$class}. There is no value for constructor parameter '\${$paramName}'. Identifier: {$identifier}.");
             }
         }
         
@@ -180,7 +182,7 @@ class CtorInjector implements InstantiatorInterface
         array $invokeArgs,
         ReflectionClass $reflectionClass
     )
-    {
+    {   
         $count = count($invokeArgs);
         $class = $this->identifier->getClass();
         

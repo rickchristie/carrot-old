@@ -228,21 +228,38 @@ class Autopilot
      * to be instantiated with the given provider, running the
      * given method name.
      * 
+     * Example usage:
+     * 
+     * <pre>
+     * $autopilot->useProvider(
+     *     'MySQLi@Default',
+     *     'Acme\Factory\MySQLiFactory',
+     *     'instantiateByConfig',
+     *     array(
+     *         $autopilot->ref('Acme\Config'),
+     *         ...
+     *     )
+     * );
+     * </pre>
+     * 
      * @param string $identifierString
      * @param string $providerIdentifier
      * @param string $methodName
+     * @param array $args
      *
      */
     public function useProvider(
         $identifierString,
         $providerIdentifier,
-        $methodName
+        $methodName,
+        array $args = array()
     )
     {
         $this->manualOverrides[$identifierString] = array(
             'type' => self::PROVIDER,
             'provider' => $providerIdentifier,
-            'method' => $methodName
+            'method' => $methodName,
+            'args' => $args
         );
     }
     
