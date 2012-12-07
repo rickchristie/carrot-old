@@ -11,29 +11,29 @@ namespace Carrot\Autopilot;
 class Autopilot
 {
     /**
-     * @see useCtor()
-     * @var string CTOR
+     * @see __construct()
+     * @var Rulebook $rulebook
      */
-    const CTOR = 'c';
-    
-    /**
-     * @see useProvider()
-     * @var string PROVIDER
-     */
-    const PROVIDER = 'p';
-    
+    private $rules;
+       
     /**
      * @see get()
      * @see ref()
-     * @var array $identifierCache
+     * @var Collection $identifierCache
      */
-    private $identifierCache = array();
+    private $identifierCache;
     
     /**
      * @see on()
-     * @var array $contextCache
+     * @var Collection $contextCache
      */
-    private $contextCache = array();
+    private $contextCache;
+    
+    /**
+     * @see __construct()
+     * @var Collection $objectCache
+     */
+    private $objectCache;
     
     /**
      * @see on()
@@ -42,41 +42,10 @@ class Autopilot
     private $currentContext;
     
     /**
-     * @see def()
-     * @var array $autoVars
-     */
-    private $autoVars = array();
-    
-    /**
-     * @see set()
-     * @var array $setters
-     */
-    private $setters = array();
-    
-    /**
-     * @see useCtor()
-     * @see useProvider()
-     * @var array $manualOverrides
-     */
-    private $manualOverrides = array();
-    
-    /**
-     * @see declareTransient()
-     * @var array $transients
-     */
-    private $transients = array();
-    
-    /**
      * @see get()
      * @var Stack $stack
      */
     private $stack;
-    
-    /**
-     * @see __construct()
-     * @var ObjectCache $objectCache
-     */
-    private $objectCache;
     
     /**
      * Constructor.
@@ -86,9 +55,15 @@ class Autopilot
     {
         $wildcardContext = new Context('*');
         $this->currentContext = $wildcardContext;
-        $this->contextCache['*'] = $wildcardContext;
-        $this->objectCache = new ObjectCache;
-        $this->stack = new Stack($objectCache);
+        $this->objectCache = new Collection;
+        $this->contextCache = new Collection;
+        $this->identifierCach = new Collection;
+        $this->contextCache->set('*', $wildcardContext);
+        $this->rulebook = new Rulebook;
+        $this->stack = new Stack(
+            $rulebook,
+            $objectCache
+        );
     }
     
     /**
@@ -108,11 +83,35 @@ class Autopilot
         
         while ($this->stack->isNotEmpty())
         {
-            $item = $this->stack->getLast();
+            $item = $this->stack->pop();
             
+            // Instantiation Routine.
             if ($item->isInstantiated() == FALSE)
             {
-                if ($item->has
+                $identifier = $item->getIdentifier();
+                
+                if (
+                    $item->isSingleton() AND
+                    $this->objectCache->has($identifier)
+                )
+                {
+                    // Get from cache and let execution.
+                    $object = $this->objectCache->get($identifier);
+                    $item->setInstance($object);
+                }
+                else if ($item->isReadyForInstantiation())
+                {
+                    $list = $item->get
+                }
+                else
+                {
+                    // Get the dependency list of the instantiator
+                    // and 
+                    $list = $item->getInstantiatorDependen
+                }
+                
+                // We still need to do the setter.
+                $this->stack->push($item);
             }
             
         }
@@ -127,6 +126,8 @@ class Autopilot
      */
     public function ref($identifierString)
     {
+        
+        
         if (array_key_exists($identifierString, $this->identifierCache))
         {
             return $this->identifierCache[$identifierString];
@@ -264,40 +265,13 @@ class Autopilot
     }
     
     /**
-     * Declare the given identifier as a transient object, which
-     * means that it will be instantiated anew each time it is
-     * needed.
+     * Shorthand for Rulebook::declareTransient().
      * 
-     * @param string $identifierString
+     * @param string $identfierString
      *
      */
     public function declareTransient($identifierString)
     {
-        $this->transients[$identifierString] = TRUE;
-    }
-    
-    /**
-     * Prepare the instantiator, either by automatic wiring or manual
-     * overrides.
-     * 
-     * @param string $identifierString
-     * @return InstantiatorInterface
-     *
-     */
-    private function prepareInstantiator()
-    {
-        
-    }
-    
-    /**
-     * Prepare the setter injector.
-     * 
-     * @param string $identifierString
-     * @return SetterInterface
-     *
-     */
-    private function prepareSetters()
-    {
-        
+        $this->rules->declareTransient($identifierString);
     }
 }

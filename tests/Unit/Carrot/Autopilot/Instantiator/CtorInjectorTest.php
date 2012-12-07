@@ -7,6 +7,7 @@ use PHPUnit_Framework_TestCase,
     Carrot\Autopilot\DependencyList,
     Carrot\Autopilot\Foo\Bar,
     Carrot\Autopilot\Foo\Ham,
+    Carrot\Autopilot\Foo\Provider,
     Carrot\Autopilot\Foo\Egg\Baz;
 
 /**
@@ -95,5 +96,26 @@ class CtorInjectorTest extends PHPUnit_Framework_TestCase
         $this->assertEquals(TRUE, $ctorInjector->isReadyForInjection());
         $baz = $ctorInjector->instantiate();
         $this->assertEquals(TRUE, $baz instanceof Baz);
+    }
+    
+    /**
+     * Test constructor injection if there is no constructor.
+     * 
+     * @use Carrot\Autopilot\Identifier
+     * @use Carrot\Autopilot\DependencyList
+     *
+     */
+    public function testNoConstructor()
+    {
+        $identifier = new Identifier('Carrot\Autopilot\Foo\Provider@Default');
+        $list = new DependencyList;
+        $ctorInjector = new CtorInjector(
+            $identifier,
+            $list
+        );
+        
+        $this->assertEquals(TRUE, $ctorInjector->isReadyForInjection());
+        $provider = $ctorInjector->instantiate();
+        $this->assertEquals(TRUE, $provider instanceof Provider);
     }
 }

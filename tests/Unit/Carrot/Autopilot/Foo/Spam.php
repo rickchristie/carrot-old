@@ -26,4 +26,15 @@ class Spam
     {
         $this->bar = $bar;
     }
+    
+    /**
+     * Get the Bar object that was injected via the constructor.
+     * 
+     * @return Bar
+     *
+     */
+    public function getBar()
+    {
+        return $this->bar;
+    }
 }

@@ -4,6 +4,7 @@ namespace Carrot\Autopilot\Instantiator;
 
 use StdClass,
     ReflectionClass,
+    ReflectionMethod,
     Carrot\Autopilot\Identifier,
     Carrot\Autopilot\DependencyList;
 
@@ -107,6 +108,13 @@ class CtorInjector implements InstantiatorInterface
         $class = $this->identifier->getClass();
         $reflectionClass = new ReflectionClass($class);
         $constructor = $reflectionClass->getConstructor();
+        
+        if ($constructor instanceof ReflectionMethod == FALSE)
+        {
+            // No constructor - just instantiate then.
+            return new $class;
+        }
+        
         $parameters =  $constructor->getParameters();
         $invokeArgs = array();
         
