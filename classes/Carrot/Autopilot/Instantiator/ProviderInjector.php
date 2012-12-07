@@ -51,7 +51,6 @@ class ProviderInjector implements InstantiatorInterface
      * Constructor.
      * 
      * @param Identifier $identifier
-     * @param DependencyList $list
      * @param ProviderIdentifier $providerIdentifier
      * @param string $method
      * @param array $args
@@ -59,14 +58,13 @@ class ProviderInjector implements InstantiatorInterface
      */
     public function __construct(
         Identifier $identifier,
-        DependencyList $list,
         Identifier $providerIdentifier,
         $method,
         array $args = array()
     )
     {
         $this->identifier = $identifier;
-        $this->list = $list;
+        $this->list = new DependencyList;
         $this->providerIdentifier = $providerIdentifier;
         $this->method = $method;
         $this->args = $args;

@@ -39,18 +39,16 @@ class CtorInjector implements InstantiatorInterface
      * Constructor.
      * 
      * @param Identifier $identifier
-     * @param DependencyList $list
      * @param array $args
      *
      */
     public function __construct(
         Identifier $identifier,
-        DependencyList $list,
         array $args = array()
     )
     {
         $this->identifier = $identifier;
-        $this->list = $list;
+        $this->list = new DependencyList;
         $this->args = $args;
         
         foreach ($this->args as $value)

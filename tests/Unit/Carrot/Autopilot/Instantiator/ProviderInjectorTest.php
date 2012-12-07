@@ -30,17 +30,16 @@ class ProviderInjectorTest extends PHPUnit_Framework_TestCase
     {
         $providerIdentifier = new Identifier('Carrot\Autopilot\Foo\Provider@Default');
         $bazIdentifier = new Identifier('Carrot\Autopilot\Foo\Egg\Baz@Default');
-        $list = new DependencyList;
         $providerInjector = new ProviderInjector(
             $bazIdentifier,
-            $list,
             $providerIdentifier,
             'getBaz'
         );
         
         $provider = new Provider;
         $this->assertEquals(FALSE, $providerInjector->isReadyForInjection());
-        $this->assertEquals(TRUE, $list === $providerInjector->getDependencyList());
+        $list = $providerInjector->getDependencyList();
+        $this->assertEquals(TRUE, $list instanceof DependencyList);
         
         $list->setObject(
             'Carrot\Autopilot\Foo\Provider@Default',
@@ -65,12 +64,10 @@ class ProviderInjectorTest extends PHPUnit_Framework_TestCase
         $providerIdentifier = new Identifier('Carrot\Autopilot\Foo\Provider@Default');
         $bazIdentifier = new Identifier('Carrot\Autopilot\Foo\Egg\Baz@Default');
         $spamIdentifier = new Identifier('Carrot\Autopilot\Foo\Spam@Default');
-        $list = new DependencyList;
         $stringOne = 'ONE';
         $stringTwo = 'TWO';
         $providerInjector = new ProviderInjector(
             $spamIdentifier,
-            $list,
             $providerIdentifier,
             'getSpam',
             array(
@@ -82,8 +79,9 @@ class ProviderInjectorTest extends PHPUnit_Framework_TestCase
         
         $provider = new Provider;
         $baz = new Baz;
+        $list = $providerInjector->getDependencyList();
         $this->assertEquals(FALSE, $providerInjector->isReadyForInjection());
-        $this->assertEquals(TRUE, $list === $providerInjector->getDependencyList());
+        $this->assertEquals(TRUE, $list instanceof DependencyList);
         
         $list->setObject(
             'Carrot\Autopilot\Foo\Provider@Default',

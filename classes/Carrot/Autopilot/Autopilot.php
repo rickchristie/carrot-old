@@ -126,15 +126,13 @@ class Autopilot
      */
     public function ref($identifierString)
     {
-        
-        
-        if (array_key_exists($identifierString, $this->identifierCache))
+        if ($this->identifierCache->has($identifierString))
         {
-            return $this->identifierCache[$identifierString];
+            return $this->identifierCache->get($identifierString);
         }
         
         $identifier = new Identifier($identifierString);
-        $this->identifierCache[$identifierString] = $identifier;
+        $this->identifierCache->set($identifierString, $identifier);
         return $identifier;
     }
     
@@ -148,19 +146,20 @@ class Autopilot
      */
     public function on($contextString)
     {
-        if (array_key_exists($contextString, $this->contextCache))
+        if ($this->contextCache->has($contextString))
         {
-            $this->currentContext = $this->contextCache[$contextString];
+            $this->currentContext = $this->contextCache->get($contextString);
+            return;
         }
         
         $context = new Context($contextString);
         $this->currentContext = $context;
-        $this->contextCache[$contextString] = $context;
+        $this->contextCache->set($contextString, $context);
     }
     
     /**
-     * Define a default variable to be used in automatic wiring in
-     * the case of non-object constructor arguments.
+     * Shorthand for Rulebook::defineAutoVar(). Change the current
+     * context first before using this method.
      * 
      * @see on()
      * @param string $name
@@ -169,30 +168,35 @@ class Autopilot
      */
     public function def($name, $value)
     {
-        $contextString = $this->currentContext->get();
-        $this->autoVars[$contextString][$name] = $value;
+        $this->rules->defineAutoVar(
+            $this->currentContext,
+            $name,
+            $value
+        );
     }
     
     /**
-     * Define a batch of default variables to be used in automatic
-     * wiring in the case of non-object constructor arguments.
+     * Batch method for Rulebook::defineAutoVar(). Change the context
+     * first before using this method.
      * 
      * @see on()
      * @param array $values
      *
      */
     public function defBatch(array $values)
-    {
-        $contextString = $this->currentContext->get();
-        
-        foreach ($values as $key => $value)
+    {   
+        foreach ($values as $name => $value)
         {
-            $this->autoVars[$contextString][$key] = $value;
+            $this->rules->defineAutoVar(
+                $this->currentContext,
+                $name,
+                $value
+            );
         }
     }
     
     /**
-     * Run a setter for the current context with the given argument.
+     * Shorthand method for Rulebook::setSetter().
      * 
      * @see on()
      * @param string $methodName
@@ -201,16 +205,15 @@ class Autopilot
      */
     public function set($methodName, array $args)
     {
-        $contextString = $this->currentContext->get();
-        $this->setters[$contextString][] = array(
-            'method' => $methodName,
-            'args' => $args
+        $this->rules->setSetter(
+            $this->currentContext,
+            $methodName,
+            $args
         );
     }
     
     /**
-     * Manually override automatic wiring for the given identifier
-     * to run the constructor with the given arguments.
+     * Shorthand for Rulebook::manualCtor().
      * 
      * @param string $identifierString
      * @param array $args
@@ -218,9 +221,10 @@ class Autopilot
      */
     public function useCtor($identifierString, array $args)
     {
-        $this->manualOverrides[$identifierString] = array(
-            'type' => self::CTOR,
-            'args' => $args
+        $identifier = $this->identifierCache->get($identifierString);
+        $this->rules->manualCtor(
+            $identifier,
+            $args
         );
     }
     

@@ -27,14 +27,12 @@ class SetterInjectorTest extends PHPUnit_Framework_TestCase
     public function testNormalInjection()
     {
         $identifier = new Identifier('Carrot\Autopilot\Foo\Bar@Default');
-        $list = new DependencyList;
-        $setter = new SetterInjector(
-            $identifier,
-            $list
-        );
+        $setter = new SetterInjector($identifier);
+        $list = $setter->getDependencyList();
         
         $this->assertEquals($identifier, $setter->getIdentifier());
-        $this->assertEquals($list, $setter->getDependencyList());
+        $this->assertEquals(TRUE, $list instanceof DependencyList);
+        
         $object = new StdClass;
         $bar = new Bar;
         $baz = new Baz;

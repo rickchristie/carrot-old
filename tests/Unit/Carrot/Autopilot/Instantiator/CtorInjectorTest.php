@@ -28,7 +28,6 @@ class CtorInjectorTest extends PHPUnit_Framework_TestCase
     public function testNormalInjection()
     {
         $identifier = new Identifier('Carrot\Autopilot\Foo\Ham@Default');
-        $list = new DependencyList;
         $barIdentifier = new Identifier('Carrot\Autopilot\Foo\Bar@Default');
         $bazIdentifier = new Identifier('Carrot\Autopilot\Foo\Egg\Baz@Default');
         $stringOne = 'One';
@@ -40,15 +39,12 @@ class CtorInjectorTest extends PHPUnit_Framework_TestCase
             'bar' => $barIdentifier
         );
         
-        $ctorInjector = new CtorInjector(
-            $identifier,
-            $list,
-            $args
-        );
-        
+        $ctorInjector = new CtorInjector($identifier, $args);
         $baz = new Baz;
         $bar = new Bar;
-        $this->assertEquals(TRUE, $list === $ctorInjector->getDependencyList());
+        $list = $ctorInjector->getDependencyList();
+        
+        $this->assertEquals(TRUE, $list instanceof DependencyList);
         $this->assertEquals(TRUE, $identifier === $ctorInjector->getIdentifier());
         $this->assertEquals(FALSE, $ctorInjector->isReadyForInjection());
         
@@ -81,18 +77,12 @@ class CtorInjectorTest extends PHPUnit_Framework_TestCase
     public function testEmptyConstructor()
     {
         $identifier = new Identifier('Carrot\Autopilot\Foo\Egg\Baz@Default');
-        $list = new DependencyList;
         $args = array(
             'random' => 466,
             'things' => 678
         );
         
-        $ctorInjector = new CtorInjector(
-            $identifier,
-            $list,
-            $args
-        );
-        
+        $ctorInjector = new CtorInjector($identifier, $args);
         $this->assertEquals(TRUE, $ctorInjector->isReadyForInjection());
         $baz = $ctorInjector->instantiate();
         $this->assertEquals(TRUE, $baz instanceof Baz);
@@ -108,11 +98,8 @@ class CtorInjectorTest extends PHPUnit_Framework_TestCase
     public function testNoConstructor()
     {
         $identifier = new Identifier('Carrot\Autopilot\Foo\Provider@Default');
-        $list = new DependencyList;
-        $ctorInjector = new CtorInjector(
-            $identifier,
-            $list
-        );
+        $ctorInjector = new CtorInjector($identifier);
+        $list = $ctorInjector->getDependencyList();
         
         $this->assertEquals(TRUE, $ctorInjector->isReadyForInjection());
         $provider = $ctorInjector->instantiate();

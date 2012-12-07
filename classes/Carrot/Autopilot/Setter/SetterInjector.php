@@ -41,12 +41,9 @@ class SetterInjector implements SetterInterface
      * @param DependencyList $list
      *
      */
-    public function __construct(
-        Identifier $identifier,
-        DependencyList $list
-    )
+    public function __construct(Identifier $identifier)
     {
-        $this->list = $list;
+        $this->list = new DependencyList;
         $this->identifier = $identifier;
     }
     
